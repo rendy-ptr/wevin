@@ -1,0 +1,27 @@
+# Build outputs
+.next
+dist
+build
+out
+
+# Dependencies
+node_modules
+
+# Configs
+package-lock.json
+bun.lock
+yarn.lock
+pnpm-lock.yaml
+
+# Public assets
+public
+
+# Logs
+*.log
+
+# Environmental variables
+.env*
+
+# Other
+.DS_Store
+coverage
