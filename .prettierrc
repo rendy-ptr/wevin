@@ -6,8 +6,5 @@
   "tabWidth": 2,
   "useTabs": false,
   "endOfLine": "lf",
-  "plugins": [
-    "prettier-plugin-organize-imports",
-    "prettier-plugin-tailwindcss"
-  ]
+  "plugins": ["prettier-plugin-organize-imports", "prettier-plugin-tailwindcss"]
 }
