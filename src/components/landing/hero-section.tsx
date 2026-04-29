@@ -51,7 +51,7 @@ export function HeroSection() {
             size="lg"
             className="border-primary text-primary-dark hover:bg-primary/10 rounded-xl px-8 py-6 text-lg"
           >
-            <Link href="/undangan/demo?to=Bapak+Ibu">
+            <Link href="/invitation/demo?to=Bapak+Ibu">
               <HeartIcon className="mr-2 h-5 w-5" />
               Lihat Contoh Undangan
             </Link>

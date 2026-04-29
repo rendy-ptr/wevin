@@ -45,7 +45,7 @@ export function DemoPreview() {
 
             <div className="max-w-2xl flex-1">
               <div
-                className={`${TEMPLATES[currentIndex].preview} border-border relative aspect-[4/5] overflow-hidden rounded-2xl border shadow-xl md:aspect-[3/4]`}
+                className={`${TEMPLATES[currentIndex].preview} border-border relative aspect-[4/5] overflow-hidden rounded-2xl rounded-[2.5rem] border shadow-xl md:aspect-[3/4]`}
               >
                 <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
                   <p
@@ -62,7 +62,7 @@ export function DemoPreview() {
                       TEMPLATES[currentIndex].textColor,
                     )}
                   >
-                    Rendy & Winka
+                    -
                   </h3>
                   <div
                     className={cn(
