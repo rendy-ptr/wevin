@@ -1,8 +1,8 @@
 import { Metadata } from 'next';
 
 export function constructMetadata({
-  title = 'Wevin - Your Brand Catchphrase',
-  description = 'A professional description of Wevin.',
+  title = 'Wevin - Weeding Invitation',
+  description = 'The perfect platform to celebrate your wedding with friends and family. Wevin makes it easy to share your special moments, RSVP, and get directions to your big day.',
   image = '/thumbnail.svg',
   noIndex = false,
 }: {
