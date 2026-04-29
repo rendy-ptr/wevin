@@ -3,14 +3,12 @@ import { Metadata } from 'next';
 export function constructMetadata({
   title = 'Wevin - Your Brand Catchphrase',
   description = 'A professional description of Wevin.',
-  image = '/thumbnail.png',
-  icons = '/favicon.ico',
+  image = '/thumbnail.svg',
   noIndex = false,
 }: {
   title?: string;
   description?: string;
   image?: string;
-  icons?: string;
   noIndex?: boolean;
 } = {}): Metadata {
   return {
@@ -32,7 +30,20 @@ export function constructMetadata({
       images: [image],
       creator: '@yourhandle',
     },
-    icons,
+    icons: {
+      icon: [
+        {
+          url: '/icon.svg',
+          type: 'image/svg+xml',
+        },
+      ],
+      apple: [
+        {
+          url: '/icon.svg',
+          type: 'image/svg+xml',
+        },
+      ],
+    },
     metadataBase: new URL('https://wevin.com'),
     ...(noIndex && {
       robots: {

@@ -1,0 +1,106 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Wevin — Digital Wedding Invitation</title>
+  <desc>Wevin open graph thumbnail with floral minimal design</desc>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#F7F0EA"/>
+
+  <!-- corner floral — top left, 8 petals -->
+  <g transform="translate(60,60)">
+    <g transform="rotate(0)">  <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(45)"> <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(90)"> <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(135)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(180)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(225)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(270)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(315)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <circle r="9" fill="#B5622A"/>
+  </g>
+
+  <!-- corner floral — top right -->
+  <g transform="translate(1140,60)">
+    <g transform="rotate(0)">  <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(45)"> <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(90)"> <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(135)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(180)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(225)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(270)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(315)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <circle r="9" fill="#B5622A"/>
+  </g>
+
+  <!-- corner floral — bottom left -->
+  <g transform="translate(60,570)">
+    <g transform="rotate(0)">  <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(45)"> <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(90)"> <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(135)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(180)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(225)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(270)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(315)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <circle r="9" fill="#B5622A"/>
+  </g>
+
+  <!-- corner floral — bottom right -->
+  <g transform="translate(1140,570)">
+    <g transform="rotate(0)">  <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(45)"> <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(90)"> <ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(135)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(180)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(225)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <g transform="rotate(270)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#F2C4B8" opacity="0.8"/></g>
+    <g transform="rotate(315)"><ellipse cx="0" cy="-18" rx="6" ry="12" fill="#E8A882" opacity="0.8"/></g>
+    <circle r="9" fill="#B5622A"/>
+  </g>
+
+  <!-- center flower — 8 petals, 2 warna bergantian, besar -->
+  <g transform="translate(600,218)">
+    <g transform="rotate(0)">  <ellipse cx="0" cy="-68" rx="28" ry="52" fill="#F2C4B8"/></g>
+    <g transform="rotate(45)"> <ellipse cx="0" cy="-68" rx="28" ry="52" fill="#E8A882"/></g>
+    <g transform="rotate(90)"> <ellipse cx="0" cy="-68" rx="28" ry="52" fill="#F2C4B8"/></g>
+    <g transform="rotate(135)"><ellipse cx="0" cy="-68" rx="28" ry="52" fill="#E8A882"/></g>
+    <g transform="rotate(180)"><ellipse cx="0" cy="-68" rx="28" ry="52" fill="#F2C4B8"/></g>
+    <g transform="rotate(225)"><ellipse cx="0" cy="-68" rx="28" ry="52" fill="#E8A882"/></g>
+    <g transform="rotate(270)"><ellipse cx="0" cy="-68" rx="28" ry="52" fill="#F2C4B8"/></g>
+    <g transform="rotate(315)"><ellipse cx="0" cy="-68" rx="28" ry="52" fill="#E8A882"/></g>
+    <circle r="52" fill="#B5622A"/>
+  </g>
+
+  <!-- brand name -->
+  <text
+    x="600" y="368"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="110"
+    font-weight="400"
+    fill="#3D2B1F"
+    text-anchor="middle"
+    letter-spacing="18"
+  >wevin</text>
+
+  <!-- tagline -->
+  <text
+    x="600" y="416"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="22"
+    fill="#8C7060"
+    text-anchor="middle"
+    letter-spacing="8"
+  >DIGITAL WEDDING INVITATION</text>
+
+  <!-- divider -->
+  <line x1="510" y1="440" x2="690" y2="440" stroke="#B5622A" stroke-width="1" opacity="0.5"/>
+
+  <!-- domain -->
+  <text
+    x="600" y="468"
+    font-family="Arial, Helvetica, sans-serif"
+    font-size="20"
+    fill="#B89A82"
+    text-anchor="middle"
+    letter-spacing="4"
+  >wevin.id</text>
+</svg>

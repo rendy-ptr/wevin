@@ -15,11 +15,13 @@ A premium Next.js 16 starter project with a robust developer experience and mode
 We've set up several tools to ensure code quality and consistency:
 
 ### 🎨 Formatting & Linting
+
 - **[Prettier](https://prettier.io/)**: Code formatting with automated class sorting via `prettier-plugin-tailwindcss`.
 - **[ESLint](https://eslint.org/)**: Configured with `eslint-plugin-simple-import-sort` for consistent import ordering.
 - **[Husky](https://typicode.github.io/husky/) & [lint-staged](https://github.com/lint-staged/lint-staged)**: Automatically runs linting and formatting on every commit to ensure zero-broken-code in the repository.
 
 ### 🧩 UI Utilities
+
 - **[clsx](https://github.com/lukeed/clsx) & [tailwind-merge](https://github.com/dcastil/tailwind-merge)**: Combined into a `cn()` utility for flexible and conflict-free Tailwind class management.
 
 ## 📂 Project Structure
