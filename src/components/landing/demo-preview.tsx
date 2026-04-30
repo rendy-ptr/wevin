@@ -2,20 +2,27 @@
 
 import { Button } from '@/components/ui/button';
 import { TEMPLATES } from '@/constants/demo-preview';
-import { cn } from '@/lib/utils';
 import { ChevronRightIcon } from 'lucide-react';
 import { useState } from 'react';
+import Book from '../shared/book';
 import { ChevronLeftIcon } from '../ui/chevron-left';
 
 export function DemoPreview() {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [isOpen, setIsOpen] = useState(false);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % TEMPLATES.length);
+    setIsOpen(false);
   };
 
   const prevSlide = () => {
     setCurrentIndex((prev) => (prev - 1 + TEMPLATES.length) % TEMPLATES.length);
+    setIsOpen(false);
+  };
+
+  const handleToggleOpen = () => {
+    setIsOpen(!isOpen);
   };
 
   return (
@@ -43,53 +50,17 @@ export function DemoPreview() {
               <ChevronLeftIcon className="h-5 w-5" />
             </Button>
 
-            <div className="max-w-2xl flex-1">
-              <div
-                className={`${TEMPLATES[currentIndex].preview} border-border relative aspect-[4/5] overflow-hidden rounded-2xl rounded-[2.5rem] border shadow-xl md:aspect-[3/4]`}
-              >
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-8 text-center">
-                  <p
-                    className={cn(
-                      'font-script mb-2 text-xl opacity-90 md:text-2xl',
-                      TEMPLATES[currentIndex].textColor,
-                    )}
-                  >
-                    The Wedding of
-                  </p>
-                  <h3
-                    className={cn(
-                      'font-display mb-4 text-4xl font-semibold italic md:text-6xl',
-                      TEMPLATES[currentIndex].textColor,
-                    )}
-                  >
-                    -
-                  </h3>
-                  <div
-                    className={cn(
-                      'mb-4 h-px w-24 opacity-30',
-                      TEMPLATES[currentIndex].textColor.replace('text-', 'bg-'),
-                    )}
-                  />
-                  <p
-                    className={cn(
-                      'font-medium opacity-80',
-                      TEMPLATES[currentIndex].textColor,
-                    )}
-                  >
-                    Sabtu, 08 Desember 2005
-                  </p>
-                  <p
-                    className={cn(
-                      'mt-1 text-sm opacity-70',
-                      TEMPLATES[currentIndex].textColor,
-                    )}
-                  >
-                    Hotel Grand Ballroom, Jakarta
-                  </p>
-
-                  <div className="border-primary/20 absolute top-4 left-4 h-16 w-16 rounded-full border" />
-                  <div className="border-primary/20 absolute right-4 bottom-4 h-20 w-20 rounded-full border" />
-                </div>
+            <div className="w-full max-w-[320px] md:max-w-[380px]">
+              <div className="relative aspect-[4/5] w-full perspective-[1500px]">
+                <Book
+                  isActive={TEMPLATES[currentIndex]}
+                  isOpen={isOpen}
+                  handleToggleOpen={handleToggleOpen}
+                  groom="Groom"
+                  bride="Bride"
+                  guestName="Guest Name"
+                  showHint={false}
+                />
               </div>
 
               <div className="mt-6 text-center">
