@@ -88,14 +88,14 @@ export default function CoverSection({
               initial={{ opacity: 0, y: 10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.95 }}
-              className="absolute top-full right-0 mt-2 min-w-[200px] overflow-hidden rounded-2xl border border-black/5 bg-white/80 p-2 shadow-2xl backdrop-blur-xl"
+              className="absolute top-full right-0 mt-2 min-w-[220px] overflow-hidden rounded-2xl border border-black/5 bg-white/80 p-2 shadow-2xl backdrop-blur-xl"
             >
-              <div className="mb-2 px-3 pt-2">
+              <div className="px-3 pt-2 pb-1">
                 <p className="text-[9px] font-bold tracking-[0.2em] text-black/40 uppercase">
                   Pilih Tema
                 </p>
               </div>
-              <div className="grid gap-1">
+              <div className="custom-scrollbar grid max-h-[240px] gap-1 overflow-y-auto pr-1">
                 {TEMPLATES.map((template, index) => (
                   <button
                     key={index}
@@ -104,18 +104,25 @@ export default function CoverSection({
                       setIsDropdownOpen(false);
                     }}
                     className={cn(
-                      'flex cursor-pointer items-center justify-between rounded-xl px-3 py-2 transition-all hover:bg-black/5',
+                      'flex cursor-pointer items-center justify-between rounded-xl px-3 py-2.5 transition-all hover:bg-black/5',
                       currentIndex === index ? 'bg-black/5' : '',
                     )}
                   >
                     <div className="flex items-center gap-3">
                       <div
                         className={cn(
-                          'h-6 w-6 rounded-full shadow-sm',
+                          'h-7 w-7 rounded-full shadow-sm',
                           template.preview,
                         )}
                       />
-                      <span className="text-sm font-medium text-black/70">
+                      <span
+                        className={cn(
+                          'text-sm transition-colors',
+                          currentIndex === index
+                            ? 'font-bold text-black/80'
+                            : 'font-medium text-black/60',
+                        )}
+                      >
                         {template.name}
                       </span>
                     </div>
