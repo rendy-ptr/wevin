@@ -38,12 +38,7 @@ export default function Book({
           }}
           className="pointer-events-none absolute -bottom-16 left-1/2 -translate-x-1/2 py-4 whitespace-nowrap"
         >
-          <p
-            className={cn(
-              'font-script text-3xl tracking-wide italic',
-              isActive.textColor,
-            )}
-          >
+          <p className="font-script text-foreground text-3xl tracking-wide italic">
             Tap to open the invitation
           </p>
         </motion.div>
@@ -60,9 +55,8 @@ export default function Book({
 
       <div
         className={cn(
-          'absolute inset-y-0 right-0 left-0 flex flex-col items-center justify-center rounded-[2rem] border border-black/5 p-8 text-center shadow-xl transition-all duration-700',
-          isActive.preview,
-          isActive.textColor,
+          'text-foreground absolute inset-y-0 right-0 left-0 flex flex-col items-center justify-center rounded-[2rem] border border-black/5 p-8 text-center shadow-xl transition-all duration-700',
+          isActive.bookPreview,
           isCoverHovered && !isOpen ? 'shadow-2xl' : 'shadow-xl',
         )}
       >
@@ -143,9 +137,8 @@ export default function Book({
         }}
         transition={{ type: 'spring', stiffness: 80, damping: 20 }}
         className={cn(
-          'absolute inset-y-0 right-0 left-12 z-30 cursor-pointer overflow-hidden rounded-r-[2rem] border-y border-r shadow-2xl transition-colors duration-700',
-          isActive.preview,
-          isActive.textColor,
+          'text-foreground absolute inset-y-0 right-0 left-12 z-30 cursor-pointer overflow-hidden rounded-r-[2rem] border-y border-r shadow-2xl transition-colors duration-700',
+          isActive.bookPreview,
         )}
       >
         <div className="pointer-events-none absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')] opacity-[0.03] mix-blend-multiply" />
@@ -167,12 +160,7 @@ export default function Book({
           <p className="font-script mb-1 text-lg opacity-80 md:text-xl">
             The Wedding of
           </p>
-          <h3
-            className={cn(
-              'font-display mb-3 text-3xl leading-tight font-semibold italic md:text-5xl',
-              isActive.titleColor,
-            )}
-          >
+          <h3 className="font-display text-primary mb-3 text-3xl leading-tight font-semibold italic md:text-5xl">
             {groom}
             <br />
             &amp;
@@ -180,12 +168,7 @@ export default function Book({
             {bride}
           </h3>
 
-          <div
-            className={cn(
-              'mx-auto mb-4 h-px w-16 opacity-30',
-              isActive.titleColor.replace('text-', 'bg-'),
-            )}
-          />
+          <div className="bg-primary mx-auto mb-4 h-px w-16 opacity-30" />
 
           <div className="mb-6 space-y-1">
             <p className="text-sm font-medium tracking-wide opacity-80 md:text-base">

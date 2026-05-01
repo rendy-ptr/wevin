@@ -25,6 +25,7 @@
   --primary: #c9a0a0; /* Dusty Rose */
   --primary-foreground: #ffffff;
   --primary-dark: #8b5e6a; /* Deep Mauve */
+  --primary-subtle: #f5eae6; /* Soft Blush */
   --secondary: #f3ede6; /* Soft Cream */
   --secondary-foreground: #2e2e2e;
   --muted: #f3ede6;
@@ -64,6 +65,7 @@
   --primary: #c9a0a0;
   --primary-foreground: #1a1815;
   --primary-dark: #8b5e6a;
+  --primary-subtle: #2a2622;
   --secondary: #2a2622;
   --secondary-foreground: #faf7f4;
   --muted: #2a2622;
@@ -101,6 +103,7 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-primary-dark: var(--primary-dark);
+  --color-primary-subtle: var(--primary-subtle);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);

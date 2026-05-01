@@ -43,7 +43,7 @@ export default function GuestbookForm() {
       </div>
       <Button
         type="submit"
-        className="bg-primary-dark hover:bg-primary-dark/90 w-full text-white"
+        className="bg-primary-dark hover:bg-primary-dark/90 text-primary-foreground w-full"
       >
         Kirim Ucapan
       </Button>

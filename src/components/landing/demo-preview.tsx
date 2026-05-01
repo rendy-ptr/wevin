@@ -51,7 +51,10 @@ export function DemoPreview() {
             </Button>
 
             <div className="w-full max-w-[320px] md:max-w-[380px]">
-              <div className="relative aspect-[4/5] w-full perspective-[1500px]">
+              <div
+                className="relative aspect-[4/5] w-full perspective-[1500px]"
+                style={TEMPLATES[currentIndex].cssVars as React.CSSProperties}
+              >
                 <Book
                   isActive={TEMPLATES[currentIndex]}
                   isOpen={isOpen}

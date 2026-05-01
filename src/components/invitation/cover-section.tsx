@@ -48,12 +48,11 @@ export default function CoverSection({
   return (
     <section
       className={cn(
-        'relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20 pb-32 transition-colors duration-700',
-        isActive.backgroundColor,
+        'bg-background relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 pt-20 pb-32 transition-colors duration-700',
       )}
     >
-      <div className="bg-primary/5 absolute -top-24 -left-24 h-64 w-64 rounded-full blur-3xl" />
-      <div className="bg-accent/5 absolute -right-24 -bottom-24 h-64 w-64 rounded-full blur-3xl" />
+      <div className="bg-primary-subtle absolute -top-24 -left-24 h-64 w-64 rounded-full opacity-60 blur-3xl" />
+      <div className="bg-primary-subtle absolute -right-24 -bottom-24 h-64 w-64 rounded-full opacity-60 blur-3xl" />
 
       <div
         ref={dropdownRef}
@@ -69,7 +68,7 @@ export default function CoverSection({
           <div
             className={cn(
               'h-8 w-8 rounded-full shadow-inner',
-              isActive.preview,
+              isActive.bookPreview,
             )}
           />
           <span className="hidden text-xs font-bold tracking-widest text-black/60 uppercase md:block">
@@ -111,8 +110,8 @@ export default function CoverSection({
                     <div className="flex items-center gap-3">
                       <div
                         className={cn(
-                          'h-7 w-7 rounded-full shadow-sm',
-                          template.preview,
+                          'h-8 w-8 shrink-0 rounded-full shadow-sm transition-transform duration-300 group-hover:scale-110',
+                          template.bookPreview,
                         )}
                       />
                       <span

@@ -17,7 +17,7 @@ export default function RSVPForm({ guestName }: { guestName: string }) {
   if (submitted) {
     return (
       <div className="py-8 text-center">
-        <div className="bg-success/10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+        <div className="bg-primary-subtle mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full">
           <CheckIcon className="text-success h-8 w-8" />
         </div>
         <h3 className="text-foreground mb-2 font-serif text-xl font-semibold">
@@ -50,7 +50,8 @@ export default function RSVPForm({ guestName }: { guestName: string }) {
             onClick={() => setStatus('hadir')}
             className={cn(
               'border-border h-auto py-4',
-              status === 'hadir' && 'bg-success/10 border-success text-success',
+              status === 'hadir' &&
+                'bg-primary-subtle border-success text-success',
             )}
           >
             <CheckIcon className="mr-2 h-5 w-5" />
@@ -88,7 +89,7 @@ export default function RSVPForm({ guestName }: { guestName: string }) {
       <Button
         type="submit"
         disabled={!status}
-        className="bg-primary-dark hover:bg-primary-dark/90 w-full text-white"
+        className="bg-primary-dark hover:bg-primary-dark/90 text-primary-foreground w-full"
       >
         Kirim Konfirmasi
       </Button>
