@@ -1,11 +1,19 @@
 import { JWTPayload, jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
 
-interface SessionUser {
+export const USER_ROLES = {
+  ADMIN: 'admin',
+  MEMBER: 'member',
+} as const;
+
+export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
+
+export interface SessionUser {
   id: number;
   email: string;
   name: string;
-  role: 'admin' | 'member';
+  role: UserRole;
 }
 
 interface Session extends JWTPayload {
@@ -59,4 +67,17 @@ export async function getSession(): Promise<Session | null> {
   const session = cookieStore.get('session')?.value;
   if (!session) return null;
   return await decrypt(session);
+}
+
+export async function requireAuth(role?: UserRole) {
+  const session = await getSession();
+
+  if (!session) redirect('/login');
+  if (role && session.user.role !== role) {
+    redirect(
+      role === USER_ROLES.ADMIN ? '/dashboard/member' : '/dashboard/admin',
+    );
+  }
+
+  return session;
 }

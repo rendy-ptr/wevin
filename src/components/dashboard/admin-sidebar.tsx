@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { SIDEBAR_LINKS } from '@/constants/admin-sidebar';
 import { useToast } from '@/hooks/use-toast';
+import { SessionUser } from '@/lib/auth';
 import api from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { isAxiosError } from 'axios';
@@ -11,7 +12,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export function AdminSidebar() {
+interface AdminSidebarProps {
+  user: SessionUser;
+}
+
+export function AdminSidebar({ user }: AdminSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
@@ -93,7 +98,7 @@ export function AdminSidebar() {
           <div className="bg-accent/10 border-accent/30 rounded-xl border px-4 py-3">
             <p className="text-muted-foreground mb-1 text-xs">Role</p>
             <p className="text-accent font-serif font-semibold">
-              Administrator
+              {user.role.toUpperCase()}
             </p>
           </div>
         </div>
@@ -131,15 +136,20 @@ export function AdminSidebar() {
           <div className="mb-4 flex items-center gap-3">
             <div className="bg-primary/20 flex h-10 w-10 items-center justify-center rounded-full">
               <span className="text-primary-dark font-serif font-semibold">
-                AD
+                {user.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2)}
               </span>
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sidebar-foreground truncate font-medium">
-                Admin
+                {user.name}
               </p>
               <p className="text-muted-foreground truncate text-xs">
-                admin@weddinginvite.com
+                {user.email}
               </p>
             </div>
           </div>

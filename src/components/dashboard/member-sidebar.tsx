@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { SIDEBAR_LINKS } from '@/constants/member-sidebar';
 import { useToast } from '@/hooks/use-toast';
+import { SessionUser } from '@/lib/auth';
 import api from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { isAxiosError } from 'axios';
@@ -11,7 +12,11 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-export function MemberSidebar() {
+interface MemberSidebarProps {
+  user: SessionUser;
+}
+
+export function MemberSidebar({ user }: MemberSidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
@@ -129,15 +134,20 @@ export function MemberSidebar() {
           <div className="mb-4 flex items-center gap-3">
             <div className="bg-primary/20 flex h-10 w-10 items-center justify-center rounded-full">
               <span className="text-primary-dark font-serif font-semibold">
-                BA
+                {user.name
+                  .split(' ')
+                  .map((n) => n[0])
+                  .join('')
+                  .toUpperCase()
+                  .slice(0, 2)}
               </span>
             </div>
             <div className="min-w-0 flex-1">
               <p className="text-sidebar-foreground truncate font-medium">
-                Budi & Ani
+                {user.name}
               </p>
               <p className="text-muted-foreground truncate text-xs">
-                budi@email.com
+                {user.email}
               </p>
             </div>
           </div>
