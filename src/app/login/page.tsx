@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
 import api from '@/lib/axios';
 import { loginSchema, type LoginFormValues } from '@/validations/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +18,7 @@ export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   const {
     register,
@@ -31,18 +33,27 @@ export default function LoginPage() {
     try {
       const response = await api.post('/api/auth/login', payload);
       router.push(response.data.data.redirectPath);
+      router.refresh();
+      toast({
+        title: 'Berhasil masuk',
+        description: 'Anda berhasil masuk ke akun.',
+      });
     } catch (error: unknown) {
       let message = 'Gagal masuk. Silakan coba lagi.';
       if (axios.isAxiosError(error)) {
         message = error.response?.data?.message || 'Email atau password salah';
       }
+      toast({
+        variant: 'destructive',
+        title: 'Gagal masuk',
+        description: message,
+      });
       setServerError(message);
     }
   };
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4">
-      <div className="absolute inset-0 bg-[url('/floral-pattern.svg')] bg-repeat opacity-5" />
       <div className="bg-primary/10 absolute top-1/4 -left-20 h-64 w-64 rounded-full blur-3xl" />
       <div className="bg-accent/10 absolute -right-20 bottom-1/4 h-80 w-80 rounded-full blur-3xl" />
 

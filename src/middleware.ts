@@ -1,9 +1,8 @@
 import { decrypt } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-export default async function middleware(req: NextRequest) {
+export default async function authMiddleware(req: NextRequest) {
   const path = req.nextUrl.pathname;
-
   const cookie = req.cookies.get('session')?.value;
   const session = cookie ? await decrypt(cookie).catch(() => null) : null;
 
@@ -16,19 +15,12 @@ export default async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard/member', req.nextUrl));
     }
 
-    if (
-      path.startsWith('/dashboard/member') &&
-      session.user.role !== 'member'
-    ) {
-      return NextResponse.redirect(new URL('/dashboard/admin', req.nextUrl));
-    }
-
-    if (path === '/login' || path === '/register') {
-      const redirectPath =
+    if (path === '/login') {
+      const dest =
         session.user.role === 'admin'
           ? '/dashboard/admin'
           : '/dashboard/member';
-      return NextResponse.redirect(new URL(redirectPath, req.nextUrl));
+      return NextResponse.redirect(new URL(dest, req.nextUrl));
     }
   }
 
@@ -36,5 +28,5 @@ export default async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+  matcher: ['/dashboard/:path*', '/login', '/register'],
 };

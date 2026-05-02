@@ -51,7 +51,7 @@ export async function login(user: SessionUser) {
 
 export async function logout() {
   const cookieStore = await cookies();
-  cookieStore.set('session', '', { expires: new Date(0) });
+  cookieStore.delete('session');
 }
 
 export async function getSession(): Promise<Session | null> {
