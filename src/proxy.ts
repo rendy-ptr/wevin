@@ -1,7 +1,7 @@
 import { decrypt } from '@/lib/auth';
 import { NextRequest, NextResponse } from 'next/server';
 
-export default async function authMiddleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const path = req.nextUrl.pathname;
   const cookie = req.cookies.get('session')?.value;
   const session = cookie ? await decrypt(cookie).catch(() => null) : null;

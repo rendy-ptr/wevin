@@ -19,3 +19,9 @@ export class AuthError extends AppError {
     super(message, 401);
   }
 }
+
+export class DuplicateError extends AppError {
+  constructor(message: string = 'Duplicate resource') {
+    super(message, 409);
+  }
+}

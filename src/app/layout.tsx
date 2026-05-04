@@ -3,6 +3,7 @@ import './globals.css';
 import { Analytics } from '@vercel/analytics/next';
 import type { Metadata } from 'next';
 
+import QueryProvider from '@/components/providers/query-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { constructMetadata } from '@/lib/metadata';
 
@@ -16,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="id" className="bg-background">
       <body className="font-sans antialiased">
-        {children}
+        <QueryProvider>{children}</QueryProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
         <Toaster />
       </body>

@@ -17,7 +17,6 @@ import { useForm } from 'react-hook-form';
 export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [serverError, setServerError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const {
@@ -29,7 +28,6 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (payload: LoginFormValues) => {
-    setServerError(null);
     try {
       const response = await api.post('/api/auth/login', payload);
       router.push(response.data.data.redirectPath);
@@ -48,7 +46,6 @@ export default function LoginPage() {
         title: 'Gagal masuk',
         description: message,
       });
-      setServerError(message);
     }
   };
 
@@ -70,12 +67,6 @@ export default function LoginPage() {
             </Link>
             <p className="text-muted-foreground">Masuk ke dashboard Anda</p>
           </div>
-
-          {serverError && (
-            <div className="bg-destructive/10 text-destructive mb-6 rounded-lg p-3 text-center text-sm font-medium">
-              {serverError}
-            </div>
-          )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div className="space-y-2">

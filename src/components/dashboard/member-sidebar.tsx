@@ -153,7 +153,7 @@ export function MemberSidebar({ user }: MemberSidebarProps) {
           </div>
           <Button
             variant="outline"
-            className="border-sidebar-border hover:bg-sidebar-accent w-full justify-start"
+            className="border-sidebar-border hover:bg-sidebar-accent hover:text-primary w-full justify-start"
             onClick={handleLogout}
           >
             <LogOut className="mr-2 h-4 w-4" />

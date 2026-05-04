@@ -5,13 +5,15 @@ import {
   LayoutTemplate,
   Package,
   Settings,
+  Tag,
   Users,
 } from 'lucide-react';
 
 export const SIDEBAR_LINKS = [
   { href: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/admin/member', label: 'Kelola Member', icon: Users },
-  { href: '/dashboard/admin/paket', label: 'Kelola Paket', icon: Package },
+  { href: '/dashboard/admin/package', label: 'Kelola Paket', icon: Package },
+  { href: '/dashboard/admin/benefit', label: 'Kelola Benefit', icon: Tag },
   {
     href: '/dashboard/admin/template',
     label: 'Manage Template',

@@ -1,4 +1,4 @@
-import { AdminSidebar } from '@/components/dashboard/admin-sidebar';
+import { AdminSidebar } from '@/components/dashboard/admin/admin-sidebar';
 import { requireAuth, USER_ROLES } from '@/lib/auth';
 import React from 'react';
 
