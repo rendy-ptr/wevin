@@ -4,17 +4,22 @@ import { Benefit } from '@/types/benefit/type';
 import { CreateUpdateBenefitFormValues } from '@/validations/admin/create-update-benefit';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const useGetBenefits = (search?: string, type?: BenefitType) => {
+export const useGetBenefits = (
+  search?: string,
+  type?: BenefitType,
+  page = 1,
+  limit = 10,
+) => {
   return useQuery({
-    queryKey: ['benefits', search, type],
+    queryKey: ['benefits', search, type, page, limit],
     queryFn: async () => {
       const response = await api.get('/api/benefit', {
-        params: { search, type },
+        params: { search, type, page, limit },
       });
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
-      return response.data.data as Benefit[];
+      return response.data.data as { items: Benefit[]; total: number };
     },
   });
 };

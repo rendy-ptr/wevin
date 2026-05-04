@@ -26,13 +26,25 @@ import {
 import { useState } from 'react';
 
 import FilterSidebar from '@/components/dashboard/admin/filter-benefit-sidebar';
+import Pagination from '@/components/shared/pagination';
 import { BenefitType } from '@/constants/benefits';
 import { useDebounce } from 'use-debounce';
 
 export default function BenefitManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [typeFilter, setTypeFilter] = useState<BenefitType | 'all'>('all');
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
+
+  const [prevSearch, setPrevSearch] = useState(debouncedSearchTerm);
+  const [prevType, setPrevType] = useState(typeFilter);
+
+  if (prevSearch !== debouncedSearchTerm || prevType !== typeFilter) {
+    setPrevSearch(debouncedSearchTerm);
+    setPrevType(typeFilter);
+    setPage(1);
+  }
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -42,10 +54,16 @@ export default function BenefitManagementPage() {
 
   const { toast } = useToast();
 
-  const { data: benefits = [], isLoading } = useGetBenefits(
+  const { data: benefitsData, isLoading } = useGetBenefits(
     debouncedSearchTerm,
     typeFilter === 'all' ? undefined : typeFilter,
+    page,
+    limit,
   );
+
+  const benefits = benefitsData?.items || [];
+  const totalItems = benefitsData?.total || 0;
+  const totalPages = Math.ceil(totalItems / limit);
 
   const deleteMutation = useDeleteBenefit();
 
@@ -237,6 +255,19 @@ export default function BenefitManagementPage() {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          limit={limit}
+          totalItems={totalItems}
+          onPageChange={setPage}
+          onLimitChange={(newLimit) => {
+            setLimit(newLimit);
+            setPage(1);
+          }}
+          isLoading={isLoading}
+        />
       </div>
 
       <CreateBenefitModal

@@ -10,12 +10,14 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const search = searchParams.get('search') || undefined;
     const type = (searchParams.get('type') as BenefitType) || undefined;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '10');
 
-    const benefits = await benefitService.getAll(search, type);
+    const data = await benefitService.getAll(search, type, page, limit);
     return NextResponse.json({
       success: true,
       message: 'Benefits fetched successfully',
-      data: benefits,
+      data: data,
     });
   } catch (error: unknown) {
     const isAppError = error instanceof AppError;

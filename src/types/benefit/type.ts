@@ -1,11 +1,3 @@
-import { BenefitType, SystemAction } from '@/constants/benefits';
+import { TBenefit } from '@/db/schema';
 
-export interface Benefit {
-  id: number;
-  name: string;
-  key: SystemAction;
-  description: string | null;
-  type: BenefitType;
-  createdAt: Date;
-  updatedAt: Date;
-}
+export type Benefit = TBenefit;

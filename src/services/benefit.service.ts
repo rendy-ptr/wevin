@@ -4,8 +4,8 @@ import { benefitRepository } from '@/repositories/benefit.repository';
 import { CreateUpdateBenefitFormValues } from '@/validations/admin/create-update-benefit';
 
 export const benefitService = {
-  getAll: async (search?: string, type?: BenefitType) => {
-    return await benefitRepository.getAll(search, type);
+  getAll: async (search?: string, type?: BenefitType, page = 1, limit = 10) => {
+    return await benefitRepository.getAll(search, type, page, limit);
   },
 
   getById: async (id: number) => {

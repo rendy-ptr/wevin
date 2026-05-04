@@ -2,17 +2,33 @@ import { BenefitType, SystemAction } from '@/constants/benefits';
 import { db } from '@/db';
 import { benefits } from '@/db/schema';
 import { CreateUpdateBenefitFormValues } from '@/validations/admin/create-update-benefit';
-import { and, eq, ilike, or } from 'drizzle-orm';
+import { and, count, eq, ilike, or } from 'drizzle-orm';
 
 export const benefitRepository = {
-  getAll: async (search?: string, type?: BenefitType) => {
-    return await db.query.benefits.findMany({
-      where: and(
-        search ? or(ilike(benefits.name, `%${search}%`)) : undefined,
-        type ? eq(benefits.type, type) : undefined,
-      ),
+  getAll: async (search?: string, type?: BenefitType, page = 1, limit = 10) => {
+    const offset = (page - 1) * limit;
+
+    const whereClause = and(
+      search ? or(ilike(benefits.name, `%${search}%`)) : undefined,
+      type ? eq(benefits.type, type) : undefined,
+    );
+
+    const items = await db.query.benefits.findMany({
+      where: whereClause,
+      limit,
+      offset,
       orderBy: (benefits, { desc }) => [desc(benefits.createdAt)],
     });
+
+    const [totalResult] = await db
+      .select({ value: count() })
+      .from(benefits)
+      .where(whereClause);
+
+    return {
+      items,
+      total: totalResult.value,
+    };
   },
 
   getById: async (id: number) => {

@@ -1,3 +1,4 @@
+import { BenefitType, SystemAction } from '@/constants/benefits';
 import {
   boolean,
   index,
@@ -61,10 +62,13 @@ export const packages = pgTable('packages', {
 
 export const benefits = pgTable('benefits', {
   id: serial('id').primaryKey(),
-  key: varchar('key', { length: 50 }).notNull().unique(),
+  key: varchar('key', { length: 50 }).notNull().unique().$type<SystemAction>(),
   name: varchar('name', { length: 100 }).notNull(),
   description: text('description'),
-  type: benefitTypeEnum('type').notNull().default('toggle'),
+  type: benefitTypeEnum('type')
+    .notNull()
+    .default('toggle')
+    .$type<BenefitType>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -98,3 +102,6 @@ export const packageBenefits = pgTable(
     ),
   }),
 );
+
+export type TBenefitType = typeof benefitTypeEnum.enumValues;
+export type TBenefit = typeof benefits.$inferSelect;

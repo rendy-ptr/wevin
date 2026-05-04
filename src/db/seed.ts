@@ -2,6 +2,11 @@ import { neon } from '@neondatabase/serverless';
 import bcrypt from 'bcryptjs';
 import * as dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/neon-http';
+import {
+  SYSTEM_ACTION_LABELS,
+  SYSTEM_ACTION_TYPES,
+  SYSTEM_ACTIONS,
+} from '../constants/benefits';
 import * as schema from './schema';
 
 dotenv.config({ path: '.env' });
@@ -41,6 +46,28 @@ async function main() {
         role: 'member',
       })
       .onConflictDoNothing();
+
+    console.log('Seeding Benefits...');
+    const benefitValues = Object.values(SYSTEM_ACTIONS).map((key) => ({
+      key,
+      name: SYSTEM_ACTION_LABELS[key],
+      type: SYSTEM_ACTION_TYPES[key],
+      description: `Fitur ${SYSTEM_ACTION_LABELS[key]} untuk paket undangan.`,
+    }));
+
+    for (const benefit of benefitValues) {
+      await db
+        .insert(schema.benefits)
+        .values(benefit)
+        .onConflictDoUpdate({
+          target: schema.benefits.key,
+          set: {
+            name: benefit.name,
+            type: benefit.type,
+            description: benefit.description,
+          },
+        });
+    }
 
     console.log('✅ Seeding complete!');
   } catch (error) {
