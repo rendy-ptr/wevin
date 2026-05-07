@@ -1,6 +1,6 @@
 import { BenefitType } from '@/constants/benefits';
 import api from '@/lib/axios';
-import { Benefit } from '@/types/benefit/type';
+import { Benefit } from '@/types/benefit.type';
 import { CreateUpdateBenefitFormValues } from '@/validations/admin/create-update-benefit';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 

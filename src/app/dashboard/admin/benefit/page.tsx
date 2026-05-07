@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useDeleteBenefit, useGetBenefits } from '@/hooks/api/use-benefit';
 import { useToast } from '@/hooks/use-toast';
-import { Benefit } from '@/types/benefit/type';
+import { Benefit } from '@/types/benefit.type';
 import { isAxiosError } from 'axios';
 import {
   Filter,

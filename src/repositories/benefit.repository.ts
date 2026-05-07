@@ -1,11 +1,17 @@
 import { BenefitType, SystemAction } from '@/constants/benefits';
 import { db } from '@/db';
 import { benefits } from '@/db/schema';
+import type { BenefitFilterParams } from '@/types/benefit.type';
 import { CreateUpdateBenefitFormValues } from '@/validations/admin/create-update-benefit';
 import { and, count, eq, ilike, or } from 'drizzle-orm';
 
 export const benefitRepository = {
-  getAll: async (search?: string, type?: BenefitType, page = 1, limit = 10) => {
+  getAll: async ({
+    search,
+    type,
+    page = 1,
+    limit = 10,
+  }: BenefitFilterParams) => {
     const offset = (page - 1) * limit;
 
     const whereClause = and(

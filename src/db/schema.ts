@@ -103,5 +103,31 @@ export const packageBenefits = pgTable(
   }),
 );
 
+import { relations } from 'drizzle-orm';
+
+export const packageRelations = relations(packages, ({ many }) => ({
+  benefits: many(packageBenefits),
+}));
+
+export const benefitRelations = relations(benefits, ({ many }) => ({
+  packages: many(packageBenefits),
+}));
+
+export const packageBenefitRelations = relations(
+  packageBenefits,
+  ({ one }) => ({
+    package: one(packages, {
+      fields: [packageBenefits.packageId],
+      references: [packages.id],
+    }),
+    benefit: one(benefits, {
+      fields: [packageBenefits.benefitId],
+      references: [benefits.id],
+    }),
+  }),
+);
+
 export type TBenefitType = typeof benefitTypeEnum.enumValues;
 export type TBenefit = typeof benefits.$inferSelect;
+export type TPackage = typeof packages.$inferSelect;
+export type TPackageBenefit = typeof packageBenefits.$inferSelect;

@@ -1,7 +1,7 @@
 import { AppError } from '@/lib/errors';
-import { benefitService } from '@/services/benefit.service';
-import { BenefitFilterParams } from '@/types/benefit.type';
-import { createUpdateBenefitSchema } from '@/validations/admin/create-update-benefit';
+import { packageService } from '@/services/package.service';
+import { PackageFilterParams } from '@/types/package.type';
+import { createUpdatePackageSchema } from '@/validations/admin/create-update-package';
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
 
@@ -10,16 +10,16 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const filters = {
       search: searchParams.get('search') || undefined,
-      type: searchParams.get('type') || undefined,
+      isActive: searchParams.get('isActive') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10'),
-    } as BenefitFilterParams;
+    } as PackageFilterParams;
 
-    const data = await benefitService.getAll(filters);
+    const packageData = await packageService.getAll(filters);
     return NextResponse.json({
       success: true,
-      message: 'Benefits fetched successfully',
-      data: data,
+      message: 'Packages fetched successfully',
+      data: packageData,
     });
   } catch (error: unknown) {
     const isAppError = error instanceof AppError;
@@ -41,20 +41,21 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const validatedData = createUpdateBenefitSchema.parse(body);
-    const { name, description, key, type } = validatedData;
+    const validatedData = createUpdatePackageSchema.parse(body);
+    const { name, description, isActive, price, benefits } = validatedData;
 
-    const benefit = await benefitService.create({
+    const packageData = await packageService.create({
       name,
       description,
-      key,
-      type,
+      isActive,
+      price,
+      benefits,
     });
     return NextResponse.json(
       {
         success: true,
-        message: 'Benefit created successfully',
-        data: benefit,
+        message: 'Package created successfully',
+        data: packageData,
       },
       { status: 201 },
     );
