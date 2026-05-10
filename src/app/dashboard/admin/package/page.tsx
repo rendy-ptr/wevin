@@ -14,6 +14,7 @@ import { PACKAGE_STATUS, TPackageStatus } from '@/db/schema';
 import { useDeletePackage, useGetPackages } from '@/hooks/api/use-package';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/currency';
+import { formatDate } from '@/lib/date';
 import { Package } from '@/types/package.type';
 import { isAxiosError } from 'axios';
 import {
@@ -155,6 +156,7 @@ export default function PackageManagementPage() {
                 <th className="px-6 py-4 font-semibold">Paket</th>
                 <th className="px-6 py-4 font-semibold">Harga</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-6 py-4 font-semibold">Tanggal Dibuat</th>
                 <th className="px-6 py-4 text-right font-semibold">Aksi</th>
               </tr>
             </thead>
@@ -212,6 +214,11 @@ export default function PackageManagementPage() {
                           Non-aktif
                         </span>
                       )}
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className="text-muted-foreground text-xs">
+                        {formatDate(pkg.createdAt)}
+                      </span>
                     </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex justify-end gap-1">

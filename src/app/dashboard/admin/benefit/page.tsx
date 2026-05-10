@@ -28,6 +28,7 @@ import { useState } from 'react';
 import FilterSidebar from '@/components/dashboard/admin/filter-benefit-sidebar';
 import Pagination from '@/components/shared/pagination';
 import { BenefitType } from '@/constants/benefits';
+import { formatDate } from '@/lib/date';
 import { useDebounce } from 'use-debounce';
 
 export default function BenefitManagementPage() {
@@ -158,6 +159,7 @@ export default function BenefitManagementPage() {
                 <th className="hidden px-6 py-4 font-semibold md:table-cell">
                   Deskripsi
                 </th>
+                <th className="px-6 py-4 font-semibold">Tanggal Dibuat</th>
                 <th className="px-6 py-4 text-right font-semibold">Aksi</th>
               </tr>
             </thead>
@@ -208,6 +210,9 @@ export default function BenefitManagementPage() {
                       <p className="text-muted-foreground max-w-sm text-xs leading-relaxed">
                         {benefit.description}
                       </p>
+                    </td>
+                    <td className="text-muted-foreground px-6 py-5 text-xs">
+                      {formatDate(benefit.createdAt)}
                     </td>
                     <td className="px-6 py-5 text-right">
                       <div className="flex justify-end gap-1">

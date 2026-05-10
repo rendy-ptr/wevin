@@ -111,4 +111,12 @@ export const packageRepository = {
       .returning();
     return result;
   },
+
+  getActive: async () => {
+    const packageData = await db.query.packages.findMany({
+      where: eq(packages.status, 'active'),
+    });
+
+    return packageData;
+  },
 };

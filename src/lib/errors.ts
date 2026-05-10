@@ -25,3 +25,9 @@ export class DuplicateError extends AppError {
     super(message, 409);
   }
 }
+
+export class BusinessError extends AppError {
+  constructor(message: string = 'Business rule violation') {
+    super(message, 422);
+  }
+}
