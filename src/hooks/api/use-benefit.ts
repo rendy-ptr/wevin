@@ -1,4 +1,5 @@
 import { BenefitType } from '@/constants/benefits';
+import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
 import { Benefit } from '@/types/benefit.type';
 import { CreateUpdateBenefitFormValues } from '@/validations/admin/create-update-benefit';
@@ -13,7 +14,7 @@ export const useGetBenefits = (
   return useQuery({
     queryKey: ['benefits', search, type, page, limit],
     queryFn: async () => {
-      const response = await api.get('/api/benefit', {
+      const response = await api.get(API_URL.BENEFIT.GET, {
         params: { search, type, page, limit },
       });
       if (!response.data.success) {
@@ -28,7 +29,7 @@ export const useCreateBenefit = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (data: CreateUpdateBenefitFormValues) => {
-      const response = await api.post('/api/benefit', data);
+      const response = await api.post(API_URL.BENEFIT.CREATE, data);
       return response.data;
     },
     onSuccess: () => {
@@ -44,7 +45,7 @@ export const useUpdateBenefit = () => {
       id,
       ...data
     }: CreateUpdateBenefitFormValues & { id: number }) => {
-      const response = await api.put(`/api/benefit/${id}`, data);
+      const response = await api.put(API_URL.BENEFIT.UPDATE(id), data);
       return response.data;
     },
     onSuccess: () => {
@@ -57,7 +58,7 @@ export const useDeleteBenefit = () => {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
-      const response = await api.delete(`/api/benefit/${id}`);
+      const response = await api.delete(API_URL.BENEFIT.DELETE(id));
       return response.data;
     },
     onSuccess: () => {

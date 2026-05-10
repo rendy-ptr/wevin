@@ -36,7 +36,11 @@ export function Navbar() {
           </div>
 
           <div className="hidden items-center gap-3 md:flex">
-            <Button asChild variant="ghost" className="text-foreground">
+            <Button
+              asChild
+              variant="ghost"
+              className="text-muted-foreground hover:bg-secondary hover:text-foreground h-10 rounded-lg px-5 font-medium transition-all"
+            >
               <Link href="/login">Masuk</Link>
             </Button>
             <Button
@@ -88,7 +92,7 @@ export function Navbar() {
               <Button
                 asChild
                 variant="ghost"
-                className="text-foreground justify-start"
+                className="text-muted-foreground hover:bg-secondary hover:text-foreground h-10 justify-start px-5 font-medium transition-all"
               >
                 <Link href="/login" onClick={() => setIsMenuOpen(false)}>
                   Masuk

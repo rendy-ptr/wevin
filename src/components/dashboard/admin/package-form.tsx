@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CheckIcon } from '@/components/ui/check';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -12,16 +12,23 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { API_URL } from '@/constants/url';
+import { PACKAGE_STATUS, TPackageStatus } from '@/db/schema';
 import { useGetBenefits } from '@/hooks/api/use-benefit';
+import {
+  formatCurrency,
+  formatThousandSeparator,
+  parseThousandSeparator,
+} from '@/lib/currency';
 import {
   CreateUpdatePackageFormValues,
   createUpdatePackageSchema,
 } from '@/validations/admin/create-update-package';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { motion } from 'framer-motion';
-import { ChevronLeft, Info, Loader2, Save } from 'lucide-react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, ChevronLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useFieldArray, useForm, useWatch } from 'react-hook-form';
+import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 interface PackageFormProps {
   initialData?: CreateUpdatePackageFormValues;
@@ -56,7 +63,7 @@ export default function PackageForm({
       name: '',
       description: '',
       price: 0,
-      isActive: true,
+      status: PACKAGE_STATUS.ACTIVE,
       benefits: [],
     },
   });
@@ -66,22 +73,11 @@ export default function PackageForm({
     name: 'benefits',
   });
 
-  const isActiveValue = useWatch({
-    control,
-    name: 'isActive',
-  });
-
-  const selectedBenefits =
-    useWatch({
-      control,
-      name: 'benefits',
-    }) || [];
-
-  const priceValue =
-    useWatch({
-      control,
-      name: 'price',
-    }) || 0;
+  const statusValue = useWatch({ control, name: 'status' });
+  const selectedBenefits = useWatch({ control, name: 'benefits' }) || [];
+  const priceValue = useWatch({ control, name: 'price' }) || 0;
+  const packageName = useWatch({ control, name: 'name' });
+  const packageDesc = useWatch({ control, name: 'description' });
 
   const toggleBenefit = (benefitId: number) => {
     const index = selectedBenefits.findIndex(
@@ -104,7 +100,7 @@ export default function PackageForm({
     const benefit = selectedBenefits.find(
       (b: { benefitId: number }) => b.benefitId === benefitId,
     );
-    return benefit ? benefit.value : '';
+    return benefit ? (benefit.value ? benefit.value : '') : '';
   };
 
   const handleBenefitValueChange = (benefitId: number, value: string) => {
@@ -116,275 +112,290 @@ export default function PackageForm({
     }
   };
 
-  return (
-    <div className="mx-auto max-w-5xl space-y-8 px-4 py-8">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Link href="/dashboard/admin/package">
-            <Button
-              variant="outline"
-              size="icon"
-              className="border-border/40 hover:bg-secondary/20 h-9 w-9 rounded-xl transition-colors"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <h1 className="text-foreground font-serif text-3xl font-bold tracking-tight">
-            {title}
-          </h1>
-        </div>
-        <Button
-          onClick={handleSubmit(onSubmit)}
-          disabled={isLoading}
-          className="bg-primary hover:bg-primary-dark shadow-primary/20 h-11 px-8 text-xs font-bold tracking-wide uppercase shadow-lg transition-all active:scale-95"
-        >
-          {isLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="mr-2 h-4 w-4" />
-          )}
-          Simpan Paket
-        </Button>
-      </div>
+  const getBenefitName = (benefitId: number) => {
+    return benefits.find((b) => b.id === benefitId)?.name || '';
+  };
 
-      <form className="grid grid-cols-1 gap-8 lg:grid-cols-3">
-        <div className="space-y-8 lg:col-span-2">
-          <Card className="border-border/40 bg-background overflow-hidden rounded-2xl border shadow-sm">
-            <CardHeader className="border-border/40 border-b px-6 py-5">
-              <CardTitle className="text-foreground font-serif text-lg font-bold">
-                Informasi Dasar
-              </CardTitle>
-              <p className="text-muted-foreground text-xs">
-                Tentukan identitas utama dan harga untuk paket ini.
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-6 p-7">
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="name"
-                  className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase"
-                >
-                  Nama Paket
-                </Label>
-                <Input
-                  id="name"
-                  placeholder="Contoh: Paket Premium, Paket Hemat..."
-                  {...register('name')}
-                  className={`bg-secondary/5 border-border/40 h-12 rounded-xl text-sm transition-all focus:bg-transparent ${errors.name ? 'border-destructive' : ''}`}
-                />
-                {errors.name && (
-                  <p className="text-destructive text-[10px] font-medium">
-                    {errors.name.message as string}
-                  </p>
-                )}
+  return (
+    <div className="bg-background min-h-screen pb-20">
+      <main className="mx-auto max-w-7xl px-4 pt-12 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-16 lg:grid-cols-5">
+          <div className="space-y-12 lg:col-span-3">
+            <div className="space-y-8">
+              <div className="border-border/40 border-b pb-4">
+                <div className="flex items-center gap-3">
+                  <Link href={API_URL.PACKAGE.INDEX}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="border-border text-muted-foreground hover:bg-secondary hover:text-foreground h-10 w-10 transition-all"
+                    >
+                      <ChevronLeft className="h-5 w-5" />
+                    </Button>
+                  </Link>
+                  <div>
+                    <h2 className="text-foreground font-serif text-xl font-bold tracking-tight">
+                      {title}
+                    </h2>
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      Lengkapi informasi dasar paket layanan Anda.
+                    </p>
+                  </div>
+                </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="grid gap-8">
                 <div className="space-y-2.5">
-                  <Label
-                    htmlFor="price"
-                    className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase"
-                  >
-                    Harga (Rp)
+                  <Label className="text-foreground text-xs font-bold">
+                    Nama Paket
                   </Label>
                   <Input
-                    id="price"
-                    type="number"
-                    placeholder="0"
-                    {...register('price', { valueAsNumber: true })}
-                    className={`bg-secondary/5 border-border/40 h-12 rounded-xl text-sm transition-all focus:bg-transparent ${errors.price ? 'border-destructive' : ''}`}
+                    placeholder="Contoh: Royal Wedding Package"
+                    {...register('name')}
+                    className="border-border/60 focus:ring-primary/20 focus:border-primary h-12 rounded-xl bg-transparent px-4 text-sm shadow-sm transition-all focus:ring-2"
+                  />
+                  {errors.name && (
+                    <p className="text-destructive px-1 text-[10px] font-medium">
+                      {errors.name.message as string}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2.5">
+                  <Label className="text-foreground text-xs font-bold">
+                    Harga Paket (IDR)
+                  </Label>
+                  <Controller
+                    control={control}
+                    name="price"
+                    render={({ field: { onChange, value, ...field } }) => (
+                      <div className="relative">
+                        <span className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-xs font-bold">
+                          Rp
+                        </span>
+                        <Input
+                          {...field}
+                          value={formatThousandSeparator(value)}
+                          onChange={(e) => {
+                            const numericValue = parseThousandSeparator(
+                              e.target.value,
+                            );
+                            onChange(numericValue);
+                          }}
+                          placeholder="0"
+                          className="border-border/60 focus:ring-primary/20 focus:border-primary h-12 rounded-xl bg-transparent pr-4 pl-12 text-sm font-medium shadow-sm transition-all focus:ring-2"
+                        />
+                      </div>
+                    )}
                   />
                   {errors.price && (
-                    <p className="text-destructive text-[10px] font-medium">
+                    <p className="text-destructive px-1 text-[10px] font-medium">
                       {errors.price.message as string}
                     </p>
                   )}
                 </div>
                 <div className="space-y-2.5">
-                  <Label className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
-                    Status Paket
+                  <Label className="text-foreground text-xs font-bold">
+                    Status
                   </Label>
                   <Select
-                    value={isActiveValue ? 'true' : 'false'}
+                    value={statusValue}
                     onValueChange={(val) =>
-                      setValue('isActive', val === 'true')
+                      setValue('status', val as TPackageStatus)
                     }
                   >
-                    <SelectTrigger className="bg-secondary/5 border-border/40 h-12 rounded-xl text-sm transition-all focus:bg-transparent">
+                    <SelectTrigger className="border-border/60 h-12 rounded-xl bg-transparent px-4 text-sm shadow-sm">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border shadow-xl">
-                      <SelectItem value="true" className="rounded-lg">
+                    <SelectContent className="border-border rounded-xl shadow-2xl">
+                      <SelectItem
+                        value={PACKAGE_STATUS.ACTIVE}
+                        className="rounded-lg"
+                      >
                         Aktif
                       </SelectItem>
-                      <SelectItem value="false" className="rounded-lg">
-                        Non-aktif
+                      <SelectItem
+                        value={PACKAGE_STATUS.INACTIVE}
+                        className="rounded-lg"
+                      >
+                        Tidak Aktif
                       </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div className="space-y-2.5">
+                  <Label className="text-foreground text-xs font-bold">
+                    Deskripsi Paket
+                  </Label>
+                  <Textarea
+                    placeholder="Jelaskan detail dan kelebihan paket ini..."
+                    {...register('description')}
+                    className="border-border/60 focus:ring-primary/20 focus:border-primary min-h-[120px] rounded-xl bg-transparent px-4 py-3 text-sm leading-relaxed shadow-sm transition-all focus:ring-2"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-8 pt-4">
+              <div className="border-border/40 border-b pb-4">
+                <h2 className="text-foreground font-serif text-xl font-bold tracking-tight">
+                  Fitur & Benefit
+                </h2>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Pilih dan tentukan kuota layanan untuk paket ini.
+                </p>
               </div>
 
-              <div className="space-y-2.5">
-                <Label
-                  htmlFor="description"
-                  className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase"
-                >
-                  Deskripsi Singkat
-                </Label>
-                <Textarea
-                  id="description"
-                  placeholder="Jelaskan keunggulan paket ini..."
-                  {...register('description')}
-                  className="bg-secondary/5 border-border/40 min-h-[120px] rounded-xl text-sm transition-all focus:bg-transparent"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/40 bg-background overflow-hidden rounded-2xl border shadow-sm">
-            <CardHeader className="border-border/40 border-b px-6 py-5">
-              <CardTitle className="text-foreground font-serif text-lg font-bold">
-                Daftar Benefit & Fitur
-              </CardTitle>
-              <p className="text-muted-foreground text-xs">
-                Pilih benefit yang tersedia dan tentukan nilai kuotanya.
-              </p>
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm">
-                  <thead>
-                    <tr className="bg-secondary/20 text-muted-foreground border-border/40 border-b text-[10px] font-bold tracking-widest uppercase">
-                      <th className="w-20 px-6 py-4 text-center font-semibold">
-                        Aktif
-                      </th>
-                      <th className="px-6 py-4 font-semibold">Nama Benefit</th>
-                      <th className="px-6 py-4 font-semibold">Nilai / Value</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-border/40 divide-y">
-                    {isLoadingBenefits ? (
-                      <tr>
-                        <td colSpan={3} className="px-6 py-12 text-center">
-                          <Loader2 className="text-primary mx-auto h-6 w-6 animate-spin" />
-                          <p className="text-muted-foreground mt-2 text-xs">
-                            Memuat daftar benefit...
-                          </p>
-                        </td>
-                      </tr>
-                    ) : (
-                      benefits.map((benefit) => {
-                        const selected = isBenefitSelected(benefit.id);
-                        return (
-                          <motion.tr
-                            key={benefit.id}
-                            initial={false}
-                            animate={{
-                              backgroundColor: selected
-                                ? 'var(--secondary-alpha-5)'
-                                : 'transparent',
-                            }}
-                            className={`hover:bg-secondary/5 group transition-colors ${selected ? 'bg-secondary/5' : ''}`}
+              <div className="grid grid-cols-1 gap-3">
+                {isLoadingBenefits ? (
+                  <div className="text-primary py-20 text-center">
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin opacity-20" />
+                  </div>
+                ) : (
+                  benefits.map((benefit) => {
+                    const selected = isBenefitSelected(benefit.id);
+                    return (
+                      <div
+                        key={benefit.id}
+                        className={`flex items-center gap-5 rounded-2xl border p-4 transition-all duration-300 ${
+                          selected
+                            ? 'bg-primary/[0.03] border-primary/30 shadow-sm'
+                            : 'border-border/40 hover:border-border bg-transparent'
+                        }`}
+                      >
+                        <div
+                          onClick={() => toggleBenefit(benefit.id)}
+                          className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border-2 transition-all ${
+                            selected
+                              ? 'bg-primary border-primary text-primary-foreground shadow-primary/20 shadow-lg'
+                              : 'bg-background border-border/60 hover:border-primary/40 text-transparent'
+                          }`}
+                        >
+                          <CheckIcon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-grow">
+                          <span
+                            className={`block text-sm font-bold ${selected ? 'text-primary' : 'text-foreground'}`}
                           >
-                            <td className="px-6 py-4 text-center">
-                              <input
-                                type="checkbox"
-                                checked={selected}
-                                onChange={() => toggleBenefit(benefit.id)}
-                                className="border-border/40 text-primary focus:ring-primary/20 accent-primary h-4 w-4 rounded"
-                              />
-                            </td>
-                            <td className="px-6 py-4">
-                              <div className="flex flex-col">
-                                <span
-                                  className={`font-bold transition-colors ${selected ? 'text-primary' : 'text-foreground'}`}
-                                >
-                                  {benefit.name}
-                                </span>
-                                <span className="text-muted-foreground font-mono text-[10px] tracking-tighter uppercase">
-                                  {benefit.type}
-                                </span>
-                              </div>
-                            </td>
-                            <td className="px-6 py-4">
+                            {benefit.name}
+                          </span>
+                          <span className="text-muted-foreground text-[10px] font-medium tracking-tighter uppercase">
+                            {benefit.type}
+                          </span>
+                        </div>
+                        <AnimatePresence>
+                          {selected && (
+                            <motion.div
+                              initial={{ opacity: 0, scale: 0.95 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.95 }}
+                              className="w-44"
+                            >
                               <Input
-                                placeholder={
-                                  benefit.type === 'toggle'
-                                    ? 'Contoh: Ya / Aktif'
-                                    : 'Contoh: 100 Tamu'
-                                }
+                                placeholder="Nilai / Quota"
                                 value={getBenefitValue(benefit.id)}
-                                disabled={!selected}
                                 onChange={(e) =>
                                   handleBenefitValueChange(
                                     benefit.id,
                                     e.target.value,
                                   )
                                 }
-                                className={`border-border/40 h-10 rounded-lg text-xs transition-all ${
-                                  selected
-                                    ? 'bg-background shadow-sm'
-                                    : 'bg-secondary/10 opacity-40'
-                                }`}
+                                className="bg-background border-border/60 focus:ring-primary/10 h-10 rounded-xl text-xs shadow-inner focus:ring-2"
                               />
-                            </td>
-                          </motion.tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })
+                )}
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </div>
 
-        <div className="space-y-6">
-          <Card className="border-border/40 bg-secondary/5 sticky top-8 rounded-2xl border shadow-sm">
-            <CardContent className="p-7">
-              <h3 className="text-foreground font-serif text-lg font-bold">
-                Ringkasan Paket
-              </h3>
-              <p className="text-muted-foreground mt-1 text-xs leading-relaxed">
-                Tinjauan konfigurasi paket sebelum dipublikasikan ke sistem.
-              </p>
-              <div className="border-border/40 mt-7 space-y-5 border-t pt-7">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                    Total Fitur
-                  </span>
-                  <span className="text-primary bg-primary/10 rounded-lg px-2.5 py-1 text-xs font-bold">
-                    {selectedBenefits.length} Fitur
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground text-xs font-semibold tracking-wider uppercase">
-                    Estimasi Harga
-                  </span>
-                  <span className="text-foreground text-sm font-bold">
-                    {priceValue > 0
-                      ? new Intl.NumberFormat('id-ID', {
-                          style: 'currency',
-                          currency: 'IDR',
-                          minimumFractionDigits: 0,
-                        }).format(Number(priceValue))
-                      : 'Rp 0'}
-                  </span>
-                </div>
+          <div className="lg:col-span-2">
+            <div className="sticky top-28 space-y-6">
+              <div className="text-center">
+                <span className="text-primary text-[10px] font-bold tracking-[0.3em] uppercase">
+                  Live Preview
+                </span>
               </div>
 
-              <div className="bg-background/50 border-border/40 mt-8 rounded-xl border p-4">
-                <p className="text-muted-foreground flex gap-2 text-[10px] leading-relaxed italic">
-                  <Info className="h-3 w-3 shrink-0" />
-                  Pastikan benefit yang dipilih sudah sesuai dengan target
-                  market paket ini.
+              <div className="bg-card border-border ring-primary/5 relative flex flex-col rounded-2xl border p-10 shadow-sm ring-1 transition-all duration-300">
+                <div className="mb-10 text-center">
+                  <h3 className="text-foreground mb-3 font-serif text-3xl font-bold">
+                    {packageName || 'Nama Paket'}
+                  </h3>
+                  <p className="text-muted-foreground mb-6 min-h-[40px] text-sm">
+                    {packageDesc || 'Deskripsi paket akan muncul di sini...'}
+                  </p>
+                  <div className="flex items-baseline justify-center gap-1">
+                    <span className="text-muted-foreground text-lg font-medium">
+                      Rp
+                    </span>
+                    <span className="text-foreground font-serif text-5xl font-bold">
+                      {priceValue > 0 ? formatCurrency(priceValue) : '0'}
+                    </span>
+                  </div>
+                </div>
+
+                <ul className="mb-10 flex-grow space-y-4">
+                  {selectedBenefits.length > 0 ? (
+                    selectedBenefits.map((b, i) => (
+                      <li key={i} className="flex items-start gap-4">
+                        <CheckIcon className="text-success mt-1 h-5 w-5 flex-shrink-0" />
+                        <span className="text-foreground text-base leading-tight">
+                          {b.value ? `${b.value} ` : ''}
+                          {getBenefitName(b.benefitId)}
+                        </span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="flex items-start gap-4 opacity-20">
+                      <CheckIcon className="mt-1 h-5 w-5 flex-shrink-0" />
+                      <span className="text-base">
+                        Belum ada fitur terpilih
+                      </span>
+                    </li>
+                  )}
+                </ul>
+
+                <Button className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-primary/10 w-full rounded-xl py-8 text-xl font-bold shadow-lg transition-all">
+                  Pilih Paket
+                </Button>
+
+                <p className="text-muted-foreground mt-6 text-center text-[10px] italic">
+                  * Tampilan pratinjau sesuai dengan landing page
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
-      </form>
+
+        <div className="border-border/40 mt-12 flex items-center justify-end gap-3 border-t py-6">
+          <Link href={API_URL.PACKAGE.INDEX}>
+            <Button
+              variant="ghost"
+              className="text-muted-foreground hover:bg-secondary hover:text-foreground h-11 px-6 text-xs font-semibold tracking-wide uppercase"
+            >
+              Batal
+            </Button>
+          </Link>
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            disabled={isLoading}
+            className="bg-primary hover:bg-primary-dark h-11 px-6 text-white shadow-sm transition-all active:scale-95"
+          >
+            {isLoading ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Check className="mr-2 h-4 w-4" />
+            )}
+            Simpan Paket
+          </Button>
+        </div>
+      </main>
     </div>
   );
 }

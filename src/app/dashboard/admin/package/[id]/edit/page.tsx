@@ -1,107 +1,108 @@
 'use client';
 
 import PackageForm from '@/components/dashboard/admin/package-form';
+import { API_URL } from '@/constants/url';
+import { useGetPackageById, useUpdatePackage } from '@/hooks/api/use-package';
 import { useToast } from '@/hooks/use-toast';
-import axios from '@/lib/axios';
-import { Package } from '@/types/package.type';
 import { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 import { isAxiosError } from 'axios';
 import { Loader2 } from 'lucide-react';
 import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 
 export default function EditPackagePage() {
   const { id } = useParams();
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(true);
-  const [packageData, setPackageData] = useState<Package | null>(null);
-  const [formattedInitialData, setFormattedInitialData] =
-    useState<CreateUpdatePackageFormValues | null>(null);
-
   const { toast } = useToast();
   const router = useRouter();
 
-  useEffect(() => {
-    const fetchPackage = async () => {
-      try {
-        const response = await axios.get(`/api/package/${id}`);
-        if (response.data.success) {
-          const pkg = response.data.data;
-          setPackageData(pkg);
+  const {
+    data: pkg,
+    isLoading: isFetching,
+    isError,
+  } = useGetPackageById(Number(id));
 
-          setFormattedInitialData({
-            name: pkg.name,
-            description: pkg.description || '',
-            price: pkg.price,
-            isActive: pkg.isActive,
-            benefits: (pkg.benefits || []).map(
-              (b: { benefitId: number; value: string }) => ({
-                benefitId: b.benefitId,
-                value: b.value,
-              }),
-            ),
-          });
-        }
-      } catch {
-        toast({
-          variant: 'destructive',
-          title: 'Gagal memuat paket',
-          description:
-            'Data paket tidak ditemukan atau terjadi kesalahan server.',
-        });
-        router.push('/dashboard/admin/package');
-      } finally {
-        setIsFetching(false);
-      }
+  const updateMutation = useUpdatePackage();
+
+  const formattedInitialData = useMemo(() => {
+    if (!pkg) return undefined;
+    return {
+      name: pkg.name,
+      description: pkg.description || '',
+      price: pkg.price,
+      status: pkg.status,
+      benefits: (pkg.benefits || []).map(
+        (b: { benefitId: number; value: string }) => ({
+          benefitId: b.benefitId,
+          value: b.value,
+        }),
+      ),
     };
+  }, [pkg]);
 
-    if (id) fetchPackage();
-  }, [id, router, toast]);
-
-  const handleSubmit = async (data: CreateUpdatePackageFormValues) => {
-    setIsLoading(true);
-    try {
-      const response = await axios.put(`/api/package/${id}`, data);
-      if (response.data.success) {
-        toast({
-          title: 'Paket diperbarui',
-          description: 'Perubahan paket telah berhasil disimpan.',
-        });
-        router.push('/dashboard/admin/package');
-      }
-    } catch (error) {
-      let message = 'Gagal memperbarui paket.';
-      if (isAxiosError(error)) {
-        message = error.response?.data?.message || message;
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Gagal memperbarui paket',
-        description: message,
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const onSubmit = (data: CreateUpdatePackageFormValues) => {
+    updateMutation.mutate(
+      { id: Number(id), ...data },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Paket diperbarui',
+            description: 'Data paket telah berhasil diperbarui.',
+          });
+          router.push(API_URL.PACKAGE.INDEX);
+        },
+        onError: (error) => {
+          let message = 'Gagal memperbarui paket.';
+          if (isAxiosError(error)) {
+            message = error.response?.data?.message || message;
+          }
+          toast({
+            variant: 'destructive',
+            title: 'Gagal memperbarui paket',
+            description: message,
+          });
+        },
+      },
+    );
   };
 
   if (isFetching) {
     return (
       <div className="flex h-[60vh] flex-col items-center justify-center gap-4">
-        <Loader2 className="text-primary h-10 w-10 animate-spin" />
-        <p className="text-muted-foreground font-medium">
+        <Loader2 className="text-primary h-10 w-10 animate-spin opacity-20" />
+        <p className="text-muted-foreground animate-pulse text-sm font-medium">
           Memuat data paket...
         </p>
       </div>
     );
   }
 
-  if (!formattedInitialData) return null;
+  if (isError || !pkg) {
+    return (
+      <div className="flex h-[60vh] flex-col items-center justify-center gap-4 text-center">
+        <div className="bg-destructive/10 text-destructive rounded-full p-4">
+          <Loader2 className="h-8 w-8 rotate-45" />
+        </div>
+        <div className="space-y-1">
+          <h2 className="text-lg font-bold">Data paket tidak ditemukan</h2>
+          <p className="text-muted-foreground text-sm">
+            Gagal memuat data dari server. Silakan coba lagi nanti.
+          </p>
+        </div>
+        <button
+          onClick={() => router.push(API_URL.PACKAGE.INDEX)}
+          className="text-primary mt-4 text-sm font-bold hover:underline"
+        >
+          Kembali ke Daftar Paket
+        </button>
+      </div>
+    );
+  }
 
   return (
     <PackageForm
-      title={`Edit Paket: ${packageData?.name}`}
-      onSubmit={handleSubmit}
-      isLoading={isLoading}
+      title={`Edit Paket: ${pkg.name}`}
+      onSubmit={onSubmit}
+      isLoading={updateMutation.isPending}
       initialData={formattedInitialData}
     />
   );

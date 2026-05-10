@@ -75,9 +75,17 @@ export async function requireAuth(role?: UserRole) {
   if (!session) redirect('/login');
   if (role && session.user.role !== role) {
     redirect(
-      role === USER_ROLES.ADMIN ? '/dashboard/member' : '/dashboard/admin',
+      getRedirectPath(
+        session.user.role === USER_ROLES.ADMIN
+          ? USER_ROLES.MEMBER
+          : USER_ROLES.ADMIN,
+      ),
     );
   }
 
   return session;
+}
+
+export function getRedirectPath(role: UserRole): string {
+  return role === USER_ROLES.ADMIN ? '/dashboard/admin' : '/dashboard/member';
 }

@@ -1,4 +1,4 @@
-import { login, logout } from '@/lib/auth';
+import { getRedirectPath, login, logout } from '@/lib/auth';
 import { AuthError, NotFoundError } from '@/lib/errors';
 import { authRepository } from '@/repositories/auth.repository';
 import bcrypt from 'bcryptjs';
@@ -17,8 +17,7 @@ export const authService = {
       throw new AuthError('Invalid credentials');
     }
 
-    const redirectPath =
-      user.role === 'admin' ? '/dashboard/admin' : '/dashboard/member';
+    const redirectPath = getRedirectPath(user.role);
 
     const sessionUser = {
       id: user.id,

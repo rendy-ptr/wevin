@@ -3,11 +3,11 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useLogin } from '@/hooks/api/use-auth';
 import { useToast } from '@/hooks/use-toast';
-import api from '@/lib/axios';
 import { loginSchema, type LoginFormValues } from '@/validations/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
-import axios from 'axios';
+import { isAxiosError } from 'axios';
 import { Eye, EyeOff, Heart, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -18,35 +18,40 @@ export default function LoginPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
+  const loginMutation = useLogin();
 
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = async (payload: LoginFormValues) => {
-    try {
-      const response = await api.post('/api/auth/login', payload);
-      router.push(response.data.data.redirectPath);
-      router.refresh();
-      toast({
-        title: 'Berhasil masuk',
-        description: 'Anda berhasil masuk ke akun.',
-      });
-    } catch (error: unknown) {
-      let message = 'Gagal masuk. Silakan coba lagi.';
-      if (axios.isAxiosError(error)) {
-        message = error.response?.data?.message || 'Email atau password salah';
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Gagal masuk',
-        description: message,
-      });
-    }
+  const onSubmit = (data: LoginFormValues) => {
+    loginMutation.mutate(data, {
+      onSuccess: (res) => {
+        toast({
+          title: 'Login berhasil',
+          variant: 'default',
+          description: `Selamat datang kembali, ${res.data.user.name}!`,
+        });
+
+        router.push(res.data.redirectPath);
+      },
+      onError: (error) => {
+        let message = 'Gagal login. Silakan coba lagi.';
+        if (isAxiosError(error)) {
+          message =
+            error.response?.data?.message || 'Email atau password salah';
+        }
+        toast({
+          variant: 'destructive',
+          title: 'Gagal login',
+          description: message,
+        });
+      },
+    });
   };
 
   return (
@@ -136,10 +141,10 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              disabled={isSubmitting}
+              disabled={loginMutation.isPending}
               className="bg-primary-dark hover:bg-primary-dark/90 h-12 w-full rounded-xl text-lg font-medium text-white transition-all duration-300"
             >
-              {isSubmitting ? (
+              {loginMutation.isPending ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="h-5 w-5 animate-spin" />
                   Memproses...

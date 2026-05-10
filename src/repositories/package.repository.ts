@@ -2,20 +2,20 @@ import { db } from '@/db';
 import { packageBenefits, packages } from '@/db/schema';
 import type { PackageFilterParams } from '@/types/package.type';
 import { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
-import { and, count, eq, ilike, or } from 'drizzle-orm';
+import { and, count, eq, ilike } from 'drizzle-orm';
 
 export const packageRepository = {
   getAll: async ({
     search,
-    isActive,
+    status,
     page = 1,
     limit = 10,
   }: PackageFilterParams) => {
     const offset = (page - 1) * limit;
 
     const whereClause = and(
-      search ? or(ilike(packages.name, `%${search}%`)) : undefined,
-      isActive !== undefined ? eq(packages.isActive, isActive) : undefined,
+      search ? ilike(packages.name, `%${search}%`) : undefined,
+      status !== undefined ? eq(packages.status, status) : undefined,
     );
 
     const items = await db.query.packages.findMany({

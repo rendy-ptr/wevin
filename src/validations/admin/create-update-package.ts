@@ -1,3 +1,4 @@
+import { packageStatusEnum } from '@/db/schema';
 import { z } from 'zod';
 
 export const createUpdatePackageSchema = z.object({
@@ -8,7 +9,7 @@ export const createUpdatePackageSchema = z.object({
     .regex(/^[a-zA-Z\s]+$/, 'Nama hanya boleh mengandung huruf dan spasi'),
   description: z.string().min(1, 'Deskripsi wajib diisi'),
   price: z.number().min(1, 'Harga minimal 1'),
-  isActive: z.boolean(),
+  status: z.enum(packageStatusEnum.enumValues),
   benefits: z.array(
     z.object({
       benefitId: z.number(),

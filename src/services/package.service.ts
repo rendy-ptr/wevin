@@ -4,13 +4,23 @@ import type { PackageFilterParams } from '@/types/package.type';
 import { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 
 export const packageService = {
-  getAll: async ({ search, isActive, page, limit }: PackageFilterParams) => {
+  getAll: async ({ search, status, page, limit }: PackageFilterParams) => {
     return await packageRepository.getAll({
       search,
-      isActive,
+      status,
       page,
       limit,
     });
+  },
+
+  findById: async (id: number) => {
+    const packageData = await packageRepository.getById(id);
+
+    if (!packageData) {
+      throw new NotFoundError('Package not found');
+    }
+
+    return packageData;
   },
 
   create: async (payload: CreateUpdatePackageFormValues) => {

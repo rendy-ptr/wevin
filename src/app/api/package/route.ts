@@ -10,7 +10,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const filters = {
       search: searchParams.get('search') || undefined,
-      isActive: searchParams.get('isActive') || undefined,
+      status: searchParams.get('status') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10'),
     } as PackageFilterParams;
@@ -42,12 +42,12 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const validatedData = createUpdatePackageSchema.parse(body);
-    const { name, description, isActive, price, benefits } = validatedData;
+    const { name, description, status, price, benefits } = validatedData;
 
     const packageData = await packageService.create({
       name,
       description,
-      isActive,
+      status,
       price,
       benefits,
     });

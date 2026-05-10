@@ -53,10 +53,15 @@ export default function DeleteModal({
               variant="destructive"
               onClick={onConfirm}
               disabled={isLoading}
-              className="bg-destructive hover:bg-destructive/90 h-10 px-6 font-bold shadow-sm transition-all active:scale-95"
+              className="bg-destructive hover:bg-destructive/90 shadow-destructive/20 relative h-11 px-10 text-xs font-bold tracking-wide uppercase shadow-lg transition-all active:scale-95"
             >
               {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
+                <>
+                  <span className="invisible text-transparent">Hapus</span>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  </div>
+                </>
               ) : (
                 'Hapus'
               )}

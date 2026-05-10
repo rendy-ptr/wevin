@@ -4,11 +4,13 @@ import SharedFilterSidebar from '@/components/shared/filter-sidebar';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
+import { PACKAGE_STATUS, TPackageStatus } from '@/db/schema';
+
 interface FilterPackageSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  statusFilter: 'all' | 'active' | 'inactive';
-  onApply: (status: 'all' | 'active' | 'inactive') => void;
+  statusFilter: TPackageStatus | undefined;
+  onApply: (status?: TPackageStatus) => void;
   onReset: () => void;
 }
 
@@ -20,7 +22,7 @@ export default function FilterPackageSidebar({
   onReset,
 }: FilterPackageSidebarProps) {
   const [localStatusFilter, setLocalStatusFilter] = useState<
-    'all' | 'active' | 'inactive'
+    TPackageStatus | undefined
   >(statusFilter);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
@@ -37,14 +39,13 @@ export default function FilterPackageSidebar({
   };
 
   const handleReset = () => {
-    setLocalStatusFilter('all');
+    setLocalStatusFilter(undefined);
     onReset();
   };
 
   const statusOptions = [
-    { label: 'Semua Status', value: 'all' },
-    { label: 'Aktif', value: 'active' },
-    { label: 'Non-aktif', value: 'inactive' },
+    { label: 'Aktif', value: PACKAGE_STATUS.ACTIVE },
+    { label: 'Non-aktif', value: PACKAGE_STATUS.INACTIVE },
   ] as const;
 
   return (

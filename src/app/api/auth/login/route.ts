@@ -10,13 +10,16 @@ export async function POST(request: Request) {
     const validatedData = loginSchema.parse(body);
     const { email, password } = validatedData;
 
-    const user = await authService.login(email, password);
+    const { sessionUser, redirectPath } = await authService.login(
+      email,
+      password,
+    );
 
     return NextResponse.json(
       {
         success: true,
         message: 'User logged in successfully',
-        data: user,
+        data: { user: sessionUser, redirectPath },
       },
       { status: 200 },
     );

@@ -1,6 +1,5 @@
 import { BenefitType, SystemAction } from '@/constants/benefits';
 import {
-  boolean,
   index,
   integer,
   pgEnum,
@@ -15,6 +14,15 @@ import {
 export const userRoleEnum = pgEnum('user_role', ['admin', 'member']);
 export const userStatusEnum = pgEnum('user_status', ['active', 'inactive']);
 export const benefitTypeEnum = pgEnum('benefit_type', ['toggle', 'quota']);
+export const packageStatusEnum = pgEnum('package_status', [
+  'active',
+  'inactive',
+]);
+
+export const PACKAGE_STATUS = {
+  ACTIVE: packageStatusEnum.enumValues[0],
+  INACTIVE: packageStatusEnum.enumValues[1],
+} as const;
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -52,7 +60,7 @@ export const packages = pgTable('packages', {
   name: varchar('name', { length: 50 }).notNull().unique(),
   description: text('description'),
   price: integer('price').notNull().default(0),
-  isActive: boolean('is_active').notNull().default(true),
+  status: packageStatusEnum('status').notNull().default(PACKAGE_STATUS.ACTIVE),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -130,4 +138,5 @@ export const packageBenefitRelations = relations(
 export type TBenefitType = typeof benefitTypeEnum.enumValues;
 export type TBenefit = typeof benefits.$inferSelect;
 export type TPackage = typeof packages.$inferSelect;
+export type TPackageStatus = (typeof packageStatusEnum.enumValues)[number];
 export type TPackageBenefit = typeof packageBenefits.$inferSelect;

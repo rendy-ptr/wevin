@@ -2,9 +2,9 @@
 
 import { Button } from '@/components/ui/button';
 import { SIDEBAR_LINKS } from '@/constants/admin-sidebar';
+import { useLogout } from '@/hooks/api/use-auth';
 import { useToast } from '@/hooks/use-toast';
 import { SessionUser } from '@/lib/auth';
-import api from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { isAxiosError } from 'axios';
 import { Heart, LogOut, Menu, X } from 'lucide-react';
@@ -21,27 +21,29 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      await api.post('/api/auth/logout');
-      toast({
-        title: 'Berhasil keluar',
-        description: 'Anda berhasil keluar dari akun',
-      });
-      router.push('/login');
-      router.refresh();
-    } catch (error) {
-      let message = 'Gagal keluar. Silakan coba lagi.';
-      if (isAxiosError(error)) {
-        message = error.response?.data?.message || 'Gagal keluar.';
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Gagal keluar',
-        description: message,
-      });
-    }
+  const logoutMutation = useLogout();
+  const onSubmit = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast({
+          title: 'Berhasil keluar',
+          description: 'Anda telah berhasil keluar dari sistem.',
+        });
+        router.push('/login');
+      },
+      onError: (error) => {
+        let message = 'Gagal keluar. Silakan coba lagi.';
+        if (isAxiosError(error)) {
+          message =
+            error.response?.data?.message || 'Gagal keluar. Silakan coba lagi.';
+        }
+        toast({
+          variant: 'destructive',
+          title: 'Gagal keluar',
+          description: message,
+        });
+      },
+    });
   };
 
   return (
@@ -155,8 +157,8 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
           </div>
           <Button
             variant="outline"
-            className="border-sidebar-border hover:bg-sidebar-accent hover:text-primary w-full justify-start"
-            onClick={handleLogout}
+            className="text-muted-foreground hover:bg-secondary hover:text-foreground h-10 w-full justify-start px-5 font-medium transition-all"
+            onClick={onSubmit}
           >
             <LogOut className="mr-2 h-4 w-4" />
             Keluar

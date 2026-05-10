@@ -10,15 +10,16 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { PACKAGE_STATUS, TPackageStatus } from '@/db/schema';
 import { useDeletePackage, useGetPackages } from '@/hooks/api/use-package';
 import { useToast } from '@/hooks/use-toast';
-import { formatCurrency } from '@/lib/utils';
+import { formatCurrency } from '@/lib/currency';
 import { Package } from '@/types/package.type';
 import { isAxiosError } from 'axios';
 import {
   Filter,
+  Heart,
   Loader2,
-  Package as PackageIcon,
   Plus,
   Search,
   SquarePen,
@@ -30,9 +31,9 @@ import { useDebounce } from 'use-debounce';
 
 export default function PackageManagementPage() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<
-    'all' | 'active' | 'inactive'
-  >('all');
+  const [statusFilter, setStatusFilter] = useState<TPackageStatus | undefined>(
+    undefined,
+  );
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(10);
   const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
@@ -52,12 +53,12 @@ export default function PackageManagementPage() {
 
   const { toast } = useToast();
 
-  const { data: packagesData, isLoading } = useGetPackages(
-    debouncedSearchTerm,
-    statusFilter === 'all' ? undefined : statusFilter === 'active',
+  const { data: packagesData, isLoading } = useGetPackages({
+    search: debouncedSearchTerm,
+    status: statusFilter,
     page,
     limit,
-  );
+  });
 
   const packages = packagesData?.items || [];
   const totalItems = packagesData?.total || 0;
@@ -92,11 +93,11 @@ export default function PackageManagementPage() {
   };
 
   const handleResetFilter = () => {
-    setStatusFilter('all');
+    setStatusFilter(undefined);
     setSearchTerm('');
   };
 
-  const activeFilterCount = [statusFilter !== 'all'].filter(Boolean).length;
+  const activeFilterCount = [statusFilter !== undefined].filter(Boolean).length;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
@@ -173,7 +174,7 @@ export default function PackageManagementPage() {
                 <tr>
                   <td colSpan={4} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
-                      <PackageIcon className="text-primary/40 h-8 w-8" />
+                      <Heart className="text-primary fill-primary h-8 w-8" />
                       <p className="text-muted-foreground text-xs font-medium">
                         Tidak ada paket ditemukan.
                       </p>
@@ -202,12 +203,12 @@ export default function PackageManagementPage() {
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      {pkg.isActive ? (
+                      {pkg.status === PACKAGE_STATUS.ACTIVE ? (
                         <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-emerald-600 uppercase">
                           Aktif
                         </span>
                       ) : (
-                        <span className="bg-muted text-muted-foreground rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase">
+                        <span className="bg-destructive/10 text-destructive rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase">
                           Non-aktif
                         </span>
                       )}
@@ -222,7 +223,7 @@ export default function PackageManagementPage() {
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="text-primary-dark hover:bg-secondary h-8 w-8 transition-colors"
+                                className="text-primary-dark hover:text-primary-dark hover:bg-secondary h-8 w-8 transition-colors"
                               >
                                 <SquarePen className="h-4 w-4" />
                               </Button>
@@ -235,7 +236,7 @@ export default function PackageManagementPage() {
                             <Button
                               variant="ghost"
                               size="icon"
-                              className="text-destructive hover:bg-secondary h-8 w-8 transition-colors"
+                              className="text-destructive hover:text-destructive hover:bg-secondary h-8 w-8 transition-colors"
                               onClick={() => {
                                 setSelectedPackage(pkg);
                                 setIsDeleteModalOpen(true);

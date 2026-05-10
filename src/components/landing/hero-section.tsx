@@ -49,7 +49,7 @@ export function HeroSection() {
             asChild
             variant="outline"
             size="lg"
-            className="border-primary text-primary-dark hover:bg-primary/10 rounded-xl px-8 py-6 text-lg"
+            className="border-primary text-primary-dark hover:bg-primary-subtle hover:text-primary-dark rounded-xl px-8 py-6 text-lg transition-colors duration-300"
           >
             <Link href="/invitation/demo?to=Bapak+Ibu">
               <HeartIcon className="mr-2 h-5 w-5" />
