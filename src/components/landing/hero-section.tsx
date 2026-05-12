@@ -13,7 +13,6 @@ export function HeroSection() {
       id="home"
       className="relative flex min-h-[90vh] items-center justify-center overflow-hidden"
     >
-      <div className="absolute inset-0 bg-[url('/floral-pattern.svg')] bg-repeat opacity-5" />
       <div className="bg-primary/10 absolute top-20 left-10 h-32 w-32 rounded-full blur-3xl" />
       <div className="bg-accent/10 absolute right-10 bottom-20 h-40 w-40 rounded-full blur-3xl" />
 

@@ -141,7 +141,7 @@ export default function CreateBenefitModal({
                             <SelectItem
                               key={action}
                               value={action}
-                              className="text-xs"
+                              className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer text-xs transition-colors"
                             >
                               <span className="mr-2 font-mono text-[10px] opacity-50">
                                 [{action}]

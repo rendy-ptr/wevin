@@ -7,6 +7,14 @@ export const API_URL = {
     ME: `${API_BASE_URL}/api/auth/me`,
     LOGIN_PAGE: `${API_BASE_URL}/login`,
   },
+  MEMBER: {
+    GET: `${API_BASE_URL}/api/member`,
+    CREATE: `${API_BASE_URL}/api/member`,
+    UPDATE: (id: number) => `${API_BASE_URL}/api/member/${id}`,
+    DELETE: (id: number) => `${API_BASE_URL}/api/member/${id}`,
+    INDEX: `${API_BASE_URL}/dashboard/admin/member`,
+    GET_BY_ID: (id: number) => `${API_BASE_URL}/api/member/edit/${id}`,
+  },
   PACKAGE: {
     GET: `${API_BASE_URL}/api/package`,
     CREATE: `${API_BASE_URL}/api/package`,

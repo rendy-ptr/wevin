@@ -163,7 +163,7 @@ export default function PackageManagementPage() {
             <tbody className="divide-border divide-y">
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-20 text-center">
+                  <td colSpan={5} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="text-primary h-8 w-8 animate-spin" />
                       <p className="text-muted-foreground text-xs font-medium">
@@ -174,7 +174,7 @@ export default function PackageManagementPage() {
                 </tr>
               ) : packages.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-6 py-20 text-center">
+                  <td colSpan={5} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Heart className="text-primary fill-primary h-8 w-8" />
                       <p className="text-muted-foreground text-xs font-medium">

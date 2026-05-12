@@ -24,12 +24,30 @@ export const PACKAGE_STATUS = {
   INACTIVE: packageStatusEnum.enumValues[1],
 } as const;
 
+export const USER_ROLE_ENUM = {
+  ADMIN: userRoleEnum.enumValues[0],
+  MEMBER: userRoleEnum.enumValues[1],
+} as const;
+
+export const USER_STATUS_ENUM = {
+  ACTIVE: {
+    LABEL: 'Aktif',
+    VALUE: userStatusEnum.enumValues[0],
+  },
+  INACTIVE: {
+    LABEL: 'Tidak Aktif',
+    VALUE: userStatusEnum.enumValues[1],
+  },
+} as const;
+
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   email: varchar('email', { length: 255 }).notNull().unique(),
   password: text('password').notNull(),
   role: userRoleEnum('role').notNull().default('member'),
+  status: userStatusEnum('status').notNull().default('active'),
+  deletedAt: timestamp('deleted_at'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -46,8 +64,6 @@ export const memberProfiles = pgTable('member_profiles', {
   packageId: integer('package_id')
     .notNull()
     .references(() => packages.id),
-  phone: varchar('phone', { length: 20 }),
-  status: userStatusEnum('status').notNull().default('active'),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -115,6 +131,7 @@ import { relations } from 'drizzle-orm';
 
 export const packageRelations = relations(packages, ({ many }) => ({
   benefits: many(packageBenefits),
+  members: many(memberProfiles),
 }));
 
 export const benefitRelations = relations(benefits, ({ many }) => ({
@@ -135,6 +152,27 @@ export const packageBenefitRelations = relations(
   }),
 );
 
+export const usersRelations = relations(users, ({ one }) => ({
+  profile: one(memberProfiles, {
+    fields: [users.id],
+    references: [memberProfiles.userId],
+  }),
+}));
+
+export const memberProfileRelations = relations(memberProfiles, ({ one }) => ({
+  user: one(users, {
+    fields: [memberProfiles.userId],
+    references: [users.id],
+  }),
+  package: one(packages, {
+    fields: [memberProfiles.packageId],
+    references: [packages.id],
+  }),
+}));
+
+export type TUserStatusEnum = (typeof userStatusEnum.enumValues)[number];
+export type TUser = typeof users.$inferSelect;
+export type TMember = typeof memberProfiles.$inferSelect;
 export type TBenefitType = typeof benefitTypeEnum.enumValues;
 export type TBenefit = typeof benefits.$inferSelect;
 export type TPackage = typeof packages.$inferSelect;
