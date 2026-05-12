@@ -15,6 +15,7 @@ import { useDeletePackage, useGetPackages } from '@/hooks/api/use-package';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/currency';
 import { formatDate } from '@/lib/date';
+import { ModalType } from '@/types/modal.type';
 import { Package } from '@/types/package.type';
 import { isAxiosError } from 'axios';
 import {
@@ -28,77 +29,95 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useDebounce } from 'use-debounce';
+import { useDebouncedCallback } from 'use-debounce';
 
 export default function PackageManagementPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState<TPackageStatus | undefined>(
-    undefined,
-  );
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
-
-  const [prevSearch, setPrevSearch] = useState(debouncedSearchTerm);
-  const [prevStatus, setPrevStatus] = useState(statusFilter);
-
-  if (prevSearch !== debouncedSearchTerm || prevStatus !== statusFilter) {
-    setPrevSearch(debouncedSearchTerm);
-    setPrevStatus(statusFilter);
-    setPage(1);
-  }
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const [filters, setFilters] = useState({
+    search: '',
+    status: undefined as TPackageStatus | undefined,
+    page: 1,
+    limit: 10,
+  });
 
   const { toast } = useToast();
 
   const { data: packagesData, isLoading } = useGetPackages({
-    search: debouncedSearchTerm,
-    status: statusFilter,
-    page,
-    limit,
+    search: filters.search,
+    status: filters.status,
+    page: filters.page,
+    limit: filters.limit,
   });
+
+  const { mutate: deletePackage, isPending: isDeleting } = useDeletePackage();
 
   const packages = packagesData?.items || [];
   const totalItems = packagesData?.total || 0;
-  const totalPages = Math.ceil(totalItems / limit);
+  const totalPages = Math.ceil(totalItems / filters.limit);
 
-  const deleteMutation = useDeletePackage();
+  const closeModal = () => {
+    setActiveModal(null);
+    setSelectedPackage(null);
+  };
 
-  const handleDelete = () => {
-    if (selectedPackage) {
-      deleteMutation.mutate(selectedPackage.id, {
-        onSuccess: () => {
-          toast({
-            title: 'Paket dihapus',
-            description: 'Paket telah berhasil dihapus dari sistem.',
-          });
-          setIsDeleteModalOpen(false);
-          setSelectedPackage(null);
-        },
-        onError: (error) => {
-          let message = 'Gagal menghapus paket.';
-          if (isAxiosError(error)) {
-            message = error.response?.data?.message || message;
-          }
-          toast({
-            variant: 'destructive',
-            title: 'Gagal menghapus paket',
-            description: message,
-          });
-        },
-      });
-    }
+  const handleOpenModal = (type: ModalType, pkg?: Package) => {
+    if (pkg) setSelectedPackage(pkg);
+    setActiveModal(type);
+  };
+
+  const handleSearch = useDebouncedCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, search: value, page: 1 }));
+  }, 500);
+
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    handleSearch(value);
+  };
+
+  const handleApplyFilter = (newFilters: {
+    status?: TPackageStatus | undefined;
+  }) => {
+    setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
   };
 
   const handleResetFilter = () => {
-    setStatusFilter(undefined);
+    setFilters({
+      search: '',
+      status: undefined,
+      page: 1,
+      limit: 10,
+    });
     setSearchTerm('');
   };
 
-  const activeFilterCount = [statusFilter !== undefined].filter(Boolean).length;
+  const handleDelete = () => {
+    if (!selectedPackage) return;
+    deletePackage(selectedPackage.id, {
+      onSuccess: () => {
+        toast({
+          title: 'Paket dihapus',
+          description: 'Paket telah berhasil dihapus dari sistem.',
+        });
+        closeModal();
+      },
+      onError: (error) => {
+        let message = 'Gagal menghapus paket.';
+        if (isAxiosError(error)) {
+          message = error.response?.data?.message || message;
+        }
+        toast({
+          variant: 'destructive',
+          title: 'Gagal menghapus paket',
+          description: message,
+        });
+      },
+    });
+  };
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
@@ -127,7 +146,7 @@ export default function PackageManagementPage() {
               <Input
                 placeholder="Cari nama paket..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={onSearchChange}
                 className="border-border focus:ring-primary h-10 bg-transparent pl-9 text-sm focus:ring-1"
               />
             </div>
@@ -135,14 +154,14 @@ export default function PackageManagementPage() {
             <Button
               variant="outline"
               size="sm"
-              className={`border-border h-10 px-4 transition-all ${isFilterMenuOpen ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}`}
-              onClick={() => setIsFilterMenuOpen(true)}
+              className="border-border text-muted-foreground hover:bg-secondary hover:text-foreground h-10 px-4 transition-all"
+              onClick={() => setIsFilterSidebarOpen(true)}
             >
               <Filter className="mr-2 h-4 w-4" />
               Filter
-              {activeFilterCount > 0 && (
-                <span className="bg-primary ml-2 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white">
-                  {activeFilterCount}
+              {filters.status && (
+                <span className="bg-primary ml-2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm">
+                  {[filters.status].filter(Boolean).length}
                 </span>
               )}
             </Button>
@@ -244,10 +263,7 @@ export default function PackageManagementPage() {
                               variant="ghost"
                               size="icon"
                               className="text-destructive hover:text-destructive hover:bg-secondary h-8 w-8 transition-colors"
-                              onClick={() => {
-                                setSelectedPackage(pkg);
-                                setIsDeleteModalOpen(true);
-                              }}
+                              onClick={() => handleOpenModal('delete', pkg)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -264,32 +280,31 @@ export default function PackageManagementPage() {
         </div>
 
         <Pagination
-          page={page}
+          page={filters.page}
           totalPages={totalPages}
-          limit={limit}
+          limit={filters.limit}
           totalItems={totalItems}
-          onPageChange={setPage}
-          onLimitChange={(newLimit) => {
-            setLimit(newLimit);
-            setPage(1);
-          }}
+          onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
+          onLimitChange={(limit) =>
+            setFilters((prev) => ({ ...prev, limit, page: 1 }))
+          }
           isLoading={isLoading}
         />
       </div>
 
       <DeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        isOpen={activeModal === 'delete'}
+        onClose={() => setActiveModal(null)}
         onConfirm={handleDelete}
-        isLoading={deleteMutation.isPending}
+        isLoading={isDeleting}
         title={`Hapus Paket ${selectedPackage?.name}?`}
       />
 
       <FilterSidebar
-        isOpen={isFilterMenuOpen}
-        onClose={() => setIsFilterMenuOpen(false)}
-        statusFilter={statusFilter}
-        onApply={setStatusFilter}
+        isOpen={isFilterSidebarOpen}
+        onClose={() => setIsFilterSidebarOpen(false)}
+        statusFilter={filters.status}
+        onApply={handleApplyFilter}
         onReset={handleResetFilter}
       />
     </div>

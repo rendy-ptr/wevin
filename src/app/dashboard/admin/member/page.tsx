@@ -22,6 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/date';
 import { UserMember } from '@/types/member.type';
+import { ModalType } from '@/types/modal.type';
 import { isAxiosError } from 'axios';
 import {
   Filter,
@@ -36,8 +37,6 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
-
-type ModalType = 'create' | 'edit' | 'delete' | 'status' | null;
 
 export default function MemberManagementPage() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);

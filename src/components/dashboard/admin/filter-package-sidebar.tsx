@@ -10,7 +10,7 @@ interface FilterPackageSidebarProps {
   isOpen: boolean;
   onClose: () => void;
   statusFilter: TPackageStatus | undefined;
-  onApply: (status?: TPackageStatus) => void;
+  onApply: (newFilters: { status?: TPackageStatus | undefined }) => void;
   onReset: () => void;
 }
 
@@ -34,7 +34,9 @@ export default function FilterPackageSidebar({
   }
 
   const handleApply = () => {
-    onApply(localStatusFilter);
+    onApply({
+      status: localStatusFilter,
+    });
     onClose();
   };
 
@@ -66,10 +68,10 @@ export default function FilterPackageSidebar({
               <Button
                 key={opt.value}
                 onClick={() => setLocalStatusFilter(opt.value)}
-                className={`flex items-center justify-between rounded-xl px-4 py-3 text-sm transition-all ${
+                className={`flex items-center justify-between rounded-lg px-4 py-3 text-sm transition-all ${
                   localStatusFilter === opt.value
-                    ? 'bg-primary/5 text-primary border-primary/30 ring-primary/30 hover:bg-primary/10 border ring-1'
-                    : 'bg-secondary/20 text-muted-foreground hover:bg-secondary/40 border border-transparent'
+                    ? 'bg-primary-dark shadow-primary-dark/10 hover:bg-primary-dark/90 text-white shadow-md'
+                    : 'bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground'
                 }`}
               >
                 <span className="font-medium">{opt.label}</span>
