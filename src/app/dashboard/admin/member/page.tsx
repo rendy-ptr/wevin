@@ -35,137 +35,138 @@ import {
   UserX,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useDebounce } from 'use-debounce';
+import { useDebouncedCallback } from 'use-debounce';
+
+type ModalType = 'create' | 'edit' | 'delete' | 'status' | null;
 
 export default function MemberManagementPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [selectedMember, setSelectedMember] = useState<UserMember | null>(null);
-  const [packageIdFilter, setPackageIdFilter] = useState<number | undefined>(
-    undefined,
-  );
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(
-    undefined,
-  );
-  const [prevSearch, setPrevSearch] = useState(debouncedSearchTerm);
-  const [prevPackageId, setPrevPackageId] = useState(packageIdFilter);
-  const [prevStatus, setPrevStatus] = useState(statusFilter);
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
+  const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const [filters, setFilters] = useState({
+    search: '',
+    packageId: undefined as number | undefined,
+    status: undefined as string | undefined,
+    page: 1,
+    limit: 10,
+  });
 
   const { toast } = useToast();
 
   const { data: membersData, isLoading } = useGetMembers({
-    search: debouncedSearchTerm,
-    packageId: packageIdFilter,
-    status: statusFilter,
-    page,
-    limit,
+    search: filters.search,
+    packageId: filters.packageId,
+    status: filters.status,
+    page: filters.page,
+    limit: filters.limit,
   });
+
+  const { mutate: deleteMember, isPending: isDeleting } = useDeleteMember();
+  const { mutate: updateStatus, isPending: isStatusUpdating } =
+    useUpdateMemberStatus();
 
   const members = membersData?.items || [];
   const totalItems = membersData?.total || 0;
-  const totalPages = Math.ceil(totalItems / limit);
+  const totalPages = Math.ceil(totalItems / filters.limit);
 
-  const { mutate, isPending } = useDeleteMember();
-  const { mutate: updateStatus, isPending: isStatusPending } =
-    useUpdateMemberStatus();
+  const closeModal = () => {
+    setActiveModal(null);
+    setSelectedMember(null);
+  };
+
+  const handleOpenModal = (type: ModalType, member?: UserMember) => {
+    if (member) setSelectedMember(member);
+    setActiveModal(type);
+  };
+
+  const handleSearch = useDebouncedCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, search: value, page: 1 }));
+  }, 500);
+
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    handleSearch(value);
+  };
+
+  const handleApplyFilter = (newFilters: {
+    packageId?: number;
+    status?: string;
+  }) => {
+    setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
+  };
+
+  const handleResetFilter = () => {
+    setFilters({
+      search: '',
+      packageId: undefined,
+      status: undefined,
+      page: 1,
+      limit: 10,
+    });
+    setSearchTerm('');
+  };
 
   const handleDelete = () => {
-    if (selectedMember) {
-      mutate(selectedMember.id, {
+    if (!selectedMember) return;
+    deleteMember(selectedMember.id, {
+      onSuccess: () => {
+        toast({
+          title: 'Member dihapus',
+          description: 'Member telah berhasil dihapus dari sistem.',
+        });
+        closeModal();
+      },
+      onError: (error) => {
+        let message = 'Gagal menghapus member.';
+        if (isAxiosError(error)) {
+          message = error.response?.data?.message || message;
+        }
+        toast({
+          variant: 'destructive',
+          title: 'Gagal menghapus member',
+          description: message,
+        });
+      },
+    });
+  };
+
+  const handleUpdateStatus = () => {
+    if (!selectedMember) return;
+    const newStatus =
+      selectedMember.status === USER_STATUS_ENUM.ACTIVE.VALUE
+        ? USER_STATUS_ENUM.INACTIVE.VALUE
+        : USER_STATUS_ENUM.ACTIVE.VALUE;
+
+    updateStatus(
+      { id: selectedMember.id, status: newStatus },
+      {
         onSuccess: () => {
           toast({
-            title: 'Member dihapus',
-            description: 'Member telah berhasil dihapus dari sistem.',
+            title: 'Status diperbarui',
+            description: `Member telah berhasil ${
+              newStatus === USER_STATUS_ENUM.INACTIVE.VALUE
+                ? 'di Non-Aktifkan'
+                : 'di Aktifkan'
+            }`,
           });
-          setIsDeleteModalOpen(false);
-          setSelectedMember(null);
+          closeModal();
         },
         onError: (error) => {
-          let message = 'Gagal menghapus member.';
+          let message = 'Gagal mengubah status member.';
           if (isAxiosError(error)) {
             message = error.response?.data?.message || message;
           }
           toast({
             variant: 'destructive',
-            title: 'Gagal menghapus member',
+            title: 'Gagal mengubah status member',
             description: message,
           });
         },
-      });
-    }
-  };
-
-  const handleUpdateStatus = () => {
-    if (selectedMember) {
-      const newStatus =
-        selectedMember.status === USER_STATUS_ENUM.ACTIVE.VALUE
-          ? USER_STATUS_ENUM.INACTIVE.VALUE
-          : USER_STATUS_ENUM.ACTIVE.VALUE;
-      updateStatus(
-        { id: selectedMember.id, status: newStatus },
-        {
-          onSuccess: () => {
-            toast({
-              title: 'Status diperbarui',
-              description: `Member telah berhasil ${
-                newStatus === USER_STATUS_ENUM.INACTIVE.VALUE
-                  ? 'di Non-Aktifkan'
-                  : 'di Aktifkan'
-              }`,
-            });
-            setIsStatusModalOpen(false);
-            setSelectedMember(null);
-          },
-          onError: (error) => {
-            let message = 'Gagal mengubah status member.';
-            if (isAxiosError(error)) {
-              message = error.response?.data?.message || message;
-            }
-            toast({
-              variant: 'destructive',
-              title: 'Gagal mengubah status member',
-              description: message,
-            });
-          },
-        },
-      );
-    }
-  };
-
-  if (
-    prevSearch !== debouncedSearchTerm ||
-    prevPackageId !== packageIdFilter ||
-    prevStatus !== statusFilter
-  ) {
-    setPrevSearch(debouncedSearchTerm);
-    setPrevPackageId(packageIdFilter);
-    setPrevStatus(statusFilter);
-    setPage(1);
-  }
-
-  const handleApplyFilter = ({
-    packageId,
-    status,
-  }: {
-    packageId?: number;
-    status?: string;
-  }) => {
-    setPackageIdFilter(packageId);
-    setStatusFilter(status);
-    setPage(1);
-  };
-
-  const handleResetFilter = () => {
-    setPackageIdFilter(undefined);
-    setStatusFilter(undefined);
-    setPage(1);
+      },
+    );
   };
 
   return (
@@ -176,12 +177,12 @@ export default function MemberManagementPage() {
             Member
           </h1>
           <p className="text-muted-foreground text-sm">
-            Total {members.length} akun terdaftar
+            Total {totalItems} akun terdaftar
           </p>
         </div>
         <Button
           className="bg-primary hover:bg-primary-dark h-11 px-6 text-white shadow-sm transition-all active:scale-95"
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={() => handleOpenModal('create')}
         >
           <Plus className="mr-2 h-4 w-4" />
           Tambah Member
@@ -196,7 +197,7 @@ export default function MemberManagementPage() {
               <Input
                 placeholder="Cari member..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={onSearchChange}
                 className="border-border focus:ring-primary h-10 bg-transparent pl-9 text-sm focus:ring-1"
               />
             </div>
@@ -205,7 +206,7 @@ export default function MemberManagementPage() {
               variant="outline"
               size="sm"
               className="border-border text-muted-foreground hover:bg-secondary hover:text-foreground h-10 px-4 transition-all"
-              onClick={() => setIsFilterMenuOpen(true)}
+              onClick={() => setIsFilterSidebarOpen(true)}
             >
               <Filter className="mr-2 h-4 w-4" />
               Filter
@@ -243,7 +244,7 @@ export default function MemberManagementPage() {
                     <div className="flex flex-col items-center gap-2">
                       <Heart className="text-primary fill-primary h-8 w-8" />
                       <p className="text-muted-foreground text-xs font-medium">
-                        Tidak ada paket ditemukan.
+                        Tidak ada data member.
                       </p>
                     </div>
                   </td>
@@ -254,20 +255,12 @@ export default function MemberManagementPage() {
                     key={member.id}
                     className="even:bg-secondary/10 hover:bg-secondary/30 transition-colors"
                   >
-                    <td className="px-6 py-4">
-                      <span className="text-foreground font-semibold">
-                        {member.name}
-                      </span>
+                    <td className="px-6 py-4 font-semibold">{member.name}</td>
+                    <td className="text-muted-foreground px-6 py-4 text-xs">
+                      {member.email}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-muted-foreground text-xs">
-                        {member.email}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-muted-foreground text-xs">
-                        {member.profile?.package?.name || '-'}
-                      </span>
+                    <td className="text-muted-foreground px-6 py-4 text-xs">
+                      {member.profile?.package?.name || '-'}
                     </td>
                     <td className="px-6 py-4">
                       <span
@@ -282,10 +275,8 @@ export default function MemberManagementPage() {
                           : USER_STATUS_ENUM.INACTIVE.LABEL}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="text-muted-foreground text-xs">
-                        {formatDate(member.createdAt)}
-                      </span>
+                    <td className="text-muted-foreground px-6 py-4 text-xs">
+                      {formatDate(member.createdAt)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-1">
@@ -295,10 +286,7 @@ export default function MemberManagementPage() {
                               variant="ghost"
                               size="icon"
                               className="text-primary-dark hover:text-primary-dark hover:bg-secondary h-8 w-8 transition-colors"
-                              onClick={() => {
-                                setSelectedMember(member);
-                                setIsEditModalOpen(true);
-                              }}
+                              onClick={() => handleOpenModal('edit', member)}
                             >
                               <SquarePen className="h-4 w-4" />
                             </Button>
@@ -318,10 +306,7 @@ export default function MemberManagementPage() {
                                   ? 'text-accent hover:text-accent hover:bg-secondary'
                                   : 'text-success hover:text-success hover:bg-secondary'
                               }`}
-                              onClick={() => {
-                                setSelectedMember(member);
-                                setIsStatusModalOpen(true);
-                              }}
+                              onClick={() => handleOpenModal('status', member)}
                             >
                               {member.status ===
                               USER_STATUS_ENUM.ACTIVE.VALUE ? (
@@ -346,10 +331,7 @@ export default function MemberManagementPage() {
                               variant="ghost"
                               size="icon"
                               className="text-destructive hover:text-destructive hover:bg-secondary h-8 w-8 transition-colors"
-                              onClick={() => {
-                                setSelectedMember(member);
-                                setIsDeleteModalOpen(true);
-                              }}
+                              onClick={() => handleOpenModal('delete', member)}
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -366,54 +348,54 @@ export default function MemberManagementPage() {
             </tbody>
           </table>
         </div>
+
         <Pagination
-          page={page}
+          page={filters.page}
           totalPages={totalPages}
-          limit={limit}
+          limit={filters.limit}
           totalItems={totalItems}
-          onPageChange={setPage}
-          onLimitChange={(newLimit) => {
-            setLimit(newLimit);
-            setPage(1);
-          }}
+          onPageChange={(p) => setFilters((f) => ({ ...f, page: p }))}
+          onLimitChange={(l) =>
+            setFilters((f) => ({ ...f, limit: l, page: 1 }))
+          }
           isLoading={isLoading}
         />
       </div>
 
       <CreateMemberModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        isOpen={activeModal === 'create'}
+        onClose={closeModal}
       />
 
       {selectedMember && (
         <EditMemberModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
+          isOpen={activeModal === 'edit'}
+          onClose={closeModal}
           member={selectedMember}
         />
       )}
 
       <DeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        isOpen={activeModal === 'delete'}
+        onClose={closeModal}
         onConfirm={handleDelete}
-        isLoading={isPending}
+        isLoading={isDeleting}
         title={`Hapus Member ${selectedMember?.name}?`}
       />
 
       <DeactiveModal
-        isOpen={isStatusModalOpen}
-        onClose={() => setIsStatusModalOpen(false)}
+        isOpen={activeModal === 'status'}
+        onClose={closeModal}
         onConfirm={handleUpdateStatus}
-        isLoading={isStatusPending}
+        isLoading={isStatusUpdating}
         member={selectedMember}
       />
 
       <FilterMemberSidebar
-        isOpen={isFilterMenuOpen}
-        onClose={() => setIsFilterMenuOpen(false)}
-        packageIdFilter={packageIdFilter}
-        statusFilter={statusFilter}
+        isOpen={isFilterSidebarOpen}
+        onClose={() => setIsFilterSidebarOpen(false)}
+        packageIdFilter={filters.packageId}
+        statusFilter={filters.status}
         onApply={handleApplyFilter}
         onReset={handleResetFilter}
       />
