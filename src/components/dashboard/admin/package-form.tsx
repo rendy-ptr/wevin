@@ -12,14 +12,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { PACKAGE_STATUS } from '@/constants/package.constant';
 import { API_URL } from '@/constants/url';
-import { PACKAGE_STATUS, TPackageStatus } from '@/db/schema';
 import { useGetBenefits } from '@/hooks/api/use-benefit';
 import {
   formatCurrency,
   formatThousandSeparator,
   parseThousandSeparator,
 } from '@/lib/currency';
+import { TPackageStatus } from '@/types/package.type';
 import {
   CreateUpdatePackageFormValues,
   createUpdatePackageSchema,
@@ -43,12 +44,10 @@ export default function PackageForm({
   isLoading = false,
   title,
 }: PackageFormProps) {
-  const { data: benefitsData, isLoading: isLoadingBenefits } = useGetBenefits(
-    undefined,
-    undefined,
-    1,
-    100,
-  );
+  const { data: benefitsData, isLoading: isLoadingBenefits } = useGetBenefits({
+    page: 1,
+    limit: 100,
+  });
   const benefits = benefitsData?.items || [];
 
   const {

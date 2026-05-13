@@ -1,11 +1,12 @@
-import { BenefitType } from '@/constants/benefits';
-import { TBenefit } from '@/db/schema';
+import { BENEFIT_TYPE_VALUES, benefits } from '@/db/schema';
 
-export type Benefit = TBenefit;
+export type TBenefit = typeof benefits.$inferSelect;
+export type TBenefitType =
+  (typeof BENEFIT_TYPE_VALUES)[keyof typeof BENEFIT_TYPE_VALUES];
 
 export type BenefitFilterParams = {
   search?: string;
-  type?: BenefitType;
+  type?: TBenefitType;
   page?: number;
   limit?: number;
 };

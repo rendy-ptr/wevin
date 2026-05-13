@@ -2,7 +2,7 @@
 
 import SharedFilterSidebar from '@/components/shared/filter-sidebar';
 import { Button } from '@/components/ui/button';
-import { USER_STATUS_ENUM } from '@/db/schema';
+import { USER_STATUS_OPTIONS } from '@/constants/user.constant';
 import { useGetPackages } from '@/hooks/api/use-package';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
@@ -62,12 +62,12 @@ export default function FilterMemberSidebar({
 
   const statusOptions = [
     {
-      label: USER_STATUS_ENUM.ACTIVE.LABEL,
-      value: USER_STATUS_ENUM.ACTIVE.VALUE,
+      label: USER_STATUS_OPTIONS.ACTIVE.LABEL,
+      value: USER_STATUS_OPTIONS.ACTIVE.VALUE,
     },
     {
-      label: USER_STATUS_ENUM.INACTIVE.LABEL,
-      value: USER_STATUS_ENUM.INACTIVE.VALUE,
+      label: USER_STATUS_OPTIONS.INACTIVE.LABEL,
+      value: USER_STATUS_OPTIONS.INACTIVE.VALUE,
     },
   ];
 

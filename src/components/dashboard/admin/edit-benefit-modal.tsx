@@ -13,7 +13,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { useUpdateBenefit } from '@/hooks/api/use-benefit';
 import { useToast } from '@/hooks/use-toast';
-import { Benefit } from '@/types/benefit.type';
+import { TBenefit } from '@/types/benefit.type';
 import {
   CreateUpdateBenefitFormValues,
   createUpdateBenefitSchema,
@@ -27,7 +27,7 @@ import { useForm } from 'react-hook-form';
 interface EditBenefitModalProps {
   isOpen: boolean;
   onClose: () => void;
-  benefit: Benefit;
+  benefit: TBenefit;
 }
 
 export default function EditBenefitModal({

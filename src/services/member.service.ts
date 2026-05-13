@@ -1,4 +1,3 @@
-import { TUserStatusEnum } from '@/db/schema';
 import {
   sendAccountEmail,
   sendDeletionNotificationEmail,
@@ -8,6 +7,7 @@ import {
 import { memberRepository } from '@/repositories/member.repository';
 import { packageRepository } from '@/repositories/package.repository';
 import { MemberFilterParams } from '@/types/member.type';
+import { TUserStatus } from '@/types/user.type';
 import { CreateUpdateMemberFormValues } from '@/validations/admin/create-update-member';
 import bcrypt from 'bcryptjs';
 
@@ -58,7 +58,7 @@ export const memberService = {
     return deletedUser;
   },
 
-  updateStatus: async (id: number, status: TUserStatusEnum) => {
+  updateStatus: async (id: number, status: TUserStatus) => {
     const updatedUser = await memberRepository.updateStatus(id, status);
     await sendStatusNotificationEmail(
       updatedUser.email,

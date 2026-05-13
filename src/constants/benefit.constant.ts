@@ -1,7 +1,6 @@
-export const BENEFIT_TYPES = {
-  TOGGLE: 'toggle',
-  QUOTA: 'quota',
-} as const;
+import { BENEFIT_TYPE_VALUES } from '@/db/schema';
+
+export const BENEFIT_TYPES = BENEFIT_TYPE_VALUES;
 
 export const BENEFIT_TYPE_LABELS: Record<BenefitType, string> = {
   toggle: 'Toggle',
@@ -71,3 +70,14 @@ export const SYSTEM_ACTION_TYPES: Record<SystemAction, BenefitType> = {
   ACTIVE_DAYS: 'quota',
   TEMPLATE_LIMIT: 'quota',
 };
+
+export const BENEFIT_TYPE_OPTIONS = {
+  TOGGLE: {
+    LABEL: 'Toggle',
+    VALUE: BENEFIT_TYPES.TOGGLE,
+  },
+  QUOTA: {
+    LABEL: 'Kuota',
+    VALUE: BENEFIT_TYPES.QUOTA,
+  },
+} as const;

@@ -4,6 +4,7 @@ import {
   getUpdateNotificationEmailHtml,
   getWelcomeEmailHtml,
 } from '@/templates/email.template';
+import { TUserStatus } from '@/types/user.type';
 import nodemailer from 'nodemailer';
 
 export const transporter = nodemailer.createTransport({
@@ -97,7 +98,7 @@ export const sendDeletionNotificationEmail = async (
 export const sendStatusNotificationEmail = async (
   email: string,
   name: string,
-  status: 'active' | 'inactive',
+  status: TUserStatus,
 ) => {
   const loginUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/login`;
   const subject =

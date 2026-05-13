@@ -4,7 +4,8 @@ import SharedFilterSidebar from '@/components/shared/filter-sidebar';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
-import { PACKAGE_STATUS, TPackageStatus } from '@/db/schema';
+import { PACKAGE_STATUS } from '@/constants/package.constant';
+import { TPackageStatus } from '@/types/package.type';
 
 interface FilterPackageSidebarProps {
   isOpen: boolean;

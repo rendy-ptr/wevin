@@ -1,6 +1,6 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
-import { Package, PackageFilterParams } from '@/types/package.type';
+import { PackageFilterParams, TPackage } from '@/types/package.type';
 import { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -19,7 +19,7 @@ export const useGetPackages = ({
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
-      return response.data.data as { items: Package[]; total: number };
+      return response.data.data as { items: TPackage[]; total: number };
     },
   });
 };

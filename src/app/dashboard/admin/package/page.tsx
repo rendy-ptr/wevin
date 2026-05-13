@@ -10,13 +10,13 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { PACKAGE_STATUS, TPackageStatus } from '@/db/schema';
+import { PACKAGE_STATUS } from '@/constants/package.constant';
 import { useDeletePackage, useGetPackages } from '@/hooks/api/use-package';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/currency';
 import { formatDate } from '@/lib/date';
 import { ModalType } from '@/types/modal.type';
-import { Package } from '@/types/package.type';
+import { TPackage, TPackageStatus } from '@/types/package.type';
 import { isAxiosError } from 'axios';
 import {
   Filter,
@@ -33,7 +33,7 @@ import { useDebouncedCallback } from 'use-debounce';
 
 export default function PackageManagementPage() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
+  const [selectedPackage, setSelectedPackage] = useState<TPackage | null>(null);
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -64,7 +64,7 @@ export default function PackageManagementPage() {
     setSelectedPackage(null);
   };
 
-  const handleOpenModal = (type: ModalType, pkg?: Package) => {
+  const handleOpenModal = (type: ModalType, pkg?: TPackage) => {
     if (pkg) setSelectedPackage(pkg);
     setActiveModal(type);
   };

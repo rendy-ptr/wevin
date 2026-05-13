@@ -1,5 +1,6 @@
 import { MemberSidebar } from '@/components/dashboard/member-sidebar';
-import { requireAuth, USER_ROLES } from '@/lib/auth';
+import { USER_ROLE_VALUES } from '@/db/schema';
+import { requireAuth } from '@/lib/auth';
 import React from 'react';
 
 export default async function MemberDashboardLayout({
@@ -7,7 +8,7 @@ export default async function MemberDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requireAuth(USER_ROLES.MEMBER);
+  const session = await requireAuth(USER_ROLE_VALUES.MEMBER);
 
   return (
     <div className="bg-background min-h-screen">

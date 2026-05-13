@@ -1,4 +1,4 @@
-import { BenefitType, SystemAction } from '@/constants/benefits';
+import { BenefitType, SystemAction } from '@/constants/benefit.constant';
 import {
   index,
   integer,
@@ -11,34 +11,44 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-export const userRoleEnum = pgEnum('user_role', ['admin', 'member']);
-export const userStatusEnum = pgEnum('user_status', ['active', 'inactive']);
-export const benefitTypeEnum = pgEnum('benefit_type', ['toggle', 'quota']);
+export const USER_ROLE_VALUES = {
+  ADMIN: 'admin',
+  MEMBER: 'member',
+} as const;
+
+export const USER_STATUS_VALUES = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+} as const;
+
+export const BENEFIT_TYPE_VALUES = {
+  TOGGLE: 'toggle',
+  QUOTA: 'quota',
+} as const;
+
+export const PACKAGE_STATUS_VALUES = {
+  ACTIVE: 'active',
+  INACTIVE: 'inactive',
+} as const;
+
+export const userRoleEnum = pgEnum('user_role', [
+  USER_ROLE_VALUES.ADMIN,
+  USER_ROLE_VALUES.MEMBER,
+]);
+export const userStatusEnum = pgEnum('user_status', [
+  USER_STATUS_VALUES.ACTIVE,
+  USER_STATUS_VALUES.INACTIVE,
+]);
+export const benefitTypeEnum = pgEnum('benefit_type', [
+  BENEFIT_TYPE_VALUES.TOGGLE,
+  BENEFIT_TYPE_VALUES.QUOTA,
+]);
 export const packageStatusEnum = pgEnum('package_status', [
-  'active',
-  'inactive',
+  PACKAGE_STATUS_VALUES.ACTIVE,
+  PACKAGE_STATUS_VALUES.INACTIVE,
 ]);
 
-export const PACKAGE_STATUS = {
-  ACTIVE: packageStatusEnum.enumValues[0],
-  INACTIVE: packageStatusEnum.enumValues[1],
-} as const;
-
-export const USER_ROLE_ENUM = {
-  ADMIN: userRoleEnum.enumValues[0],
-  MEMBER: userRoleEnum.enumValues[1],
-} as const;
-
-export const USER_STATUS_ENUM = {
-  ACTIVE: {
-    LABEL: 'Aktif',
-    VALUE: userStatusEnum.enumValues[0],
-  },
-  INACTIVE: {
-    LABEL: 'Tidak Aktif',
-    VALUE: userStatusEnum.enumValues[1],
-  },
-} as const;
+import { PACKAGE_STATUS } from '@/constants/package.constant';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -169,12 +179,3 @@ export const memberProfileRelations = relations(memberProfiles, ({ one }) => ({
     references: [packages.id],
   }),
 }));
-
-export type TUserStatusEnum = (typeof userStatusEnum.enumValues)[number];
-export type TUser = typeof users.$inferSelect;
-export type TMember = typeof memberProfiles.$inferSelect;
-export type TBenefitType = typeof benefitTypeEnum.enumValues;
-export type TBenefit = typeof benefits.$inferSelect;
-export type TPackage = typeof packages.$inferSelect;
-export type TPackageStatus = (typeof packageStatusEnum.enumValues)[number];
-export type TPackageBenefit = typeof packageBenefits.$inferSelect;

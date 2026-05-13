@@ -1,19 +1,14 @@
+import { USER_ROLE_VALUES } from '@/db/schema';
+import { TUserRole } from '@/types/user.type';
 import { JWTPayload, jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-
-export const USER_ROLES = {
-  ADMIN: 'admin',
-  MEMBER: 'member',
-} as const;
-
-export type UserRole = (typeof USER_ROLES)[keyof typeof USER_ROLES];
 
 export interface SessionUser {
   id: number;
   email: string;
   name: string;
-  role: UserRole;
+  role: TUserRole;
 }
 
 interface Session extends JWTPayload {
@@ -69,16 +64,16 @@ export async function getSession(): Promise<Session | null> {
   return await decrypt(session);
 }
 
-export async function requireAuth(role?: UserRole) {
+export async function requireAuth(role?: TUserRole) {
   const session = await getSession();
 
   if (!session) redirect('/login');
   if (role && session.user.role !== role) {
     redirect(
       getRedirectPath(
-        session.user.role === USER_ROLES.ADMIN
-          ? USER_ROLES.MEMBER
-          : USER_ROLES.ADMIN,
+        session.user.role === USER_ROLE_VALUES.ADMIN
+          ? USER_ROLE_VALUES.MEMBER
+          : USER_ROLE_VALUES.ADMIN,
       ),
     );
   }
@@ -86,6 +81,8 @@ export async function requireAuth(role?: UserRole) {
   return session;
 }
 
-export function getRedirectPath(role: UserRole): string {
-  return role === USER_ROLES.ADMIN ? '/dashboard/admin' : '/dashboard/member';
+export function getRedirectPath(role: TUserRole): string {
+  return role === USER_ROLE_VALUES.ADMIN
+    ? '/dashboard/admin'
+    : '/dashboard/member';
 }

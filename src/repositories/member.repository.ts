@@ -1,11 +1,8 @@
+import { USER_ROLE } from '@/constants/user.constant';
 import { db } from '@/db';
-import {
-  memberProfiles,
-  TUserStatusEnum,
-  USER_ROLE_ENUM,
-  users,
-} from '@/db/schema';
+import { memberProfiles, users } from '@/db/schema';
 import { MemberFilterParams } from '@/types/member.type';
+import { TUserStatus } from '@/types/user.type';
 import { CreateUpdateMemberFormValues } from '@/validations/admin/create-update-member';
 import { and, count, eq, ilike, inArray, isNull } from 'drizzle-orm';
 
@@ -34,10 +31,10 @@ export const memberRepository = {
     }
 
     const whereClause = and(
-      eq(users.role, USER_ROLE_ENUM.MEMBER),
+      eq(users.role, USER_ROLE.MEMBER),
       isNull(users.deletedAt),
       search ? ilike(users.name, `%${search}%`) : undefined,
-      status ? eq(users.status, status as TUserStatusEnum) : undefined,
+      status ? eq(users.status, status as TUserStatus) : undefined,
       matchingUserIds ? inArray(users.id, matchingUserIds) : undefined,
     );
 
@@ -81,7 +78,7 @@ export const memberRepository = {
           name: payload.name,
           email: payload.email,
           password: payload.password,
-          role: USER_ROLE_ENUM.MEMBER,
+          role: USER_ROLE.MEMBER,
         })
         .returning({ id: users.id, name: users.name, email: users.email });
 
@@ -127,7 +124,7 @@ export const memberRepository = {
     return deletedUser;
   },
 
-  updateStatus: async (id: number, status: TUserStatusEnum) => {
+  updateStatus: async (id: number, status: TUserStatus) => {
     const [updatedUser] = await db
       .update(users)
       .set({ status })

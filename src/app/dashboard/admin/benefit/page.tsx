@@ -12,7 +12,6 @@ import {
 } from '@/components/ui/tooltip';
 import { useDeleteBenefit, useGetBenefits } from '@/hooks/api/use-benefit';
 import { useToast } from '@/hooks/use-toast';
-import { Benefit } from '@/types/benefit.type';
 import { isAxiosError } from 'axios';
 import {
   Filter,
@@ -25,81 +24,98 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 
-import FilterSidebar from '@/components/dashboard/admin/filter-benefit-sidebar';
+import FilterBenefitSidebar from '@/components/dashboard/admin/filter-benefit-sidebar';
 import Pagination from '@/components/shared/pagination';
-import { BenefitType } from '@/constants/benefits';
 import { formatDate } from '@/lib/date';
-import { useDebounce } from 'use-debounce';
+import { TBenefit, TBenefitType } from '@/types/benefit.type';
+import { ModalType } from '@/types/modal.type';
+import { useDebouncedCallback } from 'use-debounce';
 
 export default function BenefitManagementPage() {
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [selectedBenefit, setSelectedBenefit] = useState<TBenefit | null>(null);
+  const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [typeFilter, setTypeFilter] = useState<BenefitType | 'all'>('all');
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(10);
-  const [debouncedSearchTerm] = useDebounce(searchTerm, 500);
 
-  const [prevSearch, setPrevSearch] = useState(debouncedSearchTerm);
-  const [prevType, setPrevType] = useState(typeFilter);
-
-  if (prevSearch !== debouncedSearchTerm || prevType !== typeFilter) {
-    setPrevSearch(debouncedSearchTerm);
-    setPrevType(typeFilter);
-    setPage(1);
-  }
-
-  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isFilterMenuOpen, setIsFilterMenuOpen] = useState(false);
-  const [selectedBenefit, setSelectedBenefit] = useState<Benefit | null>(null);
+  const [filters, setFilters] = useState({
+    search: '',
+    type: undefined as TBenefitType | undefined,
+    page: 1,
+    limit: 10,
+  });
 
   const { toast } = useToast();
 
-  const { data: benefitsData, isLoading } = useGetBenefits(
-    debouncedSearchTerm,
-    typeFilter === 'all' ? undefined : typeFilter,
-    page,
-    limit,
-  );
+  const { data: benefitsData, isLoading } = useGetBenefits({
+    search: filters.search,
+    type: filters.type,
+    page: filters.page,
+    limit: filters.limit,
+  });
+
+  const { mutate: deleteBenefit, isPending: isDeleting } = useDeleteBenefit();
 
   const benefits = benefitsData?.items || [];
   const totalItems = benefitsData?.total || 0;
-  const totalPages = Math.ceil(totalItems / limit);
+  const totalPages = Math.ceil(totalItems / filters.limit);
 
-  const deleteMutation = useDeleteBenefit();
+  const closeModal = () => {
+    setActiveModal(null);
+    setSelectedBenefit(null);
+  };
 
-  const handleDelete = () => {
-    if (selectedBenefit) {
-      deleteMutation.mutate(selectedBenefit.id, {
-        onSuccess: () => {
-          toast({
-            title: 'Benefit dihapus',
-            description: 'Benefit telah berhasil dihapus dari sistem.',
-          });
-          setIsDeleteModalOpen(false);
-          setSelectedBenefit(null);
-        },
-        onError: (error) => {
-          let message = 'Gagal menghapus benefit.';
-          if (isAxiosError(error)) {
-            message = error.response?.data?.message || message;
-          }
-          toast({
-            variant: 'destructive',
-            title: 'Gagal menghapus benefit',
-            description: message,
-          });
-        },
-      });
-    }
+  const handleOpenModal = (type: ModalType, benefit?: TBenefit) => {
+    if (benefit) setSelectedBenefit(benefit);
+    setActiveModal(type);
+  };
+
+  const handleSearch = useDebouncedCallback((value: string) => {
+    setFilters((prev) => ({ ...prev, search: value, page: 1 }));
+  }, 500);
+
+  const onSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    handleSearch(value);
+  };
+
+  const handleApplyFilter = (newFilters: { type?: TBenefitType }) => {
+    setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
   };
 
   const handleResetFilter = () => {
-    setTypeFilter('all');
+    setFilters({
+      search: '',
+      type: undefined,
+      page: 1,
+      limit: 10,
+    });
     setSearchTerm('');
   };
 
-  const activeFilterCount = [typeFilter !== 'all'].filter(Boolean).length;
+  const handleDelete = () => {
+    if (!selectedBenefit) return;
+    deleteBenefit(selectedBenefit.id, {
+      onSuccess: () => {
+        toast({
+          title: 'Benefit dihapus',
+          description: 'Benefit telah berhasil dihapus dari sistem.',
+        });
+        closeModal();
+      },
+      onError: (error) => {
+        let message = 'Gagal menghapus member.';
+        if (isAxiosError(error)) {
+          message = error.response?.data?.message || message;
+        }
+        toast({
+          variant: 'destructive',
+          title: 'Gagal menghapus member',
+          description: message,
+        });
+      },
+    });
+  };
 
   return (
     <div className="mx-auto max-w-7xl space-y-6 px-4 py-8">
@@ -114,7 +130,7 @@ export default function BenefitManagementPage() {
         </div>
         <Button
           className="bg-primary hover:bg-primary-dark h-11 px-6 text-white shadow-sm transition-all active:scale-95"
-          onClick={() => setIsCreateModalOpen(true)}
+          onClick={() => handleOpenModal('create')}
         >
           <Plus className="mr-2 h-4 w-4" />
           Tambah Benefit
@@ -129,7 +145,7 @@ export default function BenefitManagementPage() {
               <Input
                 placeholder="Cari nama atau key benefit..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={onSearchChange}
                 className="border-border focus:ring-primary h-10 bg-transparent pl-9 text-sm focus:ring-1"
               />
             </div>
@@ -137,14 +153,14 @@ export default function BenefitManagementPage() {
             <Button
               variant="outline"
               size="sm"
-              className={`border-border h-10 px-4 transition-all ${isFilterMenuOpen ? 'bg-secondary text-foreground' : 'text-muted-foreground hover:bg-secondary hover:text-foreground'}`}
-              onClick={() => setIsFilterMenuOpen(true)}
+              className="border-border text-muted-foreground hover:bg-secondary hover:text-foreground h-10 px-4 transition-all"
+              onClick={() => setIsFilterSidebarOpen(true)}
             >
               <Filter className="mr-2 h-4 w-4" />
               Filter
-              {activeFilterCount > 0 && (
-                <span className="bg-primary ml-2 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white">
-                  {activeFilterCount}
+              {filters.type && (
+                <span className="bg-primary ml-2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm">
+                  {[filters.type].filter(Boolean).length}
                 </span>
               )}
             </Button>
@@ -166,7 +182,7 @@ export default function BenefitManagementPage() {
             <tbody className="divide-border divide-y">
               {isLoading ? (
                 <tr>
-                  <td colSpan={3} className="px-6 py-20 text-center">
+                  <td colSpan={4} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="text-primary h-8 w-8 animate-spin" />
                       <p className="text-muted-foreground text-xs font-medium">
@@ -177,7 +193,7 @@ export default function BenefitManagementPage() {
                 </tr>
               ) : benefits.length === 0 ? (
                 <tr>
-                  <td colSpan={3} className="px-6 py-20 text-center">
+                  <td colSpan={4} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Heart className="text-primary fill-primary h-8 w-8" />
                       <p className="text-muted-foreground text-xs font-medium">
@@ -223,8 +239,7 @@ export default function BenefitManagementPage() {
                               size="icon"
                               className="text-primary-dark hover:text-primary-dark hover:bg-secondary h-8 w-8 transition-colors"
                               onClick={() => {
-                                setSelectedBenefit(benefit);
-                                setIsEditModalOpen(true);
+                                handleOpenModal('edit', benefit);
                               }}
                             >
                               <SquarePen className="h-4 w-4" />
@@ -241,8 +256,7 @@ export default function BenefitManagementPage() {
                               size="icon"
                               className="text-destructive hover:text-destructive hover:bg-secondary h-8 w-8 transition-colors"
                               onClick={() => {
-                                setSelectedBenefit(benefit);
-                                setIsDeleteModalOpen(true);
+                                handleOpenModal('delete', benefit);
                               }}
                             >
                               <Trash2 className="h-4 w-4" />
@@ -262,45 +276,44 @@ export default function BenefitManagementPage() {
         </div>
 
         <Pagination
-          page={page}
+          page={filters.page}
           totalPages={totalPages}
-          limit={limit}
+          limit={filters.limit}
           totalItems={totalItems}
-          onPageChange={setPage}
-          onLimitChange={(newLimit) => {
-            setLimit(newLimit);
-            setPage(1);
-          }}
+          onPageChange={(page) => setFilters((prev) => ({ ...prev, page }))}
+          onLimitChange={(limit) =>
+            setFilters((prev) => ({ ...prev, limit, page: 1 }))
+          }
           isLoading={isLoading}
         />
       </div>
 
       <CreateBenefitModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        isOpen={activeModal === 'create'}
+        onClose={closeModal}
       />
 
       {selectedBenefit && (
         <EditBenefitModal
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
+          isOpen={activeModal === 'edit'}
+          onClose={closeModal}
           benefit={selectedBenefit}
         />
       )}
 
       <DeleteModal
-        isOpen={isDeleteModalOpen}
-        onClose={() => setIsDeleteModalOpen(false)}
+        isOpen={activeModal === 'delete'}
+        onClose={closeModal}
         onConfirm={handleDelete}
-        isLoading={deleteMutation.isPending}
+        isLoading={isDeleting}
         title={`Hapus Benefit ${selectedBenefit?.name}?`}
       />
 
-      <FilterSidebar
-        isOpen={isFilterMenuOpen}
-        onClose={() => setIsFilterMenuOpen(false)}
-        typeFilter={typeFilter}
-        onApply={setTypeFilter}
+      <FilterBenefitSidebar
+        isOpen={isFilterSidebarOpen}
+        onClose={() => setIsFilterSidebarOpen(false)}
+        typeFilter={filters.type}
+        onApply={handleApplyFilter}
         onReset={handleResetFilter}
       />
     </div>

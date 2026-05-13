@@ -1,4 +1,4 @@
-import { PACKAGE_STATUS } from '@/db/schema';
+import { PACKAGE_STATUS } from '@/constants/package.constant';
 import { BusinessError, DuplicateError, NotFoundError } from '@/lib/errors';
 import { packageRepository } from '@/repositories/package.repository';
 import type { PackageFilterParams } from '@/types/package.type';

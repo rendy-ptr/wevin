@@ -1,4 +1,4 @@
-import { BenefitType, SystemAction } from '@/constants/benefits';
+import { BenefitType, SystemAction } from '@/constants/benefit.constant';
 import { db } from '@/db';
 import { benefits } from '@/db/schema';
 import type { BenefitFilterParams } from '@/types/benefit.type';

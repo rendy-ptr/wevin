@@ -23,7 +23,7 @@ import {
   SYSTEM_ACTION_LABELS,
   SYSTEM_ACTION_TYPES,
   SystemAction,
-} from '@/constants/benefits';
+} from '@/constants/benefit.constant';
 import { useCreateBenefit } from '@/hooks/api/use-benefit';
 import { useToast } from '@/hooks/use-toast';
 import {

@@ -1,5 +1,6 @@
 import { AdminSidebar } from '@/components/dashboard/admin/admin-sidebar';
-import { requireAuth, USER_ROLES } from '@/lib/auth';
+import { USER_ROLE_VALUES } from '@/db/schema';
+import { requireAuth } from '@/lib/auth';
 import React from 'react';
 
 export default async function AdminDashboardLayout({
@@ -7,7 +8,7 @@ export default async function AdminDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await requireAuth(USER_ROLES.ADMIN);
+  const session = await requireAuth(USER_ROLE_VALUES.ADMIN);
 
   return (
     <div className="bg-background min-h-screen">

@@ -2,18 +2,15 @@
 
 import SharedFilterSidebar from '@/components/shared/filter-sidebar';
 import { Button } from '@/components/ui/button';
-import {
-  BENEFIT_TYPE_LABELS,
-  BENEFIT_TYPES,
-  BenefitType,
-} from '@/constants/benefits';
+import { BENEFIT_TYPE_OPTIONS } from '@/constants/benefit.constant';
+import { TBenefitType } from '@/types/benefit.type';
 import { useState } from 'react';
 
 interface FilterBenefitSidebarProps {
   isOpen: boolean;
   onClose: () => void;
-  typeFilter: BenefitType | 'all';
-  onApply: (type: BenefitType | 'all') => void;
+  typeFilter?: TBenefitType;
+  onApply: (filters: { type?: TBenefitType }) => void;
   onReset: () => void;
 }
 
@@ -24,9 +21,9 @@ export default function FilterBenefitSidebar({
   onApply,
   onReset,
 }: FilterBenefitSidebarProps) {
-  const [localTypeFilter, setLocalTypeFilter] = useState<BenefitType | 'all'>(
-    typeFilter,
-  );
+  const [localTypeFilter, setLocalTypeFilter] = useState<
+    TBenefitType | undefined
+  >(typeFilter);
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
 
   if (isOpen && !prevIsOpen) {
@@ -37,21 +34,26 @@ export default function FilterBenefitSidebar({
   }
 
   const handleApply = () => {
-    onApply(localTypeFilter);
+    onApply({
+      type: localTypeFilter,
+    });
     onClose();
   };
 
   const handleReset = () => {
-    setLocalTypeFilter('all');
+    setLocalTypeFilter(undefined);
     onReset();
   };
 
-  const filterOptions = [
-    { label: 'Semua Tipe', value: 'all' },
-    ...Object.values(BENEFIT_TYPES).map((type) => ({
-      label: BENEFIT_TYPE_LABELS[type],
-      value: type,
-    })),
+  const typeOptions = [
+    {
+      label: BENEFIT_TYPE_OPTIONS.TOGGLE.LABEL,
+      value: BENEFIT_TYPE_OPTIONS.TOGGLE.VALUE,
+    },
+    {
+      label: BENEFIT_TYPE_OPTIONS.QUOTA.LABEL,
+      value: BENEFIT_TYPE_OPTIONS.QUOTA.VALUE,
+    },
   ];
 
   return (
@@ -68,11 +70,13 @@ export default function FilterBenefitSidebar({
             Tipe Benefit
           </label>
           <div className="flex flex-col gap-2">
-            {filterOptions.map((opt) => (
+            {typeOptions.map((opt) => (
               <Button
                 key={opt.value}
                 onClick={() =>
-                  setLocalTypeFilter(opt.value as BenefitType | 'all')
+                  setLocalTypeFilter(
+                    localTypeFilter === opt.value ? undefined : opt.value,
+                  )
                 }
                 className={`flex items-center justify-between rounded-lg px-4 py-3 text-sm transition-all ${
                   localTypeFilter === opt.value

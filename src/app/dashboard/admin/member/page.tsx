@@ -13,7 +13,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { USER_STATUS_ENUM } from '@/db/schema';
+import { USER_STATUS, USER_STATUS_OPTIONS } from '@/constants/user.constant';
 import {
   useDeleteMember,
   useGetMembers,
@@ -135,9 +135,9 @@ export default function MemberManagementPage() {
   const handleUpdateStatus = () => {
     if (!selectedMember) return;
     const newStatus =
-      selectedMember.status === USER_STATUS_ENUM.ACTIVE.VALUE
-        ? USER_STATUS_ENUM.INACTIVE.VALUE
-        : USER_STATUS_ENUM.ACTIVE.VALUE;
+      selectedMember.status === USER_STATUS.ACTIVE
+        ? USER_STATUS.INACTIVE
+        : USER_STATUS.ACTIVE;
 
     updateStatus(
       { id: selectedMember.id, status: newStatus },
@@ -146,7 +146,7 @@ export default function MemberManagementPage() {
           toast({
             title: 'Status diperbarui',
             description: `Member telah berhasil ${
-              newStatus === USER_STATUS_ENUM.INACTIVE.VALUE
+              newStatus === USER_STATUS.INACTIVE
                 ? 'di Non-Aktifkan'
                 : 'di Aktifkan'
             }`,
@@ -264,14 +264,14 @@ export default function MemberManagementPage() {
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          member.status === USER_STATUS_ENUM.ACTIVE.VALUE
+                          member.status === USER_STATUS.ACTIVE
                             ? 'bg-success/10 text-success'
                             : 'bg-destructive/10 text-destructive'
                         }`}
                       >
-                        {member.status === USER_STATUS_ENUM.ACTIVE.VALUE
-                          ? USER_STATUS_ENUM.ACTIVE.LABEL
-                          : USER_STATUS_ENUM.INACTIVE.LABEL}
+                        {member.status === USER_STATUS.ACTIVE
+                          ? USER_STATUS_OPTIONS.ACTIVE.LABEL
+                          : USER_STATUS_OPTIONS.INACTIVE.LABEL}
                       </span>
                     </td>
                     <td className="text-muted-foreground px-6 py-4 text-xs">
@@ -301,14 +301,13 @@ export default function MemberManagementPage() {
                               variant="ghost"
                               size="icon"
                               className={`hover:bg-secondary h-8 w-8 transition-colors ${
-                                member.status === USER_STATUS_ENUM.ACTIVE.VALUE
+                                member.status === USER_STATUS.ACTIVE
                                   ? 'text-accent hover:text-accent hover:bg-secondary'
                                   : 'text-success hover:text-success hover:bg-secondary'
                               }`}
                               onClick={() => handleOpenModal('status', member)}
                             >
-                              {member.status ===
-                              USER_STATUS_ENUM.ACTIVE.VALUE ? (
+                              {member.status === USER_STATUS.ACTIVE ? (
                                 <UserX className="h-4 w-4" />
                               ) : (
                                 <UserCheck className="h-4 w-4" />
@@ -317,7 +316,7 @@ export default function MemberManagementPage() {
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>
-                              {member.status === USER_STATUS_ENUM.ACTIVE.VALUE
+                              {member.status === USER_STATUS.ACTIVE
                                 ? 'Non-Aktifkan'
                                 : 'Aktifkan'}
                             </p>

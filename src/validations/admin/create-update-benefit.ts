@@ -3,7 +3,7 @@ import {
   BenefitType,
   SYSTEM_ACTIONS,
   SystemAction,
-} from '@/constants/benefits';
+} from '@/constants/benefit.constant';
 import { z } from 'zod';
 
 export const createUpdateBenefitSchema = z.object({

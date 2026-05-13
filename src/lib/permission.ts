@@ -1,4 +1,4 @@
-import { SystemAction } from '@/constants/benefits';
+import { SystemAction } from '@/constants/benefit.constant';
 
 type PackageBenefitWithKey = {
   value: string;

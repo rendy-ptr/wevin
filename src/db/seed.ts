@@ -6,7 +6,7 @@ import {
   SYSTEM_ACTION_LABELS,
   SYSTEM_ACTION_TYPES,
   SYSTEM_ACTIONS,
-} from '../constants/benefits';
+} from '../constants/benefit.constant';
 import * as schema from './schema';
 
 dotenv.config({ path: '.env' });

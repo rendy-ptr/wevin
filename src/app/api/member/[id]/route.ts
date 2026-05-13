@@ -1,6 +1,7 @@
-import { TUserStatusEnum, userStatusEnum } from '@/db/schema';
+import { userStatusEnum } from '@/db/schema';
 import { AppError } from '@/lib/errors';
 import { memberService } from '@/services/member.service';
+import { TUserStatus } from '@/types/user.type';
 import { createUpdateMemberSchema } from '@/validations/admin/create-update-member';
 import { NextResponse } from 'next/server';
 import { ZodError } from 'zod';
@@ -70,7 +71,7 @@ export async function PATCH(
 
     const member = await memberService.updateStatus(
       Number(id),
-      status as TUserStatusEnum,
+      status as TUserStatus,
     );
 
     return NextResponse.json(

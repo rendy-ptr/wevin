@@ -1,7 +1,7 @@
 import { API_URL } from '@/constants/url';
-import { TUserStatusEnum } from '@/db/schema';
 import api from '@/lib/axios';
 import type { MemberFilterParams, UserMember } from '@/types/member.type';
+import { TUserStatus } from '@/types/user.type';
 import { CreateUpdateMemberFormValues } from '@/validations/admin/create-update-member';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -73,13 +73,7 @@ export const useUpdateMemberStatus = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      status,
-    }: {
-      id: number;
-      status: TUserStatusEnum;
-    }) => {
+    mutationFn: async ({ id, status }: { id: number; status: TUserStatus }) => {
       const response = await api.patch(API_URL.MEMBER.UPDATE(id), { status });
       return response.data;
     },

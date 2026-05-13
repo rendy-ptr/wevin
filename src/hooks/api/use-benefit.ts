@@ -1,16 +1,15 @@
-import { BenefitType } from '@/constants/benefits';
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
-import { Benefit } from '@/types/benefit.type';
+import { BenefitFilterParams, TBenefit } from '@/types/benefit.type';
 import { CreateUpdateBenefitFormValues } from '@/validations/admin/create-update-benefit';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const useGetBenefits = (
-  search?: string,
-  type?: BenefitType,
-  page = 1,
-  limit = 10,
-) => {
+export const useGetBenefits = ({
+  search,
+  type,
+  page,
+  limit,
+}: BenefitFilterParams) => {
   return useQuery({
     queryKey: ['benefits', search, type, page, limit],
     queryFn: async () => {
@@ -20,7 +19,7 @@ export const useGetBenefits = (
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
-      return response.data.data as { items: Benefit[]; total: number };
+      return response.data.data as { items: TBenefit[]; total: number };
     },
   });
 };

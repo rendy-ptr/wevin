@@ -1,4 +1,8 @@
-import { TMember, TPackage, TUser } from '@/db/schema';
+import { memberProfiles } from '@/db/schema';
+import { TPackage } from './package.type';
+import { TUser } from './user.type';
+
+export type TMember = typeof memberProfiles.$inferSelect;
 
 export type UserMember = Omit<TUser, 'password'> & {
   profile:
