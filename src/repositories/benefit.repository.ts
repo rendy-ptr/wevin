@@ -1,9 +1,7 @@
-import { BenefitType, SystemAction } from '@/constants/benefit.constant';
 import { db } from '@/db';
 import { benefits } from '@/db/schema';
 import type { BenefitFilterParams } from '@/types/benefit.type';
-import { CreateUpdateBenefitFormValues } from '@/validations/admin/create-update-benefit';
-import { and, count, eq, ilike, or } from 'drizzle-orm';
+import { and, count, eq, ilike } from 'drizzle-orm';
 
 export const benefitRepository = {
   getAll: async ({
@@ -15,7 +13,7 @@ export const benefitRepository = {
     const offset = (page - 1) * limit;
 
     const whereClause = and(
-      search ? or(ilike(benefits.name, `%${search}%`)) : undefined,
+      search ? ilike(benefits.key, `%${search}%`) : undefined,
       type ? eq(benefits.type, type) : undefined,
     );
 
@@ -42,34 +40,5 @@ export const benefitRepository = {
       where: eq(benefits.id, id),
     });
     return benefit;
-  },
-
-  getByValue: async (data: { key: SystemAction; type: BenefitType }) => {
-    const benefit = await db.query.benefits.findFirst({
-      where: eq(benefits.key, data.key),
-    });
-    return benefit;
-  },
-
-  create: async (data: CreateUpdateBenefitFormValues) => {
-    const [result] = await db.insert(benefits).values(data).returning();
-    return result;
-  },
-
-  update: async (id: number, data: Partial<CreateUpdateBenefitFormValues>) => {
-    const [result] = await db
-      .update(benefits)
-      .set(data)
-      .where(eq(benefits.id, id))
-      .returning();
-    return result;
-  },
-
-  delete: async (id: number) => {
-    const [result] = await db
-      .delete(benefits)
-      .where(eq(benefits.id, id))
-      .returning();
-    return result;
   },
 };

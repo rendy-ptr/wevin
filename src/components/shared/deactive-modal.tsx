@@ -8,7 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { USER_STATUS } from '@/constants/user.constant';
+import { USER_STATUS_VALUES } from '@/constants/user.constant';
 import { UserMember } from '@/types/member.type';
 import { Loader2 } from 'lucide-react';
 
@@ -27,7 +27,7 @@ export default function DeactiveModal({
   isLoading = false,
   member,
 }: DeactiveModalProps) {
-  const isEnabling = member?.status !== USER_STATUS.ACTIVE;
+  const isEnabling = member?.status !== USER_STATUS_VALUES.ACTIVE;
   const label = isEnabling ? 'Aktifkan' : 'Non-aktifkan';
 
   return (

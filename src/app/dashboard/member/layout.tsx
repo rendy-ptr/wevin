@@ -1,5 +1,5 @@
 import { MemberSidebar } from '@/components/dashboard/member-sidebar';
-import { USER_ROLE_VALUES } from '@/db/schema';
+import { USER_ROLE_VALUES } from '@/constants/user.constant';
 import { requireAuth } from '@/lib/auth';
 import React from 'react';
 

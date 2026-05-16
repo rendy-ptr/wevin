@@ -4,7 +4,7 @@ import SharedFilterSidebar from '@/components/shared/filter-sidebar';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 
-import { PACKAGE_STATUS } from '@/constants/package.constant';
+import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
 import { TPackageStatus } from '@/types/package.type';
 
 interface FilterPackageSidebarProps {
@@ -47,8 +47,8 @@ export default function FilterPackageSidebar({
   };
 
   const statusOptions = [
-    { label: 'Aktif', value: PACKAGE_STATUS.ACTIVE },
-    { label: 'Non-aktif', value: PACKAGE_STATUS.INACTIVE },
+    { label: 'Aktif', value: PACKAGE_STATUS_VALUES.ACTIVE },
+    { label: 'Non-aktif', value: PACKAGE_STATUS_VALUES.INACTIVE },
   ] as const;
 
   return (

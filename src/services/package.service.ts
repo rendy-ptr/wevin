@@ -1,4 +1,4 @@
-import { PACKAGE_STATUS } from '@/constants/package.constant';
+import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
 import { BusinessError, DuplicateError, NotFoundError } from '@/lib/errors';
 import { packageRepository } from '@/repositories/package.repository';
 import type { PackageFilterParams } from '@/types/package.type';
@@ -31,7 +31,7 @@ export const packageService = {
       throw new DuplicateError('Package already exists');
     }
 
-    if (payload.status === PACKAGE_STATUS.ACTIVE) {
+    if (payload.status === PACKAGE_STATUS_VALUES.ACTIVE) {
       const existingActivePackage = await packageRepository.getActive();
 
       if (existingActivePackage.length >= 3) {

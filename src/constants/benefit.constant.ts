@@ -1,83 +1,46 @@
-import { BENEFIT_TYPE_VALUES } from '@/db/schema';
-
-export const BENEFIT_TYPES = BENEFIT_TYPE_VALUES;
-
-export const BENEFIT_TYPE_LABELS: Record<BenefitType, string> = {
-  toggle: 'Toggle',
-  quota: 'Quota',
-};
-
-export type BenefitType = (typeof BENEFIT_TYPES)[keyof typeof BENEFIT_TYPES];
-
-export const SYSTEM_ACTIONS = {
-  // ── Toggle
-  MUSIC_PLAYER: 'MUSIC_PLAYER',
-  RSVP_FORM: 'RSVP_FORM',
-  GUESTBOOK: 'GUESTBOOK',
-  DIGITAL_GIFT: 'DIGITAL_GIFT',
-  LIVE_STREAMING: 'LIVE_STREAMING',
-  REMOVED_WATERMARK: 'REMOVED_WATERMARK',
-  PASSWORD_PROTECT: 'PASSWORD_PROTECT',
-  CUSTOM_MESSAGE: 'CUSTOM_MESSAGE',
-  ANALYTICS: 'ANALYTICS',
-  EXPORT_RSVP: 'EXPORT_RSVP',
-
-  // ── Quota
-  GUEST_LIMIT: 'GUEST_LIMIT',
-  PHOTO_LIMIT: 'PHOTO_LIMIT',
-  ACTIVE_DAYS: 'ACTIVE_DAYS',
-  TEMPLATE_LIMIT: 'TEMPLATE_LIMIT',
+export const BENEFIT_TYPE = {
+  TOGGLE: 'toggle',
+  QUOTA: 'quota',
 } as const;
 
-export type SystemAction = (typeof SYSTEM_ACTIONS)[keyof typeof SYSTEM_ACTIONS];
-
-export const SYSTEM_ACTION_LABELS: Record<SystemAction, string> = {
-  // Toggle
-  MUSIC_PLAYER: 'Musik Latar Belakang',
-  RSVP_FORM: 'Formulir RSVP',
-  GUESTBOOK: 'Buku Tamu Digital',
-  DIGITAL_GIFT: 'Kado Digital / Angpao',
-  LIVE_STREAMING: 'Link Live Streaming',
-  REMOVED_WATERMARK: 'Hapus Watermark Wevin',
-  PASSWORD_PROTECT: 'Proteksi Password Undangan',
-  CUSTOM_MESSAGE: 'Pesan Pembuka Kustom',
-  ANALYTICS: 'Analytics Tamu',
-  EXPORT_RSVP: 'Export RSVP ke Excel',
-
-  // Quota
-  GUEST_LIMIT: 'Batas Jumlah Tamu',
-  PHOTO_LIMIT: 'Batas Upload Foto',
-  ACTIVE_DAYS: 'Durasi Link Aktif (hari)',
-  TEMPLATE_LIMIT: 'Jumlah Pilihan Template',
-};
-
-export const SYSTEM_ACTION_TYPES: Record<SystemAction, BenefitType> = {
-  // Toggle
-  MUSIC_PLAYER: 'toggle',
-  RSVP_FORM: 'toggle',
-  GUESTBOOK: 'toggle',
-  DIGITAL_GIFT: 'toggle',
-  LIVE_STREAMING: 'toggle',
-  REMOVED_WATERMARK: 'toggle',
-  PASSWORD_PROTECT: 'toggle',
-  CUSTOM_MESSAGE: 'toggle',
-  ANALYTICS: 'toggle',
-  EXPORT_RSVP: 'toggle',
-
-  // Quota
-  GUEST_LIMIT: 'quota',
-  PHOTO_LIMIT: 'quota',
-  ACTIVE_DAYS: 'quota',
-  TEMPLATE_LIMIT: 'quota',
-};
-
-export const BENEFIT_TYPE_OPTIONS = {
-  TOGGLE: {
-    LABEL: 'Toggle',
-    VALUE: BENEFIT_TYPES.TOGGLE,
+export const SYSTEM_PERMISSIONS = {
+  MUSIC_PLAYER: { label: 'Musik Latar Belakang', type: BENEFIT_TYPE.TOGGLE },
+  RSVP_FORM: { label: 'Formulir RSVP', type: BENEFIT_TYPE.TOGGLE },
+  GUESTBOOK: { label: 'Buku Tamu Digital', type: BENEFIT_TYPE.TOGGLE },
+  DIGITAL_GIFT: { label: 'Kado Digital / Angpao', type: BENEFIT_TYPE.TOGGLE },
+  LIVE_STREAMING: { label: 'Link Live Streaming', type: BENEFIT_TYPE.TOGGLE },
+  REMOVED_WATERMARK: {
+    label: 'Hapus Watermark Wevin',
+    type: BENEFIT_TYPE.TOGGLE,
   },
-  QUOTA: {
-    LABEL: 'Kuota',
-    VALUE: BENEFIT_TYPES.QUOTA,
+  PASSWORD_PROTECT: { label: 'Proteksi Password', type: BENEFIT_TYPE.TOGGLE },
+  CUSTOM_MESSAGE: { label: 'Pesan Pembuka Kustom', type: BENEFIT_TYPE.TOGGLE },
+  ANALYTICS: { label: 'Analytics Tamu', type: BENEFIT_TYPE.TOGGLE },
+  EXPORT_RSVP: { label: 'Export RSVP', type: BENEFIT_TYPE.TOGGLE },
+
+  GUEST_LIMIT: { label: 'Batas Jumlah Tamu', type: BENEFIT_TYPE.QUOTA },
+  PHOTO_LIMIT: { label: 'Batas Upload Foto', type: BENEFIT_TYPE.QUOTA },
+  ACTIVE_DAYS: { label: 'Durasi Link Aktif (Hari)', type: BENEFIT_TYPE.QUOTA },
+  TEMPLATE_LIMIT: {
+    label: 'Jumlah Pilihan Template',
+    type: BENEFIT_TYPE.QUOTA,
   },
 } as const;
+
+export type SystemAction = keyof typeof SYSTEM_PERMISSIONS;
+
+export const SYSTEM_ACTIONS = Object.keys(SYSTEM_PERMISSIONS).reduce(
+  (acc, key) => {
+    acc[key as SystemAction] = key as SystemAction;
+    return acc;
+  },
+  {} as Record<SystemAction, SystemAction>,
+);
+
+export const SYSTEM_ACTION_LABELS = Object.fromEntries(
+  Object.entries(SYSTEM_PERMISSIONS).map(([key, def]) => [key, def.label]),
+) as Record<SystemAction, string>;
+
+export const SYSTEM_ACTION_TYPES = Object.fromEntries(
+  Object.entries(SYSTEM_PERMISSIONS).map(([key, def]) => [key, def.type]),
+) as Record<SystemAction, string>;

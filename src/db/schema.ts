@@ -1,7 +1,9 @@
-import { BenefitType, SystemAction } from '@/constants/benefit.constant';
+import { SystemAction } from '@/constants/benefit.constant';
+import { TBenefitType as BenefitType } from '@/types/benefit.type';
 import {
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   serial,
@@ -11,25 +13,12 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 
-export const USER_ROLE_VALUES = {
-  ADMIN: 'admin',
-  MEMBER: 'member',
-} as const;
-
-export const USER_STATUS_VALUES = {
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
-} as const;
-
-export const BENEFIT_TYPE_VALUES = {
-  TOGGLE: 'toggle',
-  QUOTA: 'quota',
-} as const;
-
-export const PACKAGE_STATUS_VALUES = {
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
-} as const;
+import { BENEFIT_TYPE } from '@/constants/benefit.constant';
+import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
+import {
+  USER_ROLE_VALUES,
+  USER_STATUS_VALUES,
+} from '@/constants/user.constant';
 
 export const userRoleEnum = pgEnum('user_role', [
   USER_ROLE_VALUES.ADMIN,
@@ -40,15 +29,13 @@ export const userStatusEnum = pgEnum('user_status', [
   USER_STATUS_VALUES.INACTIVE,
 ]);
 export const benefitTypeEnum = pgEnum('benefit_type', [
-  BENEFIT_TYPE_VALUES.TOGGLE,
-  BENEFIT_TYPE_VALUES.QUOTA,
+  BENEFIT_TYPE.TOGGLE,
+  BENEFIT_TYPE.QUOTA,
 ]);
 export const packageStatusEnum = pgEnum('package_status', [
   PACKAGE_STATUS_VALUES.ACTIVE,
   PACKAGE_STATUS_VALUES.INACTIVE,
 ]);
-
-import { PACKAGE_STATUS } from '@/constants/package.constant';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -86,7 +73,9 @@ export const packages = pgTable('packages', {
   name: varchar('name', { length: 50 }).notNull().unique(),
   description: text('description'),
   price: integer('price').notNull().default(0),
-  status: packageStatusEnum('status').notNull().default(PACKAGE_STATUS.ACTIVE),
+  status: packageStatusEnum('status')
+    .notNull()
+    .default(PACKAGE_STATUS_VALUES.ACTIVE),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()
@@ -97,11 +86,9 @@ export const packages = pgTable('packages', {
 export const benefits = pgTable('benefits', {
   id: serial('id').primaryKey(),
   key: varchar('key', { length: 50 }).notNull().unique().$type<SystemAction>(),
-  name: varchar('name', { length: 100 }).notNull(),
-  description: text('description'),
   type: benefitTypeEnum('type')
     .notNull()
-    .default('toggle')
+    .default(BENEFIT_TYPE.TOGGLE)
     .$type<BenefitType>(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
@@ -120,7 +107,7 @@ export const packageBenefits = pgTable(
     benefitId: integer('benefit_id')
       .notNull()
       .references(() => benefits.id, { onDelete: 'cascade' }),
-    value: text('value').notNull(),
+    value: jsonb('value').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()

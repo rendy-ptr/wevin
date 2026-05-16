@@ -1,4 +1,8 @@
-import { USER_ROLE_VALUES, USER_STATUS_VALUES, users } from '@/db/schema';
+import {
+  USER_ROLE_VALUES,
+  USER_STATUS_VALUES,
+} from '@/constants/user.constant';
+import { users } from '@/db/schema';
 
 export type TUser = typeof users.$inferSelect;
 export type TUserRole =

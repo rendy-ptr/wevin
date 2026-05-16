@@ -1,38 +1,44 @@
 import { SystemAction } from '@/constants/benefit.constant';
+import { BenefitValue } from '@/types/benefit.type';
 
-type PackageBenefitWithKey = {
-  value: string;
-  benefit: {
-    key: string;
-    type: string;
-  };
-};
-
-type UserWithPackage = {
-  memberProfile: {
-    package: {
-      benefits: PackageBenefitWithKey[];
-    };
+export interface UserWithPermissions {
+  profile?: {
+    package?: {
+      benefits?: Array<{
+        value: BenefitValue;
+        benefit: {
+          key: string;
+        };
+      }>;
+    } | null;
   } | null;
-};
+}
 
 export function getBenefit(
-  user: UserWithPackage,
+  user: UserWithPermissions | null | undefined,
   action: SystemAction,
-): string | null {
-  const benefits = user.memberProfile?.package?.benefits ?? [];
+): BenefitValue {
+  if (!user) return null;
+  const benefits = user.profile?.package?.benefits ?? [];
   const found = benefits.find((b) => b.benefit.key === action);
   return found?.value ?? null;
 }
 
-export function can(user: UserWithPackage, action: SystemAction): boolean {
+export function can(
+  user: UserWithPermissions | null | undefined,
+  action: SystemAction,
+): boolean {
   const val = getBenefit(user, action);
-  return val === 'true';
+  return val === true;
 }
 
-export function limit(user: UserWithPackage, action: SystemAction): number {
+export function limit(
+  user: UserWithPermissions | null | undefined,
+  action: SystemAction,
+): number {
   const val = getBenefit(user, action);
-  if (!val) return 0;
-  const parsed = parseInt(val, 10);
+  if (val === null || val === undefined) return 0;
+  if (typeof val === 'number') return val;
+  const parsed = parseInt(String(val), 10);
   return isNaN(parsed) ? 0 : parsed;
 }

@@ -12,7 +12,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { PACKAGE_STATUS } from '@/constants/package.constant';
+import {
+  BENEFIT_TYPE,
+  SYSTEM_ACTION_LABELS,
+  SystemAction,
+} from '@/constants/benefit.constant';
+import {
+  PACKAGE_STATUS_OPTIONS,
+  PACKAGE_STATUS_VALUES,
+} from '@/constants/package.constant';
 import { API_URL } from '@/constants/url';
 import { useGetBenefits } from '@/hooks/api/use-benefit';
 import {
@@ -20,6 +28,7 @@ import {
   formatThousandSeparator,
   parseThousandSeparator,
 } from '@/lib/currency';
+import { BenefitValue, TBenefit } from '@/types/benefit.type';
 import { TPackageStatus } from '@/types/package.type';
 import {
   CreateUpdatePackageFormValues,
@@ -62,7 +71,7 @@ export default function PackageForm({
       name: '',
       description: '',
       price: 0,
-      status: PACKAGE_STATUS.ACTIVE,
+      status: PACKAGE_STATUS_VALUES.ACTIVE,
       benefits: [],
     },
   });
@@ -79,13 +88,16 @@ export default function PackageForm({
   const packageDesc = useWatch({ control, name: 'description' });
 
   const toggleBenefit = (benefitId: number) => {
+    const benefit = benefits.find((b: TBenefit) => b.id === benefitId);
     const index = selectedBenefits.findIndex(
       (b: { benefitId: number }) => b.benefitId === benefitId,
     );
+
     if (index > -1) {
       remove(index);
     } else {
-      append({ benefitId, value: '' });
+      const defaultValue = benefit?.type === BENEFIT_TYPE.TOGGLE ? true : '';
+      append({ benefitId, value: defaultValue });
     }
   };
 
@@ -95,24 +107,42 @@ export default function PackageForm({
     );
   };
 
-  const getBenefitValue = (benefitId: number) => {
+  const getBenefitValue = (benefitId: number): string | number => {
     const benefit = selectedBenefits.find(
       (b: { benefitId: number }) => b.benefitId === benefitId,
     );
-    return benefit ? (benefit.value ? benefit.value : '') : '';
+    const val = benefit?.value;
+    if (val === null || val === undefined || typeof val === 'boolean')
+      return '';
+    return val;
   };
 
-  const handleBenefitValueChange = (benefitId: number, value: string) => {
+  const handleBenefitValueChange = (
+    benefitId: number,
+    value: string | number | boolean,
+  ) => {
+    const benefit = benefits.find((b: TBenefit) => b.id === benefitId);
     const index = selectedBenefits.findIndex(
       (b: { benefitId: number }) => b.benefitId === benefitId,
     );
     if (index > -1) {
-      setValue(`benefits.${index}.value`, value);
+      // If quota, try to store as number
+      let finalValue = value;
+      if (benefit?.type === BENEFIT_TYPE.QUOTA) {
+        const parsed = parseInt(String(value), 10);
+        if (!isNaN(parsed)) finalValue = parsed;
+      }
+      setValue(
+        `benefits.${index}.value`,
+        finalValue as unknown as BenefitValue,
+      );
     }
   };
 
   const getBenefitName = (benefitId: number) => {
-    return benefits.find((b) => b.id === benefitId)?.name || '';
+    const benefit = benefits.find((b: TBenefit) => b.id === benefitId);
+    if (!benefit) return '';
+    return SYSTEM_ACTION_LABELS[benefit.key as SystemAction] || benefit.key;
   };
 
   return (
@@ -207,18 +237,15 @@ export default function PackageForm({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent className="border-border rounded-xl shadow-2xl">
-                      <SelectItem
-                        value={PACKAGE_STATUS.ACTIVE}
-                        className="rounded-lg"
-                      >
-                        Aktif
-                      </SelectItem>
-                      <SelectItem
-                        value={PACKAGE_STATUS.INACTIVE}
-                        className="rounded-lg"
-                      >
-                        Tidak Aktif
-                      </SelectItem>
+                      {Object.values(PACKAGE_STATUS_OPTIONS).map((option) => (
+                        <SelectItem
+                          key={option.VALUE}
+                          value={option.VALUE}
+                          className="rounded-lg"
+                        >
+                          {option.LABEL}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
@@ -277,14 +304,14 @@ export default function PackageForm({
                           <span
                             className={`block text-sm font-bold ${selected ? 'text-primary' : 'text-foreground'}`}
                           >
-                            {benefit.name}
+                            {SYSTEM_ACTION_LABELS[benefit.key] || benefit.key}
                           </span>
                           <span className="text-muted-foreground text-[10px] font-medium tracking-tighter uppercase">
-                            {benefit.type}
+                            {benefit.key} • {benefit.type}
                           </span>
                         </div>
                         <AnimatePresence>
-                          {selected && (
+                          {selected && benefit.type === BENEFIT_TYPE.QUOTA && (
                             <motion.div
                               initial={{ opacity: 0, scale: 0.95 }}
                               animate={{ opacity: 1, scale: 1 }}
@@ -341,15 +368,24 @@ export default function PackageForm({
 
                 <ul className="mb-10 flex-grow space-y-4">
                   {selectedBenefits.length > 0 ? (
-                    selectedBenefits.map((b, i) => (
-                      <li key={i} className="flex items-start gap-4">
-                        <CheckIcon className="text-success mt-1 h-5 w-5 flex-shrink-0" />
-                        <span className="text-foreground text-base leading-tight">
-                          {b.value ? `${b.value} ` : ''}
-                          {getBenefitName(b.benefitId)}
-                        </span>
-                      </li>
-                    ))
+                    selectedBenefits.map(
+                      (
+                        b: { benefitId: number; value: BenefitValue },
+                        i: number,
+                      ) => (
+                        <li key={i} className="flex items-start gap-4">
+                          <CheckIcon className="text-success mt-1 h-5 w-5 flex-shrink-0" />
+                          <span className="text-foreground text-base leading-tight">
+                            {b.value !== undefined &&
+                            b.value !== null &&
+                            b.value !== true
+                              ? `${b.value} `
+                              : ''}
+                            {getBenefitName(b.benefitId)}
+                          </span>
+                        </li>
+                      ),
+                    )
                   ) : (
                     <li className="flex items-start gap-4 opacity-20">
                       <CheckIcon className="mt-1 h-5 w-5 flex-shrink-0" />

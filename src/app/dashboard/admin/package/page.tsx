@@ -10,7 +10,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { PACKAGE_STATUS } from '@/constants/package.constant';
+import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
 import { useDeletePackage, useGetPackages } from '@/hooks/api/use-package';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/currency';
@@ -224,7 +224,7 @@ export default function PackageManagementPage() {
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      {pkg.status === PACKAGE_STATUS.ACTIVE ? (
+                      {pkg.status === PACKAGE_STATUS_VALUES.ACTIVE ? (
                         <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-emerald-600 uppercase">
                           Aktif
                         </span>

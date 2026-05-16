@@ -13,7 +13,7 @@ export const createUpdatePackageSchema = z.object({
   benefits: z.array(
     z.object({
       benefitId: z.number(),
-      value: z.string().min(1, 'Nilai wajib diisi'),
+      value: z.any(),
     }),
   ),
 });

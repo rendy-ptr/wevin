@@ -1,4 +1,4 @@
-import { USER_STATUS } from '@/constants/user.constant';
+import { USER_STATUS_VALUES } from '@/constants/user.constant';
 import { TUserStatus } from '@/types/user.type';
 
 export const getWelcomeEmailHtml = ({
@@ -254,7 +254,7 @@ export const getStatusNotificationEmailHtml = ({
   status: TUserStatus;
   loginUrl: string;
 }) => {
-  const isEnabling = status === USER_STATUS.ACTIVE;
+  const isEnabling = status === USER_STATUS_VALUES.ACTIVE;
   const statusLabel = isEnabling ? 'Aktif' : 'Non-Aktif';
   const statusColor = isEnabling ? '#7a9e7e' : '#c0625a';
 

@@ -1,4 +1,4 @@
-import { USER_ROLE } from '@/constants/user.constant';
+import { USER_ROLE_VALUES } from '@/constants/user.constant';
 import { db } from '@/db';
 import { memberProfiles, users } from '@/db/schema';
 import { MemberFilterParams } from '@/types/member.type';
@@ -31,7 +31,7 @@ export const memberRepository = {
     }
 
     const whereClause = and(
-      eq(users.role, USER_ROLE.MEMBER),
+      eq(users.role, USER_ROLE_VALUES.MEMBER),
       isNull(users.deletedAt),
       search ? ilike(users.name, `%${search}%`) : undefined,
       status ? eq(users.status, status as TUserStatus) : undefined,
@@ -78,7 +78,7 @@ export const memberRepository = {
           name: payload.name,
           email: payload.email,
           password: payload.password,
-          role: USER_ROLE.MEMBER,
+          role: USER_ROLE_VALUES.MEMBER,
         })
         .returning({ id: users.id, name: users.name, email: users.email });
 
@@ -136,5 +136,26 @@ export const memberRepository = {
         status: users.status,
       });
     return updatedUser;
+  },
+
+  getPermissions: async (id: number) => {
+    return await db.query.users.findFirst({
+      where: eq(users.id, id),
+      with: {
+        profile: {
+          with: {
+            package: {
+              with: {
+                benefits: {
+                  with: {
+                    benefit: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    });
   },
 };

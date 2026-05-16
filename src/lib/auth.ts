@@ -1,4 +1,4 @@
-import { USER_ROLE_VALUES } from '@/db/schema';
+import { USER_ROLE_VALUES } from '@/constants/user.constant';
 import { TUserRole } from '@/types/user.type';
 import { JWTPayload, jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';

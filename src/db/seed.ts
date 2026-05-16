@@ -3,7 +3,6 @@ import bcrypt from 'bcryptjs';
 import * as dotenv from 'dotenv';
 import { drizzle } from 'drizzle-orm/neon-http';
 import {
-  SYSTEM_ACTION_LABELS,
   SYSTEM_ACTION_TYPES,
   SYSTEM_ACTIONS,
 } from '../constants/benefit.constant';
@@ -50,9 +49,7 @@ async function main() {
     console.log('Seeding Benefits...');
     const benefitValues = Object.values(SYSTEM_ACTIONS).map((key) => ({
       key,
-      name: SYSTEM_ACTION_LABELS[key],
       type: SYSTEM_ACTION_TYPES[key],
-      description: `Fitur ${SYSTEM_ACTION_LABELS[key]} untuk paket undangan.`,
     }));
 
     for (const benefit of benefitValues) {
@@ -62,9 +59,7 @@ async function main() {
         .onConflictDoUpdate({
           target: schema.benefits.key,
           set: {
-            name: benefit.name,
             type: benefit.type,
-            description: benefit.description,
           },
         });
     }

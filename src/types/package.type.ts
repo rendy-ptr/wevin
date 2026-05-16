@@ -1,4 +1,5 @@
-import { PACKAGE_STATUS_VALUES, packageBenefits, packages } from '@/db/schema';
+import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
+import { packageBenefits, packages } from '@/db/schema';
 import { TBenefit } from './benefit.type';
 
 export type TPackageStatus =
