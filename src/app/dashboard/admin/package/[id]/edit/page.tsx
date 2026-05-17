@@ -36,6 +36,9 @@ export default function EditPackagePage() {
           value: b.value,
         }),
       ),
+      templateIds: (pkg.templates || []).map(
+        (t: { templateId: number }) => t.templateId,
+      ),
     };
   }, [pkg]);
 

@@ -1,5 +1,11 @@
-import { SystemAction } from '@/constants/benefit.constant';
+import { BENEFIT_TYPE, SystemAction } from '@/constants/benefit.constant';
+import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
+import {
+  USER_ROLE_VALUES,
+  USER_STATUS_VALUES,
+} from '@/constants/user.constant';
 import { TBenefitType as BenefitType } from '@/types/benefit.type';
+import { InferSelectModel, relations } from 'drizzle-orm';
 import {
   index,
   integer,
@@ -12,13 +18,6 @@ import {
   uniqueIndex,
   varchar,
 } from 'drizzle-orm/pg-core';
-
-import { BENEFIT_TYPE } from '@/constants/benefit.constant';
-import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
-import {
-  USER_ROLE_VALUES,
-  USER_STATUS_VALUES,
-} from '@/constants/user.constant';
 
 export const userRoleEnum = pgEnum('user_role', [
   USER_ROLE_VALUES.ADMIN,
@@ -124,15 +123,56 @@ export const packageBenefits = pgTable(
   }),
 );
 
-import { relations } from 'drizzle-orm';
+export const templates = pgTable('templates', {
+  id: serial('id').primaryKey(),
+  key: varchar('key', { length: 50 }).notNull().unique(),
+  name: varchar('name', { length: 100 }).notNull(),
+  thumbnail: text('thumbnail'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export const packageTemplates = pgTable(
+  'package_templates',
+  {
+    id: serial('id').primaryKey(),
+    packageId: integer('package_id')
+      .notNull()
+      .references(() => packages.id, { onDelete: 'cascade' }),
+    templateId: integer('template_id')
+      .notNull()
+      .references(() => templates.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => ({
+    packageIdx: index('pt_package_idx').on(table.packageId),
+    templateIdx: index('pt_template_idx').on(table.templateId),
+    uniquePackageTemplate: uniqueIndex('pt_unique_idx').on(
+      table.packageId,
+      table.templateId,
+    ),
+  }),
+);
 
 export const packageRelations = relations(packages, ({ many }) => ({
   benefits: many(packageBenefits),
+  templates: many(packageTemplates),
   members: many(memberProfiles),
 }));
 
 export const benefitRelations = relations(benefits, ({ many }) => ({
   packages: many(packageBenefits),
+}));
+
+export const templateRelations = relations(templates, ({ many }) => ({
+  packages: many(packageTemplates),
 }));
 
 export const packageBenefitRelations = relations(
@@ -145,6 +185,20 @@ export const packageBenefitRelations = relations(
     benefit: one(benefits, {
       fields: [packageBenefits.benefitId],
       references: [benefits.id],
+    }),
+  }),
+);
+
+export const packageTemplateRelations = relations(
+  packageTemplates,
+  ({ one }) => ({
+    package: one(packages, {
+      fields: [packageTemplates.packageId],
+      references: [packages.id],
+    }),
+    template: one(templates, {
+      fields: [packageTemplates.templateId],
+      references: [templates.id],
     }),
   }),
 );
@@ -166,3 +220,5 @@ export const memberProfileRelations = relations(memberProfiles, ({ one }) => ({
     references: [packages.id],
   }),
 }));
+
+export type TPackageTemplate = InferSelectModel<typeof packageTemplates>;

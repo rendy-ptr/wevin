@@ -1,7 +1,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { TEMPLATES } from '@/constants/demo-preview';
+import { TEMPLATES } from '@/constants/template.constant';
 import { ChevronRightIcon } from 'lucide-react';
 import { useState } from 'react';
 import Book from '../shared/book';

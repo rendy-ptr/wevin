@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { CheckIcon } from '@/components/ui/check';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { LayersIcon } from '@/components/ui/layers';
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ import {
 } from '@/constants/package.constant';
 import { API_URL } from '@/constants/url';
 import { useGetBenefits } from '@/hooks/api/use-benefit';
+import { useGetTemplates } from '@/hooks/api/use-template';
 import {
   formatCurrency,
   formatThousandSeparator,
@@ -30,6 +32,7 @@ import {
 } from '@/lib/currency';
 import { BenefitValue, TBenefit } from '@/types/benefit.type';
 import { TPackageStatus } from '@/types/package.type';
+import { TTemplate } from '@/types/template.type';
 import {
   CreateUpdatePackageFormValues,
   createUpdatePackageSchema,
@@ -58,6 +61,9 @@ export default function PackageForm({
     limit: 100,
   });
   const benefits = benefitsData?.items || [];
+  const { data: templatesData, isLoading: isLoadingTemplates } =
+    useGetTemplates();
+  const templates = templatesData || [];
 
   const {
     register,
@@ -73,6 +79,7 @@ export default function PackageForm({
       price: 0,
       status: PACKAGE_STATUS_VALUES.ACTIVE,
       benefits: [],
+      templateIds: [],
     },
   });
 
@@ -83,6 +90,7 @@ export default function PackageForm({
 
   const statusValue = useWatch({ control, name: 'status' });
   const selectedBenefits = useWatch({ control, name: 'benefits' }) || [];
+  const selectedTemplateIds = useWatch({ control, name: 'templateIds' }) || [];
   const priceValue = useWatch({ control, name: 'price' }) || 0;
   const packageName = useWatch({ control, name: 'name' });
   const packageDesc = useWatch({ control, name: 'description' });
@@ -107,6 +115,22 @@ export default function PackageForm({
     );
   };
 
+  const toggleTemplate = (templateId: number) => {
+    const isSelected = selectedTemplateIds.includes(templateId);
+    if (isSelected) {
+      setValue(
+        'templateIds',
+        selectedTemplateIds.filter((id: number) => id !== templateId),
+      );
+    } else {
+      setValue('templateIds', [...selectedTemplateIds, templateId]);
+    }
+  };
+
+  const isTemplateSelected = (templateId: number) => {
+    return selectedTemplateIds.includes(templateId);
+  };
+
   const getBenefitValue = (benefitId: number): string | number => {
     const benefit = selectedBenefits.find(
       (b: { benefitId: number }) => b.benefitId === benefitId,
@@ -126,7 +150,6 @@ export default function PackageForm({
       (b: { benefitId: number }) => b.benefitId === benefitId,
     );
     if (index > -1) {
-      // If quota, try to store as number
       let finalValue = value;
       if (benefit?.type === BENEFIT_TYPE.QUOTA) {
         const parsed = parseInt(String(value), 10);
@@ -143,6 +166,12 @@ export default function PackageForm({
     const benefit = benefits.find((b: TBenefit) => b.id === benefitId);
     if (!benefit) return '';
     return SYSTEM_ACTION_LABELS[benefit.key as SystemAction] || benefit.key;
+  };
+
+  const getTemplateName = (templateId: number) => {
+    const template = templates.find((t: TTemplate) => t.id === templateId);
+    if (!template) return '';
+    return template.name;
   };
 
   return (
@@ -337,6 +366,65 @@ export default function PackageForm({
                   })
                 )}
               </div>
+
+              <div className="space-y-8 pt-4">
+                <div className="border-border/40 border-b pb-4">
+                  <h2 className="text-foreground font-serif text-xl font-bold tracking-tight">
+                    Pilihan Template
+                  </h2>
+                  <p className="text-muted-foreground mt-1 text-xs">
+                    Pilih desain template yang tersedia untuk paket ini.
+                  </p>
+                </div>
+
+                {isLoadingTemplates ? (
+                  <div className="text-primary py-10 text-center">
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin opacity-20" />
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    {templates.map((template: TTemplate) => {
+                      const selected = isTemplateSelected(template.id);
+                      return (
+                        <div
+                          key={template.id}
+                          onClick={() => toggleTemplate(template.id)}
+                          className={`group relative cursor-pointer overflow-hidden rounded-2xl border transition-all duration-300 ${
+                            selected
+                              ? 'bg-primary/[0.03] border-primary/40 ring-primary/20 shadow-md ring-1'
+                              : 'border-border/40 hover:border-primary/20 bg-transparent'
+                          }`}
+                        >
+                          <div
+                            className={`aspect-[4/3] w-full ${template.thumbnail || 'bg-secondary/20'} transition-transform duration-500 group-hover:scale-105`}
+                          />
+                          <div className="flex items-center justify-between p-4">
+                            <span
+                              className={`text-sm font-bold ${selected ? 'text-primary' : 'text-foreground'}`}
+                            >
+                              {template.name}
+                            </span>
+                            <div
+                              className={`flex h-6 w-6 items-center justify-center rounded-full border transition-all ${
+                                selected
+                                  ? 'bg-primary border-primary text-primary-foreground'
+                                  : 'bg-background border-border/60 text-transparent'
+                              }`}
+                            >
+                              <CheckIcon className="h-3.5 w-3.5" />
+                            </div>
+                          </div>
+                          {selected && (
+                            <div className="bg-primary absolute top-3 right-3 rounded-full px-2 py-0.5 text-[8px] font-bold tracking-wider text-white uppercase shadow-lg">
+                              Selected
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -374,14 +462,9 @@ export default function PackageForm({
                         i: number,
                       ) => (
                         <li key={i} className="flex items-start gap-4">
-                          <CheckIcon className="text-success mt-1 h-5 w-5 flex-shrink-0" />
+                          <CheckIcon className="text-primary mt-1 h-5 w-5 flex-shrink-0" />
                           <span className="text-foreground text-base leading-tight">
-                            {b.value !== undefined &&
-                            b.value !== null &&
-                            b.value !== true
-                              ? `${b.value} `
-                              : ''}
-                            {getBenefitName(b.benefitId)}
+                            {b.value} {getBenefitName(b.benefitId)}
                           </span>
                         </li>
                       ),
@@ -391,6 +474,19 @@ export default function PackageForm({
                       <CheckIcon className="mt-1 h-5 w-5 flex-shrink-0" />
                       <span className="text-base">
                         Belum ada fitur terpilih
+                      </span>
+                    </li>
+                  )}
+
+                  {selectedTemplateIds.length > 0 && (
+                    <li className="border-border/60 flex items-start gap-4">
+                      <LayersIcon className="text-primary mt-1 h-5 w-5 flex-shrink-0" />
+                      <span className="text-foreground text-base leading-tight">
+                        {selectedTemplateIds.length} Template (
+                        {selectedTemplateIds
+                          .map((id: number) => getTemplateName(id))
+                          .join(', ')}
+                        )
                       </span>
                     </li>
                   )}

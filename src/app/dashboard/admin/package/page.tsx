@@ -175,6 +175,8 @@ export default function PackageManagementPage() {
                 <th className="px-6 py-4 font-semibold">Paket</th>
                 <th className="px-6 py-4 font-semibold">Harga</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-6 py-4 font-semibold">Total Benefit</th>
+                <th className="px-6 py-4 font-semibold">Total Template</th>
                 <th className="px-6 py-4 font-semibold">Tanggal Dibuat</th>
                 <th className="px-6 py-4 text-right font-semibold">Aksi</th>
               </tr>
@@ -182,7 +184,7 @@ export default function PackageManagementPage() {
             <tbody className="divide-border divide-y">
               {isLoading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center">
+                  <td colSpan={7} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="text-primary h-8 w-8 animate-spin" />
                       <p className="text-muted-foreground text-xs font-medium">
@@ -193,7 +195,7 @@ export default function PackageManagementPage() {
                 </tr>
               ) : packages.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center">
+                  <td colSpan={7} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Heart className="text-primary fill-primary h-8 w-8" />
                       <p className="text-muted-foreground text-xs font-medium">
@@ -233,6 +235,16 @@ export default function PackageManagementPage() {
                           Non-aktif
                         </span>
                       )}
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className="text-muted-foreground text-xs">
+                        {pkg.benefits?.length || 0}
+                      </span>
+                    </td>
+                    <td className="px-6 py-5">
+                      <span className="text-muted-foreground text-xs">
+                        {pkg.templates?.length || 0}
+                      </span>
                     </td>
                     <td className="px-6 py-5">
                       <span className="text-muted-foreground text-xs">

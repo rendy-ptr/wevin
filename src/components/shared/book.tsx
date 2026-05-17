@@ -1,6 +1,6 @@
 'use client';
 
-import { TEMPLATES } from '@/constants/demo-preview';
+import { TEMPLATES } from '@/constants/template.constant';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
 import { useState } from 'react';

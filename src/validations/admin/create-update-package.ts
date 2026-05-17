@@ -16,6 +16,7 @@ export const createUpdatePackageSchema = z.object({
       value: z.any(),
     }),
   ),
+  templateIds: z.array(z.number()),
 });
 
 export type CreateUpdatePackageFormValues = z.infer<

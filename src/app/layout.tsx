@@ -15,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className="bg-background">
-      <body className="font-sans antialiased">
+    <html lang="id" className="bg-background" suppressHydrationWarning>
+      <body className="font-sans antialiased" suppressHydrationWarning>
         <QueryProvider>{children}</QueryProvider>
         {process.env.NODE_ENV === 'production' && <Analytics />}
         <Toaster />

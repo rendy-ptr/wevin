@@ -42,7 +42,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     const validatedData = createUpdatePackageSchema.parse(body);
-    const { name, description, status, price, benefits } = validatedData;
+    const { name, description, status, price, benefits, templateIds } =
+      validatedData;
 
     const packageData = await packageService.create({
       name,
@@ -50,6 +51,7 @@ export async function POST(request: Request) {
       status,
       price,
       benefits,
+      templateIds,
     });
     return NextResponse.json(
       {

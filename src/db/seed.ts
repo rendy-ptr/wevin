@@ -6,6 +6,8 @@ import {
   SYSTEM_ACTION_TYPES,
   SYSTEM_ACTIONS,
 } from '../constants/benefit.constant';
+import { TEMPLATES } from '../constants/template.constant';
+import { TBenefitType } from '../types/benefit.type';
 import * as schema from './schema';
 
 dotenv.config({ path: '.env' });
@@ -49,7 +51,7 @@ async function main() {
     console.log('Seeding Benefits...');
     const benefitValues = Object.values(SYSTEM_ACTIONS).map((key) => ({
       key,
-      type: SYSTEM_ACTION_TYPES[key],
+      type: SYSTEM_ACTION_TYPES[key] as TBenefitType,
     }));
 
     for (const benefit of benefitValues) {
@@ -60,6 +62,25 @@ async function main() {
           target: schema.benefits.key,
           set: {
             type: benefit.type,
+          },
+        });
+    }
+
+    console.log('Seeding Templates...');
+    for (const template of TEMPLATES) {
+      const slug = template.name.toLowerCase().replace(/ /g, '-');
+      await db
+        .insert(schema.templates)
+        .values({
+          key: slug,
+          name: template.name,
+          thumbnail: template.bookPreview,
+        })
+        .onConflictDoUpdate({
+          target: schema.templates.key,
+          set: {
+            name: template.name,
+            thumbnail: template.bookPreview,
           },
         });
     }

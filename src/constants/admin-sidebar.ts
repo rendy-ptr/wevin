@@ -2,7 +2,6 @@ import {
   BarChart3,
   History,
   LayoutDashboard,
-  LayoutTemplate,
   Package,
   Settings,
   Users,
@@ -12,11 +11,6 @@ export const SIDEBAR_LINKS = [
   { href: '/dashboard/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/admin/member', label: 'Kelola Member', icon: Users },
   { href: '/dashboard/admin/package', label: 'Kelola Paket', icon: Package },
-  {
-    href: '/dashboard/admin/template',
-    label: 'Manage Template',
-    icon: LayoutTemplate,
-  },
   {
     href: '/dashboard/admin/analytics',
     label: 'Analytics Global',

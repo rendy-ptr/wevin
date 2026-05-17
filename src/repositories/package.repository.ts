@@ -1,5 +1,5 @@
 import { db } from '@/db';
-import { packageBenefits, packages } from '@/db/schema';
+import { packageBenefits, packages, packageTemplates } from '@/db/schema';
 import type { PackageFilterParams } from '@/types/package.type';
 import { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 import { and, count, eq, ilike } from 'drizzle-orm';
@@ -20,6 +20,10 @@ export const packageRepository = {
 
     const items = await db.query.packages.findMany({
       where: whereClause,
+      with: {
+        benefits: true,
+        templates: true,
+      },
       limit,
       offset,
       orderBy: (packages, { desc }) => [desc(packages.createdAt)],
@@ -41,6 +45,7 @@ export const packageRepository = {
       where: eq(packages.id, id),
       with: {
         benefits: true,
+        templates: true,
       },
     });
 
@@ -56,7 +61,7 @@ export const packageRepository = {
   },
 
   create: async (payload: CreateUpdatePackageFormValues) => {
-    const { benefits, ...packageData } = payload;
+    const { benefits, templateIds, ...packageData } = payload;
 
     return await db.transaction(async (tx) => {
       const [newPackage] = await tx
@@ -74,12 +79,21 @@ export const packageRepository = {
         );
       }
 
+      if (templateIds && templateIds.length > 0) {
+        await tx.insert(packageTemplates).values(
+          templateIds.map((templateId) => ({
+            packageId: newPackage.id,
+            templateId,
+          })),
+        );
+      }
+
       return newPackage;
     });
   },
 
   update: async (id: number, payload: CreateUpdatePackageFormValues) => {
-    const { benefits, ...packageData } = payload;
+    const { benefits, templateIds, ...packageData } = payload;
 
     return await db.transaction(async (tx) => {
       const [updatedPackage] = await tx
@@ -89,6 +103,9 @@ export const packageRepository = {
         .returning();
 
       await tx.delete(packageBenefits).where(eq(packageBenefits.packageId, id));
+      await tx
+        .delete(packageTemplates)
+        .where(eq(packageTemplates.packageId, id));
 
       if (benefits && benefits.length > 0) {
         await tx.insert(packageBenefits).values(
@@ -96,6 +113,15 @@ export const packageRepository = {
             packageId: id,
             benefitId: b.benefitId,
             value: b.value,
+          })),
+        );
+      }
+
+      if (templateIds && templateIds.length > 0) {
+        await tx.insert(packageTemplates).values(
+          templateIds.map((templateId) => ({
+            packageId: id,
+            templateId,
           })),
         );
       }

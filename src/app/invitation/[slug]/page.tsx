@@ -5,7 +5,7 @@ import CoverSection from '@/components/invitation/cover-section';
 import EventCard from '@/components/invitation/event-section';
 import GuestbookForm from '@/components/invitation/guest-book-section';
 import RSVPForm from '@/components/invitation/rsvp-section';
-import { TEMPLATES } from '@/constants/demo-preview';
+import { TEMPLATES } from '@/constants/template.constant';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, Music, VolumeX } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';

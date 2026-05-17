@@ -25,10 +25,10 @@ export const API_URL = {
   },
   BENEFIT: {
     GET: `${API_BASE_URL}/api/benefit`,
-    CREATE: `${API_BASE_URL}/api/benefit`,
-    UPDATE: (id: number) => `${API_BASE_URL}/api/benefit/${id}`,
-    DELETE: (id: number) => `${API_BASE_URL}/api/benefit/${id}`,
-    INDEX: `${API_BASE_URL}/dashboard/admin/benefit`,
     GET_BY_ID: (id: number) => `${API_BASE_URL}/api/benefit/${id}`,
+  },
+  TEMPLATE: {
+    GET: `${API_BASE_URL}/api/template`,
+    GET_BY_ID: (id: number) => `${API_BASE_URL}/api/template/${id}`,
   },
 };
