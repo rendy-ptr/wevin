@@ -2,6 +2,7 @@ import { getRedirectPath, login, logout } from '@/lib/auth';
 import { AuthError, NotFoundError } from '@/lib/errors';
 import { authRepository } from '@/repositories/auth.repository';
 import bcrypt from 'bcryptjs';
+import { activityService } from './activity.service';
 
 export const authService = {
   login: async (email: string, password: string) => {
@@ -28,11 +29,27 @@ export const authService = {
 
     await login(sessionUser);
 
+    await activityService.log({
+      userId: user.id,
+      action: 'LOGIN',
+      entityType: 'AUTH',
+      details: `${user.name} berhasil login.`,
+    });
+
     return { sessionUser, redirectPath };
   },
 
-  logout: async () => {
+  logout: async (userId?: number) => {
     await logout();
+
+    if (userId) {
+      await activityService.log({
+        userId,
+        action: 'LOGOUT',
+        entityType: 'AUTH',
+        details: `Berhasil logout.`,
+      });
+    }
     return { success: true };
   },
 };

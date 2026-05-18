@@ -1,4 +1,5 @@
 import { userStatusEnum } from '@/db/schema';
+import { getSession } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { memberService } from '@/services/member.service';
 import { TUserStatus } from '@/types/user.type';
@@ -11,13 +12,22 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await getSession();
+    if (!session) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const { id } = await params;
     const body = await request.json();
     const validatedData = createUpdateMemberSchema
       .omit({ email: true })
       .parse(body);
 
-    const member = await memberService.update(Number(id), validatedData);
+    const member = await memberService.update(
+      Number(id),
+      validatedData,
+      session.user.id,
+    );
 
     return NextResponse.json(
       {
@@ -59,6 +69,11 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await getSession();
+    if (!session) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const { id } = await params;
     const { status } = await request.json();
 
@@ -72,6 +87,7 @@ export async function PATCH(
     const member = await memberService.updateStatus(
       Number(id),
       status as TUserStatus,
+      session.user.id,
     );
 
     return NextResponse.json(
@@ -104,8 +120,13 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await getSession();
+    if (!session) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const { id } = await params;
-    const member = await memberService.delete(Number(id));
+    const member = await memberService.delete(Number(id), session.user.id);
 
     return NextResponse.json(
       {

@@ -99,7 +99,7 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
         <div className="px-4 py-4">
           <div className="bg-accent/10 border-accent/30 rounded-xl border px-4 py-3">
             <p className="text-muted-foreground mb-1 text-xs">Role</p>
-            <p className="text-accent font-serif font-semibold">
+            <p className="text-accent-foreground font-serif font-semibold">
               {user.role.toUpperCase()}
             </p>
           </div>
@@ -157,11 +157,20 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
           </div>
           <Button
             variant="outline"
-            className="text-muted-foreground hover:bg-secondary hover:text-foreground h-10 w-full justify-start px-5 font-medium transition-all"
+            className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark h-10 w-full cursor-pointer justify-start px-5 font-medium transition-colors"
             onClick={onSubmit}
+            disabled={logoutMutation.isPending}
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            Keluar
+            {logoutMutation.isPending ? (
+              <>
+                <span className="animate-pulse">Keluar...</span>
+              </>
+            ) : (
+              <>
+                <LogOut className="mr-2 h-4 w-4" />
+                Keluar
+              </>
+            )}
           </Button>
         </div>
       </aside>

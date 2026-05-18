@@ -1,3 +1,4 @@
+import { getSession } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { packageService } from '@/services/package.service';
 import { PackageFilterParams } from '@/types/package.type';
@@ -40,19 +41,27 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const body = await request.json();
     const validatedData = createUpdatePackageSchema.parse(body);
     const { name, description, status, price, benefits, templateIds } =
       validatedData;
 
-    const packageData = await packageService.create({
-      name,
-      description,
-      status,
-      price,
-      benefits,
-      templateIds,
-    });
+    const packageData = await packageService.create(
+      {
+        name,
+        description,
+        status,
+        price,
+        benefits,
+        templateIds,
+      },
+      session.user.id,
+    );
     return NextResponse.json(
       {
         success: true,

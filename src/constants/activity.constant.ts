@@ -1,0 +1,38 @@
+export const ACTIVITY_ACTION_VALUES = {
+  CREATE: 'create',
+  UPDATE: 'update',
+  DELETE: 'delete',
+  LOGIN: 'login',
+  LOGOUT: 'logout',
+} as const;
+
+export const ACTIVITY_ACTION_OPTIONS = {
+  [ACTIVITY_ACTION_VALUES.CREATE]: {
+    LABEL: 'Create',
+    VALUE: ACTIVITY_ACTION_VALUES.CREATE,
+  },
+  [ACTIVITY_ACTION_VALUES.UPDATE]: {
+    LABEL: 'Update',
+    VALUE: ACTIVITY_ACTION_VALUES.UPDATE,
+  },
+  [ACTIVITY_ACTION_VALUES.DELETE]: {
+    LABEL: 'Delete',
+    VALUE: ACTIVITY_ACTION_VALUES.DELETE,
+  },
+  [ACTIVITY_ACTION_VALUES.LOGIN]: {
+    LABEL: 'Login',
+    VALUE: ACTIVITY_ACTION_VALUES.LOGIN,
+  },
+  [ACTIVITY_ACTION_VALUES.LOGOUT]: {
+    LABEL: 'Logout',
+    VALUE: ACTIVITY_ACTION_VALUES.LOGOUT,
+  },
+} as const;
+
+export const ACTIVITY_ACTION_COLOR = {
+  [ACTIVITY_ACTION_VALUES.CREATE]: 'bg-emerald-500/10 text-emerald-600',
+  [ACTIVITY_ACTION_VALUES.UPDATE]: 'bg-amber-500/10 text-amber-600',
+  [ACTIVITY_ACTION_VALUES.DELETE]: 'bg-destructive/10 text-destructive',
+  [ACTIVITY_ACTION_VALUES.LOGIN]: 'bg-blue-500/10 text-blue-600',
+  [ACTIVITY_ACTION_VALUES.LOGOUT]: 'bg-slate-500/10 text-slate-600',
+};

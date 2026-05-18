@@ -1,10 +1,12 @@
+import { getSession } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { authService } from '@/services/auth.service';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
   try {
-    await authService.logout();
+    const session = await getSession();
+    await authService.logout(session?.user?.id);
 
     return NextResponse.json(
       {

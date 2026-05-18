@@ -1,3 +1,4 @@
+import { getSession } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { packageService } from '@/services/package.service';
 import { createUpdatePackageSchema } from '@/validations/admin/create-update-package';
@@ -9,11 +10,20 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await getSession();
+    if (!session) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const { id } = await params;
     const body = await request.json();
     const validatedData = createUpdatePackageSchema.parse(body);
 
-    const packageData = await packageService.update(Number(id), validatedData);
+    const packageData = await packageService.update(
+      Number(id),
+      validatedData,
+      session.user.id,
+    );
 
     return NextResponse.json(
       {
@@ -55,8 +65,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
+    const session = await getSession();
+    if (!session) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const { id } = await params;
-    const packageData = await packageService.delete(Number(id));
+    const packageData = await packageService.delete(
+      Number(id),
+      session.user.id,
+    );
 
     return NextResponse.json(
       {

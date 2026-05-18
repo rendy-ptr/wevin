@@ -31,4 +31,7 @@ export const API_URL = {
     GET: `${API_BASE_URL}/api/template`,
     GET_BY_ID: (id: number) => `${API_BASE_URL}/api/template/${id}`,
   },
+  ACTIVITY: {
+    GET: `${API_BASE_URL}/api/activity`,
+  },
 };

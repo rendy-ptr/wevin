@@ -1,3 +1,4 @@
+import { getSession } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { memberService } from '@/services/member.service';
 import { MemberFilterParams } from '@/types/member.type';
@@ -44,9 +45,17 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
+    const session = await getSession();
+    if (!session) {
+      throw new AppError('Unauthorized', 401);
+    }
+
     const body = await request.json();
     const validatedData = createUpdateMemberSchema.parse(body);
-    const memberData = await memberService.create(validatedData);
+    const memberData = await memberService.create(
+      validatedData,
+      session.user.id,
+    );
     return NextResponse.json({
       success: true,
       message: 'Member created successfully',

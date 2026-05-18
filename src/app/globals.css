@@ -30,8 +30,8 @@
   --secondary-foreground: #2e2e2e;
   --muted: #f3ede6;
   --muted-foreground: #7a7069; /* Warm Gray */
-  --accent: #c9a84c; /* Warm Gold */
-  --accent-foreground: #ffffff;
+  --accent: #eef3f7; /* Cloud Blue */
+  --accent-foreground: #516b84; /* French Blue */
   --destructive: #c0625a; /* Muted Red */
   --destructive-foreground: #ffffff;
   --success: #7a9e7e; /* Sage Green */
@@ -70,8 +70,8 @@
   --secondary-foreground: #faf7f4;
   --muted: #2a2622;
   --muted-foreground: #a8a099;
-  --accent: #c9a84c;
-  --accent-foreground: #1a1815;
+  --accent: #232c35; /* Midnight Blue */
+  --accent-foreground: #a2b7cc; /* Dusty Blue */
   --destructive: #c0625a;
   --destructive-foreground: #faf7f4;
   --success: #7a9e7e;

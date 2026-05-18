@@ -207,7 +207,7 @@ export default function MemberManagementPage() {
             <Button
               variant="outline"
               size="sm"
-              className="border-border text-muted-foreground hover:bg-secondary hover:text-foreground h-10 px-4 transition-all"
+              className="border-border hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark h-10 cursor-pointer px-4 transition-colors"
               onClick={() => setIsFilterSidebarOpen(true)}
             >
               <Filter className="mr-2 h-4 w-4" />
