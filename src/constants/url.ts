@@ -34,4 +34,12 @@ export const API_URL = {
   ACTIVITY: {
     GET: `${API_BASE_URL}/api/activity`,
   },
+  SETTING: {
+    GET: `${API_BASE_URL}/api/setting`,
+    UPDATE_PASSWORD: (id: number) =>
+      `${API_BASE_URL}/api/setting/password/${id}`,
+    UPDATE_NAME_EMAIL: (id: number) =>
+      `${API_BASE_URL}/api/setting/name-email/${id}`,
+    GET_ALL_ACTIVITY_LOGS: `${API_BASE_URL}/api/setting/logs`,
+  },
 };

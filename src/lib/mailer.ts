@@ -1,10 +1,12 @@
 import {
   getDeletionNotificationEmailHtml,
   getStatusNotificationEmailHtml,
+  getUpdateNameAndEmailNotificationEmailHtml,
   getUpdateNotificationEmailHtml,
+  getUpdatePasswordNotificationEmailHtml,
   getWelcomeEmailHtml,
 } from '@/templates/email.template';
-import { TUserStatus } from '@/types/user.type';
+import { TUser, TUserStatus } from '@/types/user.type';
 import nodemailer from 'nodemailer';
 
 export const transporter = nodemailer.createTransport({
@@ -49,7 +51,7 @@ export const sendAccountEmail = async (
   }
 };
 
-export const sendUpdateNotificationEmail = async (
+export const sendUpdateNameAndPackageNotificationEmail = async (
   email: string,
   name: string,
   packageName: string,
@@ -120,5 +122,63 @@ export const sendStatusNotificationEmail = async (
     );
   } catch (error) {
     console.error(`[MAILER] Gagal mengirim email status ke ${email}:`, error);
+  }
+};
+
+export const sendUpdatePasswordNotificationEmail = async ({
+  email,
+  name,
+}: Pick<TUser, 'email' | 'name'>) => {
+  const subscribeUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}`;
+
+  const mailOptions = {
+    from: `"Admin Wevin" <${process.env.SMTP_FROM || 'admin@wevin.local'}>`,
+    to: email,
+    subject: 'Notifikasi Perubahan Password Akun Wevin',
+    html: getUpdatePasswordNotificationEmailHtml({
+      name,
+      subscribeUrl,
+    }),
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(
+      `[MAILER] Email notifikasi ganti password sukses terkirim ke ${email}`,
+    );
+  } catch (error) {
+    console.error(
+      `[MAILER] Gagal mengirim email notifikasi ganti password ke ${email}:`,
+      error,
+    );
+  }
+};
+
+export const sendUpdateNameAndEmailNotificationEmail = async ({
+  email,
+  name,
+}: Pick<TUser, 'email' | 'name'>) => {
+  const subscribeUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}`;
+
+  const mailOptions = {
+    from: `"Admin Wevin" <${process.env.SMTP_FROM || 'admin@wevin.local'}>`,
+    to: email,
+    subject: 'Notifikasi Perubahan Nama dan Email Akun Wevin',
+    html: getUpdateNameAndEmailNotificationEmailHtml({
+      name,
+      subscribeUrl,
+    }),
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(
+      `[MAILER] Email notifikasi ganti nama dan email sukses terkirim ke ${email}`,
+    );
+  } catch (error) {
+    console.error(
+      `[MAILER] Gagal mengirim email notifikasi ganti nama dan email ke ${email}:`,
+      error,
+    );
   }
 };

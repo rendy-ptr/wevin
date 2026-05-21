@@ -2,7 +2,7 @@ import {
   sendAccountEmail,
   sendDeletionNotificationEmail,
   sendStatusNotificationEmail,
-  sendUpdateNotificationEmail,
+  sendUpdateNameAndPackageNotificationEmail,
 } from '@/lib/mailer';
 import { memberRepository } from '@/repositories/member.repository';
 import { packageRepository } from '@/repositories/package.repository';
@@ -56,7 +56,7 @@ export const memberService = {
   ) => {
     const pkg = await packageRepository.getById(payload.packageId);
     const updatedUser = await memberRepository.update(id, payload);
-    await sendUpdateNotificationEmail(
+    await sendUpdateNameAndPackageNotificationEmail(
       updatedUser.email,
       updatedUser.name,
       pkg?.name || 'No Package',

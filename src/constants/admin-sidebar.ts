@@ -11,5 +11,5 @@ export const SIDEBAR_LINKS = [
   { href: '/dashboard/admin/member', label: 'Kelola Member', icon: Users },
   { href: '/dashboard/admin/package', label: 'Kelola Paket', icon: Package },
   { href: '/dashboard/admin/logs', label: 'Logs & Activity', icon: History },
-  { href: '/dashboard/admin/pengaturan', label: 'Pengaturan', icon: Settings },
+  { href: '/dashboard/admin/settings', label: 'Pengaturan', icon: Settings },
 ];
