@@ -61,6 +61,8 @@ jobs:
 
       - name: Build (Vercel staging)
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Deploy to Staging
         run: vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }}
@@ -90,6 +92,8 @@ jobs:
 
       - name: Build (Vercel production)
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Deploy to Production
         run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
