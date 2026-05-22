@@ -11,18 +11,25 @@ import {
 import { TUser, TUserStatus } from '@/types/user.type';
 import nodemailer from 'nodemailer';
 
-export const transporter = nodemailer.createTransport({
+const transporterConfig = {
   host: process.env.SMTP_HOST || 'localhost',
   port: Number(process.env.SMTP_PORT) || 1025,
   secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-  },
   tls: {
     rejectUnauthorized: process.env.NODE_ENV === 'production',
   },
-});
+  auth:
+    process.env.SMTP_USER && process.env.SMTP_PASS
+      ? {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        }
+      : undefined,
+};
+
+export const transporter = nodemailer.createTransport(
+  transporterConfig as nodemailer.TransportOptions,
+);
 
 export const sendAccountEmail = async (
   email: string,
