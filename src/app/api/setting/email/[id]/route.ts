@@ -5,10 +5,6 @@ import { updateEmailSchema } from '@/validations/admin/create-update-setting';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'configure-your-jwt-secret-key',
-);
-
 const extendedSchema = updateEmailSchema.extend({
   verificationToken: z.string().optional(),
   otpCode: z.string().optional(),
