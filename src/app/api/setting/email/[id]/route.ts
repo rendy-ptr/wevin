@@ -1,8 +1,18 @@
-import { getSession } from '@/lib/auth';
+import { getSession, login } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { settingService } from '@/services/setting.service';
-import { updatePasswordSchema } from '@/validations/admin/create-update-setting';
+import { updateEmailSchema } from '@/validations/admin/create-update-setting';
 import { NextResponse } from 'next/server';
+import { z } from 'zod';
+
+const secret = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'configure-your-jwt-secret-key',
+);
+
+const extendedSchema = updateEmailSchema.extend({
+  verificationToken: z.string().optional(),
+  otpCode: z.string().optional(),
+});
 
 export async function PATCH(
   request: Request,
@@ -18,20 +28,27 @@ export async function PATCH(
       throw new AppError('Unauthorized', 401);
     }
 
-    const { password: newPassword, oldPassword } =
-      updatePasswordSchema.parse(body);
+    const { email, verificationToken, otpCode } = extendedSchema.parse(body);
 
-    const user = await settingService.updatePassword({
+    const user = await settingService.updateEmail({
       id: Number(id),
-      oldPassword,
-      newPassword,
+      email,
       userId: session.user.id,
+      verificationToken,
+      otpCode,
+    });
+
+    await login({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Password updated successfully',
+        message: 'Name and email updated successfully',
         data: user,
       },
       { status: 200 },

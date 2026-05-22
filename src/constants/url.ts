@@ -38,8 +38,9 @@ export const API_URL = {
     GET: `${API_BASE_URL}/api/setting`,
     UPDATE_PASSWORD: (id: number) =>
       `${API_BASE_URL}/api/setting/password/${id}`,
-    UPDATE_NAME_EMAIL: (id: number) =>
-      `${API_BASE_URL}/api/setting/name-email/${id}`,
+    UPDATE_EMAIL: (id: number) => `${API_BASE_URL}/api/setting/email/${id}`,
+    UPDATE_NAME: (id: number) => `${API_BASE_URL}/api/setting/name/${id}`,
     GET_ALL_ACTIVITY_LOGS: `${API_BASE_URL}/api/setting/logs`,
+    SEND_OTP: `${API_BASE_URL}/api/setting/send-otp`,
   },
 };

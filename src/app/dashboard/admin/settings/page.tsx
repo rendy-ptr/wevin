@@ -1,7 +1,8 @@
 'use client';
 
 import EditPasswordModal from '@/components/dashboard/admin/edit-password-modal';
-import EditProfileModal from '@/components/dashboard/admin/edit-profile-modal';
+import EditProfileEmailModal from '@/components/dashboard/admin/edit-profile-email-modal';
+import EditProfileNameModal from '@/components/dashboard/admin/edit-profile-name-modal';
 import FilterActivitySidebar from '@/components/dashboard/admin/filter-activity-sidebar';
 import Pagination from '@/components/shared/pagination';
 import { Button } from '@/components/ui/button';
@@ -28,6 +29,7 @@ import {
   Loader2,
   Package,
   Search,
+  SquarePen,
   User,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -96,7 +98,7 @@ export default function SettingsPage() {
   const getActionColor = (action: string) => {
     return (
       ACTIVITY_ACTION_COLOR[
-        action.toLowerCase() as keyof typeof ACTIVITY_ACTION_COLOR
+        action.toUpperCase() as keyof typeof ACTIVITY_ACTION_COLOR
       ] || 'bg-secondary/20 text-foreground'
     );
   };
@@ -132,15 +134,6 @@ export default function SettingsPage() {
         <div className="flex items-center gap-3">
           <Button
             type="button"
-            variant="outline"
-            onClick={() => setActiveModal('profile')}
-            className="border-border hover:bg-secondary/50 text-foreground h-10 gap-2 text-xs font-medium tracking-wide transition-all active:scale-95"
-          >
-            <User className="text-muted-foreground h-4 w-4" />
-            Perbarui Profil
-          </Button>
-          <Button
-            type="button"
             onClick={() => setActiveModal('password')}
             className="bg-primary hover:bg-primary-dark shadow-primary/20 text-primary-foreground h-10 gap-2 text-xs font-medium tracking-wide shadow-lg transition-all active:scale-95"
           >
@@ -171,11 +164,31 @@ export default function SettingsPage() {
                   <Label className="text-muted-foreground text-xs">
                     Nama Lengkap
                   </Label>
-                  <p className="mt-1 text-sm font-medium">{user.name}</p>
+                  <div className="flex items-center justify-start gap-2">
+                    <p className="text-sm font-medium">{user.name}</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-primary-dark hover:text-primary-dark hover:bg-secondary h-8 w-8 transition-colors"
+                      onClick={() => setActiveModal('profile-name')}
+                    >
+                      <SquarePen className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs">Email</Label>
-                  <p className="mt-1 text-sm font-medium">{user.email}</p>
+                  <div className="flex items-center justify-start gap-2">
+                    <p className="text-sm font-medium">{user.email}</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-primary-dark hover:text-primary-dark hover:bg-secondary h-8 w-8 transition-colors"
+                      onClick={() => setActiveModal('profile-email')}
+                    >
+                      <SquarePen className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
                 <div className="space-y-1">
                   <Label className="text-muted-foreground text-xs">
@@ -360,8 +373,14 @@ export default function SettingsPage() {
         />
       </div>
 
-      <EditProfileModal
-        isOpen={activeModal === 'profile'}
+      <EditProfileEmailModal
+        isOpen={activeModal === 'profile-email'}
+        onClose={() => setActiveModal(null)}
+        user={user}
+      />
+
+      <EditProfileNameModal
+        isOpen={activeModal === 'profile-name'}
         onClose={() => setActiveModal(null)}
         user={user}
       />

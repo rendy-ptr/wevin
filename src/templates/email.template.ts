@@ -418,7 +418,92 @@ export const getUpdatePasswordNotificationEmailHtml = ({
   `;
 };
 
-export const getUpdateNameAndEmailNotificationEmailHtml = ({
+export const getUpdateEmailNotificationEmailHtml = ({
+  name,
+  email,
+  subscribeUrl,
+}: {
+  name: string;
+  email: string;
+  subscribeUrl: string;
+}) => {
+  const formattedDate = new Date().toLocaleString('id-ID', {
+    timeZone: 'Asia/Jakarta',
+    dateStyle: 'long',
+    timeStyle: 'short',
+  });
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #faf7f4; font-family: 'DM Sans', Arial, sans-serif; color: #2e2e2e; -webkit-font-smoothing: antialiased;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #faf7f4; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="100%" max-width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid #e8d5cc; max-width: 600px;">
+
+              <tr>
+                <td align="center" style="padding: 45px 0 25px 0; background-color: #ffffff;">
+                  <h1 style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 600; color: #8b5e6a; letter-spacing: 1.5px;">Wevin</h1>
+                  <p style="margin: 6px 0 0 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; color: #c9a0a0; font-style: italic; letter-spacing: 0.5px;">Digital Wedding Invitation</p>
+                </td>
+              </tr>
+
+              <tr>
+                <td style="padding: 20px 45px 45px 45px;">
+                  <h2 style="margin: 0 0 20px 0; font-size: 20px; font-weight: 500; color: #2e2e2e;">Halo, ${name}</h2>
+                  <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.7; color: #7a7069;">
+                    Kami ingin menginformasikan bahwa email akun Wevin Anda telah berhasil diperbarui pada <strong>${formattedDate} WIB</strong>.
+                  </p>
+
+                  <div style="background-color: #f5eae6; border-left: 4px solid #c0625a; padding: 20px; margin-bottom: 25px; border-radius: 4px;">
+                    <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #c0625a;">
+                      <strong>Detail Perubahan:</strong><br>
+                      Email baru: <strong>${email}</strong><br>
+                      Perubahan ini dilakukan melalui halaman pengaturan dashboard Anda. Demi keamanan, jangan pernah membagikan password Anda kepada siapa pun.
+                    </p>
+                  </div>
+
+                  <p style="margin: 0 0 25px 0; font-size: 15px; line-height: 1.7; color: #7a7069;">
+                    Jika Anda tidak melakukan perubahan email ini atau memiliki kekhawatiran mengenai keamanan akun Anda, segera hubungi tim support kami.
+                  </p>
+
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr>
+                      <td align="center">
+                        <a href="${subscribeUrl}" style="display: inline-block; background-color: #c9a0a0; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 500; padding: 15px 36px; border-radius: 30px; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(201, 160, 160, 0.3);">Login ke Dashboard</a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <p style="margin: 35px 0 0 0; font-size: 14px; line-height: 1.7; color: #7a7069; text-align: center;">
+                    Terima kasih atas perhatian Anda.
+                  </p>
+                </td>
+              </tr>
+
+              <tr>
+                <td align="center" style="padding: 20px 40px; background-color: #8b5e6a; border-radius: 0 0 12px 12px;">
+                  <p style="margin: 0; font-size: 13px; color: #f5eae6; letter-spacing: 0.5px;">
+                    Pesan ini dikirimkan otomatis oleh sistem <strong style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; font-weight: 600; color: #ffffff;">Wevin</strong>
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+};
+
+export const getUpdateNameNotificationEmailHtml = ({
   name,
   subscribeUrl,
 }: {
@@ -456,18 +541,19 @@ export const getUpdateNameAndEmailNotificationEmailHtml = ({
                 <td style="padding: 20px 45px 45px 45px;">
                   <h2 style="margin: 0 0 20px 0; font-size: 20px; font-weight: 500; color: #2e2e2e;">Halo, ${name}</h2>
                   <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.7; color: #7a7069;">
-                    Kami ingin menginformasikan bahwa nama dan email akun Wevin Anda telah berhasil diperbarui pada <strong>${formattedDate} WIB</strong>.
+                    Kami ingin menginformasikan bahwa nama akun Wevin Anda telah berhasil diperbarui pada <strong>${formattedDate} WIB</strong>.
                   </p>
 
                   <div style="background-color: #f5eae6; border-left: 4px solid #c0625a; padding: 20px; margin-bottom: 25px; border-radius: 4px;">
                     <p style="margin: 0; font-size: 14px; line-height: 1.6; color: #c0625a;">
-                      <strong>Keamanan Akun:</strong><br>
-                      Perubahan nama dan email ini dilakukan melalui halaman pengaturan dashboard Anda. Demi keamanan, jangan pernah membagikan password Anda kepada siapa pun.
+                      <strong>Detail Perubahan:</strong><br>
+                      Nama baru: <strong>${name}</strong><br>
+                      Perubahan ini dilakukan melalui halaman pengaturan dashboard Anda. Demi keamanan, jangan pernah membagikan password Anda kepada siapa pun.
                     </p>
                   </div>
 
                   <p style="margin: 0 0 25px 0; font-size: 15px; line-height: 1.7; color: #7a7069;">
-                    Jika Anda tidak melakukan perubahan nama dan email ini atau memiliki kekhawatiran mengenai keamanan akun Anda, segera hubungi tim support kami.
+                    Jika Anda tidak melakukan perubahan nama ini atau memiliki kekhawatiran mengenai keamanan akun Anda, segera hubungi tim support kami.
                   </p>
 
                   <table width="100%" border="0" cellspacing="0" cellpadding="0">
@@ -480,6 +566,70 @@ export const getUpdateNameAndEmailNotificationEmailHtml = ({
 
                   <p style="margin: 35px 0 0 0; font-size: 14px; line-height: 1.7; color: #7a7069; text-align: center;">
                     Terima kasih atas perhatian Anda.
+                  </p>
+                </td>
+              </tr>
+
+              <tr>
+                <td align="center" style="padding: 20px 40px; background-color: #8b5e6a; border-radius: 0 0 12px 12px;">
+                  <p style="margin: 0; font-size: 13px; color: #f5eae6; letter-spacing: 0.5px;">
+                    Pesan ini dikirimkan otomatis oleh sistem <strong style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; font-weight: 600; color: #ffffff;">Wevin</strong>
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+};
+
+export const getOtpEmailHtml = ({ otpCode }: { otpCode: string }) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #faf7f4; font-family: 'DM Sans', Arial, sans-serif; color: #2e2e2e; -webkit-font-smoothing: antialiased;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #faf7f4; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="100%" max-width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid #e8d5cc; max-width: 600px;">
+
+              <tr>
+                <td align="center" style="padding: 45px 0 25px 0; background-color: #ffffff;">
+                  <h1 style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 600; color: #8b5e6a; letter-spacing: 1.5px;">Wevin</h1>
+                  <p style="margin: 6px 0 0 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; color: #c9a0a0; font-style: italic; letter-spacing: 0.5px;">Digital Wedding Invitation</p>
+                </td>
+              </tr>
+
+              <tr>
+                <td style="padding: 20px 45px 45px 45px;">
+                  <h2 style="margin: 0 0 20px 0; font-size: 20px; font-weight: 500; color: #2e2e2e;">Kode Verifikasi Email</h2>
+                  <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.7; color: #7a7069;">
+                    Anda menerima email ini karena adanya permintaan untuk mengubah alamat email akun Wevin Anda ke email ini.
+                  </p>
+                  <p style="margin: 0 0 25px 0; font-size: 15px; line-height: 1.7; color: #7a7069;">
+                    Berikut adalah kode verifikasi OTP Anda (berlaku selama 10 menit):
+                  </p>
+
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 30px;">
+                    <tr>
+                      <td align="center">
+                        <div style="background-color: #f5eae6; border: 1px solid #e8d5cc; border-radius: 8px; padding: 20px; display: inline-block;">
+                          <span style="font-family: monospace; font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #8b5e6a;">${otpCode}</span>
+                        </div>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <p style="margin: 35px 0 0 0; font-size: 14px; line-height: 1.7; color: #7a7069; text-align: center;">
+                    Jika Anda tidak meminta perubahan ini, abaikan saja email ini. Keamanan akun Anda tetap terjamin.
                   </p>
                 </td>
               </tr>

@@ -44,18 +44,40 @@ export const useUpdatePassword = () => {
   });
 };
 
-export const useUpdateNameAndEmail = () => {
+export const useUpdateEmail = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
       id,
-      name,
       email,
-    }: Pick<TUser, 'id' | 'name' | 'email'>) => {
-      const response = await api.patch(API_URL.SETTING.UPDATE_NAME_EMAIL(id), {
-        name,
+      verificationToken,
+      otpCode,
+    }: Pick<TUser, 'id' | 'email'> & {
+      verificationToken?: string;
+      otpCode?: string;
+    }) => {
+      const response = await api.patch(API_URL.SETTING.UPDATE_EMAIL(id), {
         email,
+        verificationToken,
+        otpCode,
+      });
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+      queryClient.invalidateQueries({ queryKey: ['settings', variables.id] });
+    },
+  });
+};
+
+export const useUpdateName = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, name }: Pick<TUser, 'id' | 'name'>) => {
+      const response = await api.patch(API_URL.SETTING.UPDATE_NAME(id), {
+        name,
       });
       return response.data;
     },
@@ -95,6 +117,15 @@ export const useGetAllActivityLogs = ({
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
       return response.data.data as { items: TActivityLog[]; total: number };
+    },
+  });
+};
+
+export const useSendOtp = () => {
+  return useMutation({
+    mutationFn: async ({ email }: { email: string }) => {
+      const response = await api.post(API_URL.SETTING.SEND_OTP, { email });
+      return response.data;
     },
   });
 };
