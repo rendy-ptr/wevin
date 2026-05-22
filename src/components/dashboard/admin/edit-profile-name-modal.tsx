@@ -1,3 +1,5 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -8,68 +10,74 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useUpdateNameAndEmail } from '@/hooks/api/use-setting';
+import { useUpdateName } from '@/hooks/api/use-setting';
 import { useToast } from '@/hooks/use-toast';
 import { TUser } from '@/types/user.type';
 import {
-  UpdateNameAndEmailFormValues,
-  updateNameAndEmailSchema,
-} from '@/validations/admin/create-update-member';
+  UpdateNameFormValues,
+  updateNameSchema,
+} from '@/validations/admin/create-update-setting';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
 import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
-interface EditProfileModalProps {
+interface EditProfileNameModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: Pick<TUser, 'name' | 'email' | 'id'>;
+  user: TUser;
 }
 
-export default function EditProfileModal({
+export default function EditProfileNameModal({
   isOpen,
   onClose,
   user,
-}: EditProfileModalProps) {
+}: EditProfileNameModalProps) {
   const { toast } = useToast();
+  const { mutate: updateName, isPending: isPendingUpdateName } =
+    useUpdateName();
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<UpdateNameAndEmailFormValues>({
-    resolver: zodResolver(updateNameAndEmailSchema),
+  } = useForm<UpdateNameFormValues>({
+    resolver: zodResolver(updateNameSchema),
     defaultValues: {
-      name: user.name,
-      email: user.email,
+      name: '',
     },
   });
-  const { mutate: updateNameAndEmail, isPending: isPendingUpdateNameAndEmail } =
-    useUpdateNameAndEmail();
 
-  const handleUpdateNameAndEmail = (data: UpdateNameAndEmailFormValues) => {
-    updateNameAndEmail(
+  useEffect(() => {
+    if (isOpen) {
+      reset({ name: user.name });
+    }
+  }, [isOpen, user.name, reset]);
+
+  const handleUpdateName = (data: UpdateNameFormValues) => {
+    updateName(
       { id: user.id, ...data },
       {
         onSuccess: (res) => {
           toast({
-            title: 'Profil berhasil diperbarui',
+            title: 'Nama berhasil diperbarui',
             variant: 'default',
-            description: `Profil ${res.data.name} berhasil diperbarui!`,
+            description: `Nama ${res.data.name} berhasil diperbarui!`,
           });
           onClose();
           reset();
         },
         onError: (error) => {
-          let message = 'Gagal memperbarui profil. Silakan coba lagi.';
+          let message = 'Gagal memperbarui nama. Silakan coba lagi.';
           if (isAxiosError(error)) {
             message =
               error.response?.data?.message ||
-              'Gagal memperbarui profil. Silakan coba lagi.';
+              'Gagal memperbarui nama. Silakan coba lagi.';
           }
           toast({
             variant: 'destructive',
-            title: 'Gagal memperbarui profil',
+            title: 'Gagal memperbarui nama',
             description: message,
           });
         },
@@ -85,55 +93,38 @@ export default function EditProfileModal({
   return (
     <Dialog open={isOpen} onOpenChange={handleCloseModal}>
       <DialogContent className="border-border bg-background overflow-hidden rounded-2xl border p-0 shadow-2xl sm:max-w-[420px]">
-        <form onSubmit={handleSubmit(handleUpdateNameAndEmail)} className="p-7">
+        <form onSubmit={handleSubmit(handleUpdateName)} className="p-7">
           <DialogHeader className="p-0 text-left">
             <DialogTitle className="text-foreground font-serif text-xl font-bold tracking-tight">
-              Perbarui Profil
+              Perbarui Nama
             </DialogTitle>
             <DialogDescription className="text-muted-foreground mt-1.5 text-xs">
-              Ubah nama lengkap dan email akun Anda saat ini.
+              Ubah nama akun Anda.
             </DialogDescription>
           </DialogHeader>
 
           <div className="mt-8 space-y-5">
             <div className="space-y-2">
-              <Label
-                htmlFor="dialog-name"
-                className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase"
-              >
-                Nama Lengkap
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label
+                  htmlFor="dialog-name"
+                  className="text-foreground font-medium"
+                >
+                  Nama
+                </Label>
+              </div>
               <Input
-                id="dialog-name"
                 {...register('name')}
-                placeholder="Masukkan nama lengkap..."
-                className="bg-secondary/5 border-border/40 h-11 text-sm transition-all focus:bg-transparent"
-                required
+                id="dialog-name"
+                type="text"
+                placeholder="Masukkan nama"
+                className={`border-border bg-background focus:border-primary focus:ring-primary h-12 rounded-xl pr-12 ${
+                  errors.name ? 'border-destructive' : ''
+                }`}
               />
               {errors.name && (
-                <p className="text-destructive text-[10px] font-medium">
+                <p className="text-destructive text-xs italic">
                   {errors.name.message}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label
-                htmlFor="dialog-email"
-                className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase"
-              >
-                Email
-              </Label>
-              <Input
-                id="dialog-email"
-                type="email"
-                {...register('email')}
-                placeholder="Masukkan email baru..."
-                className="bg-secondary/5 border-border/40 h-11 text-sm transition-all focus:bg-transparent"
-              />
-              {errors.email && (
-                <p className="text-destructive text-[10px] font-medium">
-                  {errors.email.message}
                 </p>
               )}
             </div>
@@ -144,17 +135,17 @@ export default function EditProfileModal({
               type="button"
               variant="ghost"
               onClick={handleCloseModal}
-              disabled={isPendingUpdateNameAndEmail}
+              disabled={isPendingUpdateName}
               className="text-muted-foreground hover:bg-secondary hover:text-foreground h-11 px-6 text-xs font-semibold tracking-wide uppercase"
             >
               Batal
             </Button>
             <Button
               type="submit"
-              disabled={isPendingUpdateNameAndEmail}
+              disabled={isPendingUpdateName}
               className="bg-primary hover:bg-primary-dark shadow-primary/20 relative h-11 px-10 text-xs font-bold tracking-wide uppercase shadow-lg transition-all active:scale-95"
             >
-              {isPendingUpdateNameAndEmail ? (
+              {isPendingUpdateName ? (
                 <>
                   <span className="invisible text-transparent">Simpan</span>
                   <div className="absolute inset-0 flex items-center justify-center">

@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import {
   UpdatePasswordFormValues,
   updatePasswordSchema,
-} from '@/validations/admin/create-update-member';
+} from '@/validations/admin/create-update-setting';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';

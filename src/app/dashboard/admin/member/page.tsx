@@ -305,7 +305,7 @@ export default function MemberManagementPage() {
                               size="icon"
                               className={`hover:bg-secondary h-8 w-8 transition-colors ${
                                 member.status === USER_STATUS_VALUES.ACTIVE
-                                  ? 'text-accent hover:text-accent hover:bg-secondary'
+                                  ? 'text-accent-dark hover:text-accent-dark hover:bg-secondary'
                                   : 'text-success hover:text-success hover:bg-secondary'
                               }`}
                               onClick={() => handleOpenModal('status', member)}

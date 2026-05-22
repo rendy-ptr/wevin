@@ -69,7 +69,7 @@ export default function LogsActivityPage() {
   const getActionColor = (action: string) => {
     return (
       ACTIVITY_ACTION_COLOR[
-        action.toLowerCase() as keyof typeof ACTIVITY_ACTION_COLOR
+        action.toUpperCase() as keyof typeof ACTIVITY_ACTION_COLOR
       ] || 'bg-secondary/20 text-foreground'
     );
   };

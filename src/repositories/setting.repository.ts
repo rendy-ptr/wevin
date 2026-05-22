@@ -56,16 +56,22 @@ export const settingRepository = {
     return user;
   },
 
-  updateNameAndEmail: async ({
-    id,
-    name,
-    email,
-  }: Pick<TUser, 'id' | 'name' | 'email'>) => {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, id),
-    });
-    await db.update(users).set({ name, email }).where(eq(users.id, id));
-    return user;
+  updateEmail: async ({ id, email }: Pick<TUser, 'id' | 'email'>) => {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ email })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  },
+
+  updateName: async ({ id, name }: Pick<TUser, 'id' | 'name'>) => {
+    const [updatedUser] = await db
+      .update(users)
+      .set({ name })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
   },
 
   getAllActivityLogs: async ({
