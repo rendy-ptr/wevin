@@ -6,7 +6,7 @@ import {
 } from '@/lib/mailer';
 import { settingRepository } from '@/repositories/setting.repository';
 import { ActivityFilterParams } from '@/types/activity.type';
-import { TUser } from '@/types/user.type';
+import { BaseUserModel } from '@/types/user.type';
 import bcrypt from 'bcryptjs';
 import { jwtVerify } from 'jose';
 import { activityService } from './activity.service';
@@ -25,7 +25,7 @@ export const settingService = {
     oldPassword,
     newPassword,
     userId,
-  }: Pick<TUser, 'id'> & {
+  }: Pick<BaseUserModel, 'id'> & {
     oldPassword: string;
     newPassword: string;
     userId: number;
@@ -75,7 +75,7 @@ export const settingService = {
     userId,
     verificationToken,
     otpCode,
-  }: Pick<TUser, 'id' | 'email'> & {
+  }: Pick<BaseUserModel, 'id' | 'email'> & {
     userId: number;
     verificationToken: string | undefined;
     otpCode: string | undefined;
@@ -129,7 +129,7 @@ export const settingService = {
     id,
     name,
     userId,
-  }: Pick<TUser, 'id' | 'name'> & {
+  }: Pick<BaseUserModel, 'id' | 'name'> & {
     userId: number;
   }) => {
     const updatedUser = await settingRepository.updateName({

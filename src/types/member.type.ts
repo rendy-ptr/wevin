@@ -1,16 +1,7 @@
 import { memberProfiles } from '@/db/schema';
-import { TPackage } from './package.type';
-import { TUser } from './user.type';
+import { InferSelectModel } from 'drizzle-orm';
 
-export type TMember = typeof memberProfiles.$inferSelect;
-
-export type UserMember = Omit<TUser, 'password'> & {
-  profile:
-    | (TMember & {
-        package: TPackage;
-      })
-    | null;
-};
+export type BaseMemberProfileModel = InferSelectModel<typeof memberProfiles>;
 
 export type MemberFilterParams = {
   search?: string;

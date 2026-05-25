@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useUpdateName } from '@/hooks/api/use-setting';
 import { useToast } from '@/hooks/use-toast';
-import { TUser } from '@/types/user.type';
+import { BaseUserModel } from '@/types/user.type';
 import {
   UpdateNameFormValues,
   updateNameSchema,
@@ -26,7 +26,7 @@ import { useForm } from 'react-hook-form';
 interface EditProfileNameModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: TUser;
+  user: Pick<BaseUserModel, 'name' | 'id'>;
 }
 
 export default function EditProfileNameModal({

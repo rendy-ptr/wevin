@@ -1,46 +1,43 @@
-export const BENEFIT_TYPE = {
-  TOGGLE: 'toggle',
-  QUOTA: 'quota',
-} as const;
-
-export const SYSTEM_PERMISSIONS = {
-  MUSIC_PLAYER: { label: 'Musik Latar Belakang', type: BENEFIT_TYPE.TOGGLE },
-  RSVP_FORM: { label: 'Formulir RSVP', type: BENEFIT_TYPE.TOGGLE },
-  GUESTBOOK: { label: 'Buku Tamu Digital', type: BENEFIT_TYPE.TOGGLE },
-  DIGITAL_GIFT: { label: 'Kado Digital / Angpao', type: BENEFIT_TYPE.TOGGLE },
-  LIVE_STREAMING: { label: 'Link Live Streaming', type: BENEFIT_TYPE.TOGGLE },
-  REMOVED_WATERMARK: {
-    label: 'Hapus Watermark Wevin',
-    type: BENEFIT_TYPE.TOGGLE,
+export const BENEFITS_DATA = [
+  {
+    key: 'music_player',
+    label: 'Musik Latar Belakang',
+    type: 'toggle' as const,
   },
-  PASSWORD_PROTECT: { label: 'Proteksi Password', type: BENEFIT_TYPE.TOGGLE },
-  CUSTOM_MESSAGE: { label: 'Pesan Pembuka Kustom', type: BENEFIT_TYPE.TOGGLE },
-  ANALYTICS: { label: 'Analytics Tamu', type: BENEFIT_TYPE.TOGGLE },
-  EXPORT_RSVP: { label: 'Export RSVP', type: BENEFIT_TYPE.TOGGLE },
-
-  GUEST_LIMIT: { label: 'Batas Jumlah Tamu', type: BENEFIT_TYPE.QUOTA },
-  PHOTO_LIMIT: { label: 'Batas Upload Foto', type: BENEFIT_TYPE.QUOTA },
-  ACTIVE_DAYS: { label: 'Durasi Link Aktif (Hari)', type: BENEFIT_TYPE.QUOTA },
-  TEMPLATE_LIMIT: {
-    label: 'Jumlah Pilihan Template',
-    type: BENEFIT_TYPE.QUOTA,
+  { key: 'rsvp_form', label: 'Formulir RSVP', type: 'toggle' as const },
+  { key: 'guestbook', label: 'Buku Tamu Digital', type: 'toggle' as const },
+  {
+    key: 'digital_gift',
+    label: 'Kado Digital / Angpao',
+    type: 'toggle' as const,
   },
-} as const;
-
-export type SystemAction = keyof typeof SYSTEM_PERMISSIONS;
-
-export const SYSTEM_ACTIONS = Object.keys(SYSTEM_PERMISSIONS).reduce(
-  (acc, key) => {
-    acc[key as SystemAction] = key as SystemAction;
-    return acc;
+  {
+    key: 'live_streaming',
+    label: 'Link Live Streaming',
+    type: 'toggle' as const,
   },
-  {} as Record<SystemAction, SystemAction>,
-);
-
-export const SYSTEM_ACTION_LABELS = Object.fromEntries(
-  Object.entries(SYSTEM_PERMISSIONS).map(([key, def]) => [key, def.label]),
-) as Record<SystemAction, string>;
-
-export const SYSTEM_ACTION_TYPES = Object.fromEntries(
-  Object.entries(SYSTEM_PERMISSIONS).map(([key, def]) => [key, def.type]),
-) as Record<SystemAction, string>;
+  {
+    key: 'removed_watermark',
+    label: 'Hapus Watermark',
+    type: 'toggle' as const,
+  },
+  {
+    key: 'password_protect',
+    label: 'Proteksi Password',
+    type: 'toggle' as const,
+  },
+  {
+    key: 'custom_message',
+    label: 'Pesan Pembuka Kustom',
+    type: 'toggle' as const,
+  },
+  { key: 'analytics', label: 'Analytics Tamu', type: 'toggle' as const },
+  { key: 'export_rsvp', label: 'Export RSVP', type: 'toggle' as const },
+  { key: 'guest_limit', label: 'Batas Jumlah Tamu', type: 'quota' as const },
+  { key: 'photo_limit', label: 'Batas Upload Foto', type: 'quota' as const },
+  {
+    key: 'active_days',
+    label: 'Durasi Link Aktif (Hari)',
+    type: 'quota' as const,
+  },
+] as const;

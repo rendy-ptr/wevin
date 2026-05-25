@@ -15,6 +15,13 @@ export default async function proxy(req: NextRequest) {
       return NextResponse.redirect(new URL('/dashboard/member', req.nextUrl));
     }
 
+    if (
+      path.startsWith('/dashboard/member') &&
+      session.user.role !== 'member'
+    ) {
+      return NextResponse.redirect(new URL('/dashboard/admin', req.nextUrl));
+    }
+
     if (path === '/login') {
       const dest =
         session.user.role === 'admin'

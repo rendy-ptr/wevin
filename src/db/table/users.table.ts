@@ -1,0 +1,50 @@
+import {
+  USER_ROLE_VALUES,
+  USER_STATUS_VALUES,
+} from '@/constants/user.constant';
+import { relations } from 'drizzle-orm';
+import {
+  pgEnum,
+  pgTable,
+  serial,
+  text,
+  timestamp,
+  varchar,
+} from 'drizzle-orm/pg-core';
+import { activityLogs } from './activity-log.table';
+import { memberProfiles } from './member-profiles.table';
+import { memberQuotaUsage } from './member-quota-usage.table';
+
+export const userRoleEnum = pgEnum('user_role', [
+  USER_ROLE_VALUES.ADMIN,
+  USER_ROLE_VALUES.MEMBER,
+]);
+
+export const userStatusEnum = pgEnum('user_status', [
+  USER_STATUS_VALUES.ACTIVE,
+  USER_STATUS_VALUES.INACTIVE,
+]);
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  name: varchar('name', { length: 255 }).notNull(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  password: text('password').notNull(),
+  role: userRoleEnum('role').notNull().default('member'),
+  status: userStatusEnum('status').notNull().default('active'),
+  deletedAt: timestamp('deleted_at'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at')
+    .defaultNow()
+    .notNull()
+    .$onUpdate(() => new Date()),
+});
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  profile: one(memberProfiles, {
+    fields: [users.id],
+    references: [memberProfiles.userId],
+  }),
+  quotaUsages: many(memberQuotaUsage),
+  activityLogs: many(activityLogs),
+}));

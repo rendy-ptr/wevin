@@ -3,19 +3,22 @@ import {
   USER_STATUS_VALUES,
 } from '@/constants/user.constant';
 import { users } from '@/db/schema';
+import { InferSelectModel } from 'drizzle-orm';
 import { TActivityLog } from './activity.type';
+import { BasePackageBenefitModel } from './benefit.type';
+import { BaseMemberProfileModel } from './member.type';
+import { BasePackageModel } from './package.type';
 
-export type TUser = typeof users.$inferSelect;
+export type BaseUserModel = InferSelectModel<typeof users>;
 export type TUserRole =
   (typeof USER_ROLE_VALUES)[keyof typeof USER_ROLE_VALUES];
 export type TUserStatus =
   (typeof USER_STATUS_VALUES)[keyof typeof USER_STATUS_VALUES];
 
-export type TUserRelated = TUser & {
-  profile: {
-    package: {
-      id: string;
-      name: string;
+export type UserWithRelationships = Omit<BaseUserModel, 'password'> & {
+  profile: BaseMemberProfileModel & {
+    package: BasePackageModel & {
+      benefits: BasePackageBenefitModel[];
     };
   };
   activityLogs: TActivityLog[];

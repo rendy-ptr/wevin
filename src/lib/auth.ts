@@ -1,15 +1,9 @@
 import { USER_ROLE_VALUES } from '@/constants/user.constant';
+import { SessionUser } from '@/types/session.type';
 import { TUserRole } from '@/types/user.type';
 import { JWTPayload, jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-
-export interface SessionUser {
-  id: number;
-  email: string;
-  name: string;
-  role: TUserRole;
-}
 
 interface Session extends JWTPayload {
   user: SessionUser;

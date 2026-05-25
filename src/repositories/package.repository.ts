@@ -1,85 +1,131 @@
+import { BENEFITS_DATA } from '@/constants/benefit.constant';
 import { db } from '@/db';
 import { packageBenefits, packages, packageTemplates } from '@/db/schema';
-import type { PackageFilterParams } from '@/types/package.type';
-import { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
+import { BasePackageBenefitModel } from '@/types/benefit.type';
+import type {
+  BasePackageModel,
+  PackageFilterParams,
+  PackageIndexItem,
+  PackageWithRelationships,
+} from '@/types/package.type';
+import {
+  BasePackageTemplateModel,
+  BaseTemplateModel,
+} from '@/types/template.type';
+import type { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 import { and, count, eq, ilike } from 'drizzle-orm';
 
 export const packageRepository = {
   getAll: async ({
     search,
-    status,
+    isActive,
+    isPopular,
     page = 1,
     limit = 10,
-  }: PackageFilterParams) => {
+  }: PackageFilterParams): Promise<{
+    items: PackageIndexItem[];
+    total: number;
+  }> => {
     const offset = (page - 1) * limit;
 
     const whereClause = and(
       search ? ilike(packages.name, `%${search}%`) : undefined,
-      status !== undefined ? eq(packages.status, status) : undefined,
+      isActive !== undefined ? eq(packages.isActive, isActive) : undefined,
+      isPopular !== undefined ? eq(packages.isPopular, isPopular) : undefined,
     );
 
-    const items = await db.query.packages.findMany({
-      where: whereClause,
-      with: {
-        benefits: true,
-        templates: true,
-      },
-      limit,
-      offset,
-      orderBy: (packages, { desc }) => [desc(packages.createdAt)],
-    });
-
-    const [totalResult] = await db
-      .select({ value: count() })
-      .from(packages)
-      .where(whereClause);
+    const [items, [totalResult]] = await Promise.all([
+      db.query.packages.findMany({
+        where: whereClause,
+        columns: {
+          updatedAt: false,
+        },
+        with: {
+          benefits: {
+            columns: {
+              id: true,
+              benefitKey: true,
+              toggleValue: true,
+              quotaValue: true,
+            },
+          },
+          templates: {
+            with: { template: { columns: { id: true, name: true } } },
+          },
+        },
+        limit,
+        offset,
+        orderBy: (packages, { desc }) => [desc(packages.createdAt)],
+      }),
+      db.select({ value: count() }).from(packages).where(whereClause),
+    ]);
 
     return {
-      items,
+      items: items as PackageIndexItem[],
       total: totalResult.value,
     };
   },
 
-  getById: async (id: number) => {
-    const packageData = await db.query.packages.findFirst({
+  getById: async (
+    id: number,
+  ): Promise<Pick<BasePackageModel, 'id' | 'name'> | undefined> => {
+    return db.query.packages.findFirst({
       where: eq(packages.id, id),
-      with: {
-        benefits: true,
-        templates: true,
-      },
+      columns: { id: true, name: true },
     });
-
-    return packageData;
   },
 
-  getByName: async (name: string) => {
-    const packageData = await db.query.packages.findFirst({
+  getByName: async (
+    name: string,
+  ): Promise<Pick<BasePackageModel, 'id' | 'name'> | undefined> => {
+    return db.query.packages.findFirst({
       where: eq(packages.name, name),
+      columns: { id: true, name: true },
     });
-
-    return packageData;
   },
 
-  create: async (payload: CreateUpdatePackageFormValues) => {
+  getActive: async (): Promise<Pick<BasePackageModel, 'id' | 'isActive'>[]> => {
+    return db.query.packages.findMany({
+      where: eq(packages.isActive, true),
+      columns: { id: true, isActive: true },
+    });
+  },
+
+  create: async (
+    payload: CreateUpdatePackageFormValues,
+  ): Promise<BasePackageModel> => {
     const { benefits, templateIds, ...packageData } = payload;
 
-    return await db.transaction(async (tx) => {
+    return db.transaction(async (tx) => {
       const [newPackage] = await tx
         .insert(packages)
         .values(packageData)
         .returning();
 
-      if (benefits && benefits.length > 0) {
+      if (benefits?.length) {
         await tx.insert(packageBenefits).values(
-          benefits.map((b) => ({
-            packageId: newPackage.id,
-            benefitId: b.benefitId,
-            value: b.value,
-          })),
+          benefits.map((b) => {
+            const benefitDef = BENEFITS_DATA.find(
+              (def) => def.key === b.benefitKey,
+            );
+            if (!benefitDef)
+              throw new Error(
+                `Benefit key "${b.benefitKey}" tidak ada di konstanta`,
+              );
+
+            return {
+              packageId: newPackage.id,
+              benefitKey: b.benefitKey,
+              toggleValue:
+                benefitDef.type === 'toggle' ? (b.toggleValue ?? null) : null,
+              quotaValue:
+                benefitDef.type === 'quota' ? (b.quotaValue ?? null) : null,
+            };
+          }),
         );
       }
 
-      if (templateIds && templateIds.length > 0) {
+      if (templateIds?.length) {
         await tx.insert(packageTemplates).values(
           templateIds.map((templateId) => ({
             packageId: newPackage.id,
@@ -88,14 +134,17 @@ export const packageRepository = {
         );
       }
 
-      return newPackage;
+      return newPackage as BasePackageModel;
     });
   },
 
-  update: async (id: number, payload: CreateUpdatePackageFormValues) => {
+  update: async (
+    id: number,
+    payload: CreateUpdatePackageFormValues,
+  ): Promise<BasePackageModel> => {
     const { benefits, templateIds, ...packageData } = payload;
 
-    return await db.transaction(async (tx) => {
+    return db.transaction(async (tx) => {
       const [updatedPackage] = await tx
         .update(packages)
         .set(packageData)
@@ -107,42 +156,126 @@ export const packageRepository = {
         .delete(packageTemplates)
         .where(eq(packageTemplates.packageId, id));
 
-      if (benefits && benefits.length > 0) {
+      if (benefits?.length) {
         await tx.insert(packageBenefits).values(
-          benefits.map((b) => ({
-            packageId: id,
-            benefitId: b.benefitId,
-            value: b.value,
-          })),
+          benefits.map((b) => {
+            const benefitDef = BENEFITS_DATA.find(
+              (def) => def.key === b.benefitKey,
+            );
+            if (!benefitDef)
+              throw new Error(
+                `Benefit key "${b.benefitKey}" tidak ada di konstanta`,
+              );
+
+            return {
+              packageId: id,
+              benefitKey: b.benefitKey,
+              toggleValue:
+                benefitDef.type === 'toggle' ? (b.toggleValue ?? null) : null,
+              quotaValue:
+                benefitDef.type === 'quota' ? (b.quotaValue ?? null) : null,
+            };
+          }),
         );
       }
 
-      if (templateIds && templateIds.length > 0) {
-        await tx.insert(packageTemplates).values(
-          templateIds.map((templateId) => ({
-            packageId: id,
-            templateId,
-          })),
-        );
+      if (templateIds?.length) {
+        await tx
+          .insert(packageTemplates)
+          .values(
+            templateIds.map((templateId) => ({ packageId: id, templateId })),
+          );
       }
 
-      return updatedPackage;
+      return updatedPackage as BasePackageModel;
     });
   },
 
-  delete: async (id: number) => {
+  delete: async (id: number): Promise<BasePackageModel | undefined> => {
     const [result] = await db
       .delete(packages)
       .where(eq(packages.id, id))
       .returning();
-    return result;
+    return result as BasePackageModel;
   },
 
-  getActive: async () => {
-    const packageData = await db.query.packages.findMany({
-      where: eq(packages.status, 'active'),
-    });
+  getPackageWithRelationships: async (
+    id: number,
+  ): Promise<PackageWithRelationships | undefined> => {
+    return db.query.packages.findFirst({
+      where: eq(packages.id, id),
+      columns: {
+        createdAt: false,
+        updatedAt: false,
+      },
+      with: {
+        benefits: {
+          columns: {
+            id: true,
+            benefitKey: true,
+            toggleValue: true,
+            quotaValue: true,
+          },
+        },
+        templates: {
+          with: {
+            template: {
+              columns: { id: true, name: true },
+            },
+          },
+        },
+        members: {
+          with: {
+            user: {
+              columns: { id: true, name: true },
+            },
+          },
+        },
+      },
+    }) as Promise<PackageWithRelationships | undefined>;
+  },
 
-    return packageData;
+  getPackageActiveWithBenefits: async (): Promise<
+    (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
+      benefits: Pick<
+        BasePackageBenefitModel,
+        'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
+      >[];
+      templates: (BasePackageTemplateModel & {
+        template: Pick<BaseTemplateModel, 'id' | 'name'>;
+      })[];
+    })[]
+  > => {
+    return db.query.packages.findMany({
+      where: eq(packages.isActive, true),
+      columns: { id: true, name: true, price: true },
+      with: {
+        benefits: {
+          columns: {
+            id: true,
+            benefitKey: true,
+            toggleValue: true,
+            quotaValue: true,
+          },
+        },
+        templates: {
+          with: {
+            template: {
+              columns: { id: true, name: true },
+            },
+          },
+        },
+      },
+    }) as Promise<
+      (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
+        benefits: Pick<
+          BasePackageBenefitModel,
+          'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
+        >[];
+        templates: (BasePackageTemplateModel & {
+          template: Pick<BaseTemplateModel, 'id' | 'name'>;
+        })[];
+      })[]
+    >;
   },
 };

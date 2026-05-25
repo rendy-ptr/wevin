@@ -1,17 +1,27 @@
 import { getSession } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { packageService } from '@/services/package.service';
-import { PackageFilterParams } from '@/types/package.type';
+import {
+  BasePackageModel,
+  PackageFilterParams,
+  PackageIndexItem,
+} from '@/types/package.type';
 import { createUpdatePackageSchema } from '@/validations/admin/create-update-package';
 import { NextResponse } from 'next/server';
-import { ZodError } from 'zod';
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<
+  NextResponse<{
+    success: boolean;
+    message: string;
+    data: { items: PackageIndexItem[]; total: number } | undefined;
+  }>
+> {
   try {
     const { searchParams } = new URL(request.url);
     const filters = {
       search: searchParams.get('search') || undefined,
-      status: searchParams.get('status') || undefined,
+      isActive: searchParams.get('isActive') || undefined,
+      isPopular: searchParams.get('isPopular') || undefined,
       page: parseInt(searchParams.get('page') || '1'),
       limit: parseInt(searchParams.get('limit') || '10'),
     } as PackageFilterParams;
@@ -32,14 +42,20 @@ export async function GET(request: Request) {
       {
         success: false,
         message,
-        data: null,
+        data: undefined,
       },
       { status },
     );
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: Request): Promise<
+  NextResponse<{
+    success: boolean;
+    message: string;
+    data: BasePackageModel | undefined;
+  }>
+> {
   try {
     const session = await getSession();
     if (!session) {
@@ -47,15 +63,28 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const validatedData = createUpdatePackageSchema.parse(body);
-    const { name, description, status, price, benefits, templateIds } =
-      validatedData;
+    const parsed = createUpdatePackageSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Validation failed',
+          data: undefined,
+          errors: parsed.error,
+        },
+        { status: 400 },
+      );
+    }
+
+    const { name, description, isActive, price, benefits, templateIds } =
+      parsed.data;
 
     const packageData = await packageService.create(
       {
         name,
         description,
-        status,
+        isActive,
         price,
         benefits,
         templateIds,
@@ -71,16 +100,6 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error: unknown) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Validation failed',
-          errors: error.issues,
-        },
-        { status: 400 },
-      );
-    }
     const isAppError = error instanceof AppError;
     const message =
       error instanceof Error ? error.message : 'Internal Server Error';
@@ -90,7 +109,7 @@ export async function POST(request: Request) {
       {
         success: false,
         message,
-        data: null,
+        data: undefined,
       },
       { status },
     );

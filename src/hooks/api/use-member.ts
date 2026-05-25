@@ -1,7 +1,7 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
-import type { MemberFilterParams, UserMember } from '@/types/member.type';
-import { TUserStatus } from '@/types/user.type';
+import type { MemberFilterParams } from '@/types/member.type';
+import { TUserStatus, UserWithRelationships } from '@/types/user.type';
 import { CreateUpdateMemberFormValues } from '@/validations/admin/create-update-member';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -21,7 +21,10 @@ export const useGetMembers = ({
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
-      return response.data.data as { items: UserMember[]; total: number };
+      return response.data.data as {
+        items: UserWithRelationships[];
+        total: number;
+      };
     },
   });
 };

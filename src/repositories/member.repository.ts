@@ -138,24 +138,24 @@ export const memberRepository = {
     return updatedUser;
   },
 
-  getPermissions: async (id: number) => {
-    return await db.query.users.findFirst({
-      where: eq(users.id, id),
-      with: {
-        profile: {
-          with: {
-            package: {
-              with: {
-                benefits: {
-                  with: {
-                    benefit: true,
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    });
-  },
+  // getPermissions: async (id: number) => {
+  //   return await db.query.users.findFirst({
+  //     where: eq(users.id, id),
+  //     with: {
+  //       profile: {
+  //         with: {
+  //           package: {
+  //             with: {
+  //               benefits: {
+  //                 with: {
+  //                   benefit: true,
+  //                 },
+  //               },
+  //             },
+  //           },
+  //         },
+  //       },
+  //     },
+  //   });
+  // },
 };

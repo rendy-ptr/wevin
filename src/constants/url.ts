@@ -6,6 +6,7 @@ export const API_URL = {
     LOGOUT: `${API_BASE_URL}/api/auth/logout`,
     ME: `${API_BASE_URL}/api/auth/me`,
     LOGIN_PAGE: `${API_BASE_URL}/login`,
+    SESSION: `${API_BASE_URL}/api/auth/session`,
   },
   MEMBER: {
     GET: `${API_BASE_URL}/api/member`,
@@ -22,6 +23,7 @@ export const API_URL = {
     DELETE: (id: number) => `${API_BASE_URL}/api/package/${id}`,
     INDEX: `${API_BASE_URL}/dashboard/admin/package`,
     GET_BY_ID: (id: number) => `${API_BASE_URL}/api/package/edit/${id}`,
+    GET_ACTIVE: `${API_BASE_URL}/api/package/active`,
   },
   BENEFIT: {
     GET: `${API_BASE_URL}/api/benefit`,

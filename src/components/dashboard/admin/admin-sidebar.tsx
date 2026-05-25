@@ -3,8 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { SIDEBAR_LINKS } from '@/constants/admin-sidebar';
 import { useLogout } from '@/hooks/api/use-auth';
+import { useSession } from '@/hooks/use-session';
 import { useToast } from '@/hooks/use-toast';
-import { SessionUser } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 import { isAxiosError } from 'axios';
 import { Heart, LogOut, Menu, X } from 'lucide-react';
@@ -12,11 +12,8 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
-interface AdminSidebarProps {
-  user: SessionUser;
-}
-
-export function AdminSidebar({ user }: AdminSidebarProps) {
+export function AdminSidebar() {
+  const { user, isLoading } = useSession();
   const pathname = usePathname();
   const router = useRouter();
   const { toast } = useToast();
@@ -127,24 +124,36 @@ export function AdminSidebar({ user }: AdminSidebarProps) {
 
         <div className="border-sidebar-border border-t p-4">
           <div className="mb-4 flex items-center gap-3">
-            <div className="bg-primary/20 flex h-10 w-10 items-center justify-center rounded-full">
-              <span className="text-primary-dark font-serif font-semibold">
-                {user.name
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .toUpperCase()
-                  .slice(0, 2)}
-              </span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-sidebar-foreground truncate font-medium">
-                {user.name}
-              </p>
-              <p className="text-muted-foreground truncate text-xs">
-                {user.email}
-              </p>
-            </div>
+            {isLoading || !user ? (
+              <>
+                <div className="bg-sidebar-accent h-10 w-10 animate-pulse rounded-full" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="bg-sidebar-accent h-4 w-24 animate-pulse rounded" />
+                  <div className="bg-sidebar-accent h-3 w-32 animate-pulse rounded" />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-primary/20 flex h-10 w-10 items-center justify-center rounded-full">
+                  <span className="text-primary-dark font-serif font-semibold">
+                    {user.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sidebar-foreground truncate font-medium">
+                    {user.name}
+                  </p>
+                  <p className="text-muted-foreground truncate text-xs">
+                    {user.email}
+                  </p>
+                </div>
+              </>
+            )}
           </div>
           <Button
             variant="outline"

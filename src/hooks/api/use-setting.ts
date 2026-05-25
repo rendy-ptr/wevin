@@ -1,7 +1,7 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
 import { ActivityFilterParams, TActivityLog } from '@/types/activity.type';
-import { TUser, TUserRelated } from '@/types/user.type';
+import { BaseUserModel, UserWithRelationships } from '@/types/user.type';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useGetSettings = () => {
@@ -12,7 +12,7 @@ export const useGetSettings = () => {
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
-      return response.data.data as TUserRelated;
+      return response.data.data as UserWithRelationships;
     },
   });
 };
@@ -26,7 +26,7 @@ export const useUpdatePassword = () => {
       password,
       oldPassword,
       confirmPassword,
-    }: Pick<TUser, 'id' | 'password'> & {
+    }: Pick<BaseUserModel, 'id' | 'password'> & {
       oldPassword: string;
       confirmPassword: string;
     }) => {
@@ -53,7 +53,7 @@ export const useUpdateEmail = () => {
       email,
       verificationToken,
       otpCode,
-    }: Pick<TUser, 'id' | 'email'> & {
+    }: Pick<BaseUserModel, 'id' | 'email'> & {
       verificationToken?: string;
       otpCode?: string;
     }) => {
@@ -67,6 +67,7 @@ export const useUpdateEmail = () => {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
       queryClient.invalidateQueries({ queryKey: ['settings', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['session'] });
     },
   });
 };
@@ -75,7 +76,7 @@ export const useUpdateName = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, name }: Pick<TUser, 'id' | 'name'>) => {
+    mutationFn: async ({ id, name }: Pick<BaseUserModel, 'id' | 'name'>) => {
       const response = await api.patch(API_URL.SETTING.UPDATE_NAME(id), {
         name,
       });
@@ -84,6 +85,7 @@ export const useUpdateName = () => {
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
       queryClient.invalidateQueries({ queryKey: ['settings', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['session'] });
     },
   });
 };

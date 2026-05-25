@@ -1,14 +1,21 @@
 import { AppError } from '@/lib/errors';
 import { packageService } from '@/services/package.service';
+import { PackageWithRelationships } from '@/types/package.type';
 import { NextResponse } from 'next/server';
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
-) {
+): Promise<
+  NextResponse<{
+    success: boolean;
+    message: string;
+    data: PackageWithRelationships | undefined;
+  }>
+> {
   try {
     const { id } = await params;
-    const packageData = await packageService.findById(Number(id));
+    const packageData = await packageService.getWithRelationships(Number(id));
 
     return NextResponse.json(
       {
@@ -28,7 +35,7 @@ export async function GET(
       {
         success: false,
         message,
-        data: null,
+        data: undefined,
       },
       { status },
     );
