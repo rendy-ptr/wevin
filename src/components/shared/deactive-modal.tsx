@@ -9,7 +9,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { USER_STATUS_VALUES } from '@/constants/user.constant';
-import { UserMember } from '@/types/member.type';
+import { UserWithRelationships } from '@/types/user.type';
 import { Loader2 } from 'lucide-react';
 
 interface DeactiveModalProps {
@@ -17,7 +17,7 @@ interface DeactiveModalProps {
   onClose: () => void;
   onConfirm: () => void;
   isLoading?: boolean;
-  member: UserMember | null;
+  member: UserWithRelationships | null;
 }
 
 export default function DeactiveModal({

@@ -1,14 +1,20 @@
 import { getSession } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { packageService } from '@/services/package.service';
+import { BasePackageModel } from '@/types/package.type';
 import { createUpdatePackageSchema } from '@/validations/admin/create-update-package';
 import { NextResponse } from 'next/server';
-import { ZodError } from 'zod';
 
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
-) {
+): Promise<
+  NextResponse<{
+    success: boolean;
+    message: string;
+    data: BasePackageModel | undefined;
+  }>
+> {
   try {
     const session = await getSession();
     if (!session) {
@@ -17,11 +23,23 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const validatedData = createUpdatePackageSchema.parse(body);
+    const parsed = createUpdatePackageSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Validation failed',
+          data: undefined,
+          errors: parsed.error.issues,
+        },
+        { status: 400 },
+      );
+    }
 
     const packageData = await packageService.update(
       Number(id),
-      validatedData,
+      parsed.data,
       session.user.id,
     );
 
@@ -34,16 +52,6 @@ export async function PUT(
       { status: 200 },
     );
   } catch (error: unknown) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Validation failed',
-          errors: error.issues,
-        },
-        { status: 400 },
-      );
-    }
     const isAppError = error instanceof AppError;
     const message =
       error instanceof Error ? error.message : 'Internal Server Error';
@@ -53,7 +61,7 @@ export async function PUT(
       {
         success: false,
         message,
-        data: null,
+        data: undefined,
       },
       { status },
     );
@@ -63,7 +71,13 @@ export async function PUT(
 export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
-) {
+): Promise<
+  NextResponse<{
+    success: boolean;
+    message: string;
+    data: BasePackageModel | undefined;
+  }>
+> {
   try {
     const session = await getSession();
     if (!session) {
@@ -94,7 +108,7 @@ export async function DELETE(
       {
         success: false,
         message,
-        data: null,
+        data: undefined,
       },
       { status },
     );

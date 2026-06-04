@@ -16,7 +16,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { useSendOtp, useUpdateEmail } from '@/hooks/api/use-setting';
 import { useToast } from '@/hooks/use-toast';
-import { TUser } from '@/types/user.type';
+import { BaseUserModel } from '@/types/user.type';
 import {
   UpdateEmailFormValues,
   updateEmailSchema,
@@ -31,7 +31,7 @@ import { useForm } from 'react-hook-form';
 interface EditProfileEmailModalProps {
   isOpen: boolean;
   onClose: () => void;
-  user: Pick<TUser, 'email' | 'id'>;
+  user: Pick<BaseUserModel, 'email' | 'id'>;
 }
 
 export default function EditProfileEmailModal({

@@ -8,7 +8,7 @@ import {
   getUpdatePasswordNotificationEmailHtml,
   getWelcomeEmailHtml,
 } from '@/templates/email.template';
-import { TUser, TUserStatus } from '@/types/user.type';
+import { BaseUserModel, TUserStatus } from '@/types/user.type';
 import nodemailer from 'nodemailer';
 
 const transporterConfig = {
@@ -137,7 +137,7 @@ export const sendStatusNotificationEmail = async (
 export const sendUpdatePasswordNotificationEmail = async ({
   email,
   name,
-}: Pick<TUser, 'email' | 'name'>) => {
+}: Pick<BaseUserModel, 'email' | 'name'>) => {
   const subscribeUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}`;
 
   const mailOptions = {
@@ -166,7 +166,7 @@ export const sendUpdatePasswordNotificationEmail = async ({
 export const sendUpdateNameNotificationEmail = async ({
   email,
   name,
-}: Pick<TUser, 'email' | 'name'>) => {
+}: Pick<BaseUserModel, 'email' | 'name'>) => {
   const subscribeUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}`;
 
   const mailOptions = {
@@ -195,7 +195,7 @@ export const sendUpdateNameNotificationEmail = async ({
 export const sendUpdateEmailNotificationEmail = async ({
   email,
   name,
-}: Pick<TUser, 'email' | 'name'>) => {
+}: Pick<BaseUserModel, 'email' | 'name'>) => {
   const subscribeUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}`;
 
   const mailOptions = {

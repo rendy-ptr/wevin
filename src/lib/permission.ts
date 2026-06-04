@@ -1,44 +1,41 @@
-import { SystemAction } from '@/constants/benefit.constant';
-import { BenefitValue } from '@/types/benefit.type';
+import { BenefitKeyType } from '@/types/benefit.type';
+import { SessionPackage } from '@/types/session.type';
 
-export interface UserWithPermissions {
-  profile?: {
-    package?: {
-      benefits?: Array<{
-        value: BenefitValue;
-        benefit: {
-          key: string;
-        };
-      }>;
-    } | null;
-  } | null;
-}
+export function createPermission(pkg: SessionPackage | null) {
+  if (!pkg) {
+    return {
+      can: (_key: BenefitKeyType) => false,
+      getQuota: (_key: BenefitKeyType) => 0,
+      isUnlimited: (_key: BenefitKeyType) => false,
+      canAdd: (_key: BenefitKeyType, _used: number) => false,
+      hasTemplate: (_templateId: number) => false,
+    };
+  }
 
-export function getBenefit(
-  user: UserWithPermissions | null | undefined,
-  action: SystemAction,
-): BenefitValue {
-  if (!user) return null;
-  const benefits = user.profile?.package?.benefits ?? [];
-  const found = benefits.find((b) => b.benefit.key === action);
-  return found?.value ?? null;
-}
+  const benefitMap = new Map(pkg.benefits.map((b) => [b.benefitKey, b]));
 
-export function can(
-  user: UserWithPermissions | null | undefined,
-  action: SystemAction,
-): boolean {
-  const val = getBenefit(user, action);
-  return val === true;
-}
+  return {
+    can(key: BenefitKeyType): boolean {
+      return benefitMap.get(key)?.toggleValue === true;
+    },
 
-export function limit(
-  user: UserWithPermissions | null | undefined,
-  action: SystemAction,
-): number {
-  const val = getBenefit(user, action);
-  if (val === null || val === undefined) return 0;
-  if (typeof val === 'number') return val;
-  const parsed = parseInt(String(val), 10);
-  return isNaN(parsed) ? 0 : parsed;
+    getQuota(key: BenefitKeyType): number {
+      return benefitMap.get(key)?.quotaValue ?? 0;
+    },
+
+    isUnlimited(key: BenefitKeyType): boolean {
+      return benefitMap.get(key)?.quotaValue === -1;
+    },
+
+    canAdd(key: BenefitKeyType, used: number): boolean {
+      const quota = benefitMap.get(key)?.quotaValue;
+      if (quota === undefined) return false;
+      if (quota === -1) return true;
+      return used < (quota ?? 0);
+    },
+
+    hasTemplate(templateId: number): boolean {
+      return pkg.templateIds.includes(templateId);
+    },
+  };
 }

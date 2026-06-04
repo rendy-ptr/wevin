@@ -4,6 +4,7 @@ import PackageForm from '@/components/dashboard/admin/package-form';
 import { API_URL } from '@/constants/url';
 import { useGetPackageById, useUpdatePackage } from '@/hooks/api/use-package';
 import { useToast } from '@/hooks/use-toast';
+import { BenefitKeyType } from '@/types/benefit.type';
 import { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 import { isAxiosError } from 'axios';
 import { Loader2 } from 'lucide-react';
@@ -21,29 +22,30 @@ export default function EditPackagePage() {
     isError,
   } = useGetPackageById(Number(id));
 
-  const updateMutation = useUpdatePackage();
+  const { mutate: updateMutation, isPending: isLoadingUpdate } =
+    useUpdatePackage();
 
-  const formattedInitialData = useMemo(() => {
+  const formattedInitialData = useMemo<
+    CreateUpdatePackageFormValues | undefined
+  >(() => {
     if (!pkg) return undefined;
     return {
       name: pkg.name,
       description: pkg.description || '',
       price: pkg.price,
-      status: pkg.status,
-      benefits: (pkg.benefits || []).map(
-        (b: { benefitId: number; value: string }) => ({
-          benefitId: b.benefitId,
-          value: b.value,
-        }),
-      ),
-      templateIds: (pkg.templates || []).map(
-        (t: { templateId: number }) => t.templateId,
-      ),
+      isActive: pkg.isActive,
+      isPopular: pkg.isPopular,
+      benefits: pkg.benefits.map((b) => ({
+        benefitKey: b.benefitKey as BenefitKeyType,
+        toggleValue: b.toggleValue ?? undefined,
+        quotaValue: b.quotaValue ?? undefined,
+      })),
+      templateIds: pkg.templates.map((t) => t.id),
     };
   }, [pkg]);
 
   const onSubmit = (data: CreateUpdatePackageFormValues) => {
-    updateMutation.mutate(
+    updateMutation(
       { id: Number(id), ...data },
       {
         onSuccess: () => {
@@ -105,7 +107,7 @@ export default function EditPackagePage() {
     <PackageForm
       title={`Edit Paket: ${pkg.name}`}
       onSubmit={onSubmit}
-      isLoading={updateMutation.isPending}
+      isLoading={isLoadingUpdate}
       initialData={formattedInitialData}
     />
   );

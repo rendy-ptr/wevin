@@ -25,6 +25,20 @@ export const authService = {
       email: user.email,
       name: user.name,
       role: user.role,
+      package: user.profile?.package
+        ? {
+            id: user.profile.package.id,
+            name: user.profile.package.name,
+            benefits: user.profile.package.benefits.map((b) => ({
+              benefitKey: b.benefitKey,
+              toggleValue: b.toggleValue,
+              quotaValue: b.quotaValue,
+            })),
+            templateIds: user.profile.package.templates.map(
+              (t) => t.templateId,
+            ),
+          }
+        : null,
     };
 
     await login(sessionUser);

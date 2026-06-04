@@ -1,42 +1,66 @@
-import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
 import { BusinessError, DuplicateError, NotFoundError } from '@/lib/errors';
 import { packageRepository } from '@/repositories/package.repository';
 import { activityService } from '@/services/activity.service';
-import type { PackageFilterParams } from '@/types/package.type';
+import { BasePackageBenefitModel } from '@/types/benefit.type';
+import type {
+  BasePackageModel,
+  PackageFilterParams,
+  PackageIndexItem,
+  PackageWithRelationships,
+} from '@/types/package.type';
+import {
+  BasePackageTemplateModel,
+  BaseTemplateModel,
+} from '@/types/template.type';
 import { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 
 export const packageService = {
-  getAll: async ({ search, status, page, limit }: PackageFilterParams) => {
+  getAll: async ({
+    search,
+    isActive,
+    isPopular,
+    page,
+    limit,
+  }: PackageFilterParams): Promise<{
+    items: PackageIndexItem[];
+    total: number;
+  }> => {
     return await packageRepository.getAll({
       search,
-      status,
+      isActive,
+      isPopular,
       page,
       limit,
     });
   },
 
-  findById: async (id: number) => {
-    const packageData = await packageRepository.getById(id);
+  findById: async (
+    id: number,
+  ): Promise<Pick<BasePackageModel, 'id'> | undefined> => {
+    const getPackageById = await packageRepository.getById(id);
 
-    if (!packageData) {
+    if (!getPackageById) {
       throw new NotFoundError('Package not found');
     }
 
-    return packageData;
+    return getPackageById;
   },
 
-  create: async (payload: CreateUpdatePackageFormValues, userId?: number) => {
+  create: async (
+    payload: CreateUpdatePackageFormValues,
+    userId?: number,
+  ): Promise<BasePackageModel> => {
     const existingPackage = await packageRepository.getByName(payload.name);
 
     if (existingPackage) {
       throw new DuplicateError('Package already exists');
     }
 
-    if (payload.status === PACKAGE_STATUS_VALUES.ACTIVE) {
+    if (payload.isActive) {
       const existingActivePackage = await packageRepository.getActive();
 
-      if (existingActivePackage.length >= 3) {
-        throw new BusinessError('Only 3 active packages are allowed');
+      if (existingActivePackage.length >= 4) {
+        throw new BusinessError('Only 4 active packages are allowed');
       }
     }
 
@@ -59,7 +83,7 @@ export const packageService = {
     id: number,
     payload: CreateUpdatePackageFormValues,
     userId?: number,
-  ) => {
+  ): Promise<BasePackageModel> => {
     const packageData = await packageRepository.getById(id);
 
     if (!packageData) {
@@ -81,7 +105,10 @@ export const packageService = {
     return updatedPackage;
   },
 
-  delete: async (id: number, userId?: number) => {
+  delete: async (
+    id: number,
+    userId?: number,
+  ): Promise<BasePackageModel | undefined> => {
     const packageData = await packageRepository.getById(id);
 
     if (!packageData) {
@@ -101,5 +128,32 @@ export const packageService = {
     }
 
     return result;
+  },
+
+  getActiveWithBenefits: async (): Promise<
+    (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
+      benefits: Pick<
+        BasePackageBenefitModel,
+        'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
+      >[];
+      templates: (BasePackageTemplateModel & {
+        template: Pick<BaseTemplateModel, 'id' | 'name'>;
+      })[];
+    })[]
+  > => {
+    const packages = await packageRepository.getPackageActiveWithBenefits();
+    return packages;
+  },
+
+  getWithRelationships: async (
+    id: number,
+  ): Promise<PackageWithRelationships | undefined> => {
+    const packageData = await packageRepository.getPackageWithRelationships(id);
+
+    if (!packageData) {
+      throw new NotFoundError('Package not found');
+    }
+
+    return packageData;
   },
 };

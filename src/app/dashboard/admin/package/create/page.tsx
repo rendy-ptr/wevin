@@ -12,15 +12,16 @@ export default function CreatePackagePage() {
   const { toast } = useToast();
   const router = useRouter();
 
-  const createMutation = useCreatePackage();
+  const { mutate: createPackage, isPending: createPackageLoading } =
+    useCreatePackage();
 
   const onSubmit = (data: CreateUpdatePackageFormValues) => {
-    createMutation.mutate(data, {
-      onSuccess: (res) => {
+    createPackage(data, {
+      onSuccess: () => {
         toast({
           title: 'Paket berhasil ditambahkan',
           variant: 'default',
-          description: `Paket ${res.data.name} berhasil ditambahkan!`,
+          description: `Paket ${data.name} berhasil ditambahkan!`,
         });
         router.push(API_URL.PACKAGE.INDEX);
       },
@@ -44,7 +45,7 @@ export default function CreatePackagePage() {
     <PackageForm
       title="Tambah Paket Baru"
       onSubmit={onSubmit}
-      isLoading={createMutation.isPending}
+      isLoading={createPackageLoading}
     />
   );
 }

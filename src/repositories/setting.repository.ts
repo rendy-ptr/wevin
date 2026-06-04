@@ -1,7 +1,7 @@
 import { db } from '@/db';
 import { activityLogs, users } from '@/db/schema';
 import { ActivityFilterParams } from '@/types/activity.type';
-import { TUser } from '@/types/user.type';
+import { BaseUserModel } from '@/types/user.type';
 import { and, count, eq, gte, ilike, lte, or } from 'drizzle-orm';
 
 export const settingRepository = {
@@ -44,7 +44,10 @@ export const settingRepository = {
     return user;
   },
 
-  updatePassword: async ({ id, password }: Pick<TUser, 'id' | 'password'>) => {
+  updatePassword: async ({
+    id,
+    password,
+  }: Pick<BaseUserModel, 'id' | 'password'>) => {
     const user = await db.query.users.findFirst({
       where: eq(users.id, id),
       columns: {
@@ -56,7 +59,7 @@ export const settingRepository = {
     return user;
   },
 
-  updateEmail: async ({ id, email }: Pick<TUser, 'id' | 'email'>) => {
+  updateEmail: async ({ id, email }: Pick<BaseUserModel, 'id' | 'email'>) => {
     const [updatedUser] = await db
       .update(users)
       .set({ email })
@@ -65,7 +68,7 @@ export const settingRepository = {
     return updatedUser;
   },
 
-  updateName: async ({ id, name }: Pick<TUser, 'id' | 'name'>) => {
+  updateName: async ({ id, name }: Pick<BaseUserModel, 'id' | 'name'>) => {
     const [updatedUser] = await db
       .update(users)
       .set({ name })

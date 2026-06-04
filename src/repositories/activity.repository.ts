@@ -1,6 +1,10 @@
 import { db } from '@/db';
 import { activityLogs } from '@/db/schema';
-import type { ActivityFilterParams } from '@/types/activity.type';
+import type {
+  ActivityFilterParams,
+  ActivityIndexItem,
+  BaseActivityLogModel,
+} from '@/types/activity.type';
 import {
   and,
   count,
@@ -20,7 +24,10 @@ export const activityRepository = {
     action,
     page = 1,
     limit = 10,
-  }: ActivityFilterParams) => {
+  }: ActivityFilterParams): Promise<{
+    items: ActivityIndexItem[];
+    total: number;
+  }> => {
     const offset = (page - 1) * limit;
 
     const whereClause = and(
@@ -57,28 +64,21 @@ export const activityRepository = {
       .where(whereClause);
 
     return {
-      items,
+      items: items as ActivityIndexItem[],
       total: totalResult.value,
     };
   },
 
-  getById: async (id: number) => {
-    const activity = await db.query.activityLogs.findFirst({
-      where: eq(activityLogs.id, id),
-      with: {
-        user: {
-          columns: {
-            name: true,
-            email: true,
-            role: true,
-          },
-        },
-      },
-    });
-    return activity;
-  },
+  // getById: async (id: number): Promise<BaseActivityLogModel | undefined> => {
+  //   const activity = await db.query.activityLogs.findFirst({
+  //     where: eq(activityLogs.id, id),
+  //   });
+  //   return activity as BaseActivityLogModel;
+  // },
 
-  create: async (data: InferInsertModel<typeof activityLogs>) => {
+  create: async (
+    data: InferInsertModel<typeof activityLogs>,
+  ): Promise<BaseActivityLogModel> => {
     const [activity] = await db.insert(activityLogs).values(data).returning();
     return activity;
   },

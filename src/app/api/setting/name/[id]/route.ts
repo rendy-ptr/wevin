@@ -1,4 +1,4 @@
-import { getSession } from '@/lib/auth';
+import { getSession, login } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { settingService } from '@/services/setting.service';
 import { updateNameSchema } from '@/validations/admin/create-update-setting';
@@ -24,6 +24,14 @@ export async function PATCH(
       id: Number(id),
       name,
       userId: session.user.id,
+    });
+
+    await login({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      package: session.user.package,
     });
 
     return NextResponse.json(

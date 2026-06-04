@@ -39,6 +39,7 @@ export async function PATCH(
       email: user.email,
       name: user.name,
       role: user.role,
+      package: session.user.package,
     });
 
     return NextResponse.json(

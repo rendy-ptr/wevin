@@ -10,13 +10,12 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
 import { useDeletePackage, useGetPackages } from '@/hooks/api/use-package';
 import { useToast } from '@/hooks/use-toast';
 import { formatCurrency } from '@/lib/currency';
 import { formatDate } from '@/lib/date';
 import { ModalType } from '@/types/modal.type';
-import { TPackage, TPackageStatus } from '@/types/package.type';
+import { PackageIndexItem } from '@/types/package.type';
 import { isAxiosError } from 'axios';
 import {
   Filter,
@@ -33,13 +32,15 @@ import { useDebouncedCallback } from 'use-debounce';
 
 export default function PackageManagementPage() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const [selectedPackage, setSelectedPackage] = useState<TPackage | null>(null);
+  const [selectedPackage, setSelectedPackage] =
+    useState<PackageIndexItem | null>(null);
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   const [filters, setFilters] = useState({
     search: '',
-    status: undefined as TPackageStatus | undefined,
+    isActive: undefined as boolean | undefined,
+    isPopular: undefined as boolean | undefined,
     page: 1,
     limit: 10,
   });
@@ -48,7 +49,8 @@ export default function PackageManagementPage() {
 
   const { data: packagesData, isLoading } = useGetPackages({
     search: filters.search,
-    status: filters.status,
+    isActive: filters.isActive,
+    isPopular: filters.isPopular,
     page: filters.page,
     limit: filters.limit,
   });
@@ -64,7 +66,7 @@ export default function PackageManagementPage() {
     setSelectedPackage(null);
   };
 
-  const handleOpenModal = (type: ModalType, pkg?: TPackage) => {
+  const handleOpenModal = (type: ModalType, pkg?: PackageIndexItem) => {
     if (pkg) setSelectedPackage(pkg);
     setActiveModal(type);
   };
@@ -80,7 +82,8 @@ export default function PackageManagementPage() {
   };
 
   const handleApplyFilter = (newFilters: {
-    status?: TPackageStatus | undefined;
+    isActive?: boolean | undefined;
+    isPopular?: boolean | undefined;
   }) => {
     setFilters((prev) => ({ ...prev, ...newFilters, page: 1 }));
   };
@@ -88,7 +91,8 @@ export default function PackageManagementPage() {
   const handleResetFilter = () => {
     setFilters({
       search: '',
-      status: undefined,
+      isActive: undefined,
+      isPopular: undefined,
       page: 1,
       limit: 10,
     });
@@ -159,11 +163,6 @@ export default function PackageManagementPage() {
             >
               <Filter className="mr-2 h-4 w-4" />
               Filter
-              {filters.status && (
-                <span className="bg-primary ml-2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-sm">
-                  {[filters.status].filter(Boolean).length}
-                </span>
-              )}
             </Button>
           </div>
         </div>
@@ -175,6 +174,7 @@ export default function PackageManagementPage() {
                 <th className="px-6 py-4 font-semibold">Paket</th>
                 <th className="px-6 py-4 font-semibold">Harga</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
+                <th className="px-6 py-4 font-semibold">Populer</th>
                 <th className="px-6 py-4 font-semibold">Total Benefit</th>
                 <th className="px-6 py-4 font-semibold">Total Template</th>
                 <th className="px-6 py-4 font-semibold">Tanggal Dibuat</th>
@@ -184,7 +184,7 @@ export default function PackageManagementPage() {
             <tbody className="divide-border divide-y">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-20 text-center">
+                  <td colSpan={8} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="text-primary h-8 w-8 animate-spin" />
                       <p className="text-muted-foreground text-xs font-medium">
@@ -195,7 +195,7 @@ export default function PackageManagementPage() {
                 </tr>
               ) : packages.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-20 text-center">
+                  <td colSpan={8} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Heart className="text-primary fill-primary h-8 w-8" />
                       <p className="text-muted-foreground text-xs font-medium">
@@ -226,15 +226,28 @@ export default function PackageManagementPage() {
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      {pkg.status === PACKAGE_STATUS_VALUES.ACTIVE ? (
-                        <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider text-emerald-600 uppercase">
+                      {pkg.isActive ? (
+                        <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider whitespace-nowrap text-emerald-600 uppercase">
                           Aktif
                         </span>
                       ) : (
-                        <span className="bg-destructive/10 text-destructive rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider uppercase">
-                          Non-aktif
+                        <span className="bg-destructive/10 text-destructive rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider whitespace-nowrap uppercase">
+                          Tidak Aktif
                         </span>
                       )}
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-2">
+                        {pkg.isPopular ? (
+                          <span className="rounded-full bg-emerald-500/10 px-2.5 py-1 text-[10px] font-bold tracking-wider whitespace-nowrap text-emerald-600 uppercase">
+                            Ya
+                          </span>
+                        ) : (
+                          <span className="bg-destructive/10 text-destructive rounded-full px-2.5 py-1 text-[10px] font-bold tracking-wider whitespace-nowrap uppercase">
+                            Tidak
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-5">
                       <span className="text-muted-foreground text-xs">
@@ -247,7 +260,7 @@ export default function PackageManagementPage() {
                       </span>
                     </td>
                     <td className="px-6 py-5">
-                      <span className="text-muted-foreground text-xs">
+                      <span className="text-muted-foreground text-xs whitespace-nowrap">
                         {formatDate(pkg.createdAt)}
                       </span>
                     </td>
@@ -315,7 +328,8 @@ export default function PackageManagementPage() {
       <FilterSidebar
         isOpen={isFilterSidebarOpen}
         onClose={() => setIsFilterSidebarOpen(false)}
-        statusFilter={filters.status}
+        isActiveFilter={filters.isActive}
+        isPopularFilter={filters.isPopular}
         onApply={handleApplyFilter}
         onReset={handleResetFilter}
       />
