@@ -3,6 +3,7 @@ export type ModalType =
   | 'edit'
   | 'delete'
   | 'status'
-  | 'profile'
+  | 'profile-name'
+  | 'profile-email'
   | 'password'
   | null;

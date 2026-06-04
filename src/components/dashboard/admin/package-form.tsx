@@ -2,36 +2,20 @@
 
 import { Button } from '@/components/ui/button';
 import { CheckIcon } from '@/components/ui/check';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LayersIcon } from '@/components/ui/layers';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-  BENEFIT_TYPE,
-  SYSTEM_ACTION_LABELS,
-  SystemAction,
-} from '@/constants/benefit.constant';
-import {
-  PACKAGE_STATUS_OPTIONS,
-  PACKAGE_STATUS_VALUES,
-} from '@/constants/package.constant';
+import { BENEFITS_DATA } from '@/constants/benefit.constant';
 import { API_URL } from '@/constants/url';
-import { useGetBenefits } from '@/hooks/api/use-benefit';
 import { useGetTemplates } from '@/hooks/api/use-template';
 import {
   formatCurrency,
   formatThousandSeparator,
   parseThousandSeparator,
 } from '@/lib/currency';
-import { BenefitValue, TBenefit } from '@/types/benefit.type';
-import { TPackageStatus } from '@/types/package.type';
+import { BenefitKeyType } from '@/types/benefit.type';
 import { TTemplate } from '@/types/template.type';
 import {
   CreateUpdatePackageFormValues,
@@ -56,11 +40,6 @@ export default function PackageForm({
   isLoading = false,
   title,
 }: PackageFormProps) {
-  const { data: benefitsData, isLoading: isLoadingBenefits } = useGetBenefits({
-    page: 1,
-    limit: 100,
-  });
-  const benefits = benefitsData?.items || [];
   const { data: templatesData, isLoading: isLoadingTemplates } =
     useGetTemplates();
   const templates = templatesData || [];
@@ -73,11 +52,12 @@ export default function PackageForm({
     formState: { errors },
   } = useForm<CreateUpdatePackageFormValues>({
     resolver: zodResolver(createUpdatePackageSchema),
-    defaultValues: initialData || {
+    defaultValues: initialData ?? {
       name: '',
       description: '',
       price: 0,
-      status: PACKAGE_STATUS_VALUES.ACTIVE,
+      isPopular: false,
+      isActive: false,
       benefits: [],
       templateIds: [],
     },
@@ -88,90 +68,56 @@ export default function PackageForm({
     name: 'benefits',
   });
 
-  const statusValue = useWatch({ control, name: 'status' });
   const selectedBenefits = useWatch({ control, name: 'benefits' }) || [];
   const selectedTemplateIds = useWatch({ control, name: 'templateIds' }) || [];
   const priceValue = useWatch({ control, name: 'price' }) || 0;
   const packageName = useWatch({ control, name: 'name' });
   const packageDesc = useWatch({ control, name: 'description' });
 
-  const toggleBenefit = (benefitId: number) => {
-    const benefit = benefits.find((b: TBenefit) => b.id === benefitId);
-    const index = selectedBenefits.findIndex(
-      (b: { benefitId: number }) => b.benefitId === benefitId,
-    );
+  const toggleBenefit = (key: BenefitKeyType) => {
+    const benefit = BENEFITS_DATA.find((b) => b.key === key);
+    const index = selectedBenefits.findIndex((b) => b.benefitKey === key);
 
     if (index > -1) {
       remove(index);
     } else {
-      const defaultValue = benefit?.type === BENEFIT_TYPE.TOGGLE ? true : '';
-      append({ benefitId, value: defaultValue });
-    }
-  };
-
-  const isBenefitSelected = (benefitId: number) => {
-    return selectedBenefits.some(
-      (b: { benefitId: number }) => b.benefitId === benefitId,
-    );
-  };
-
-  const toggleTemplate = (templateId: number) => {
-    const isSelected = selectedTemplateIds.includes(templateId);
-    if (isSelected) {
-      setValue(
-        'templateIds',
-        selectedTemplateIds.filter((id: number) => id !== templateId),
+      append(
+        benefit?.type === 'toggle'
+          ? { benefitKey: key, toggleValue: true, quotaValue: undefined }
+          : { benefitKey: key, toggleValue: undefined, quotaValue: 0 },
       );
-    } else {
-      setValue('templateIds', [...selectedTemplateIds, templateId]);
     }
+  };
+
+  const isBenefitSelected = (key: BenefitKeyType) => {
+    return selectedBenefits.some((b) => b.benefitKey === key);
+  };
+
+  const getQuotaValue = (key: BenefitKeyType) => {
+    const benefit = selectedBenefits.find((b) => b.benefitKey === key);
+    return benefit?.quotaValue ?? 0;
+  };
+
+  const handleQuotaChange = (key: BenefitKeyType, raw: string) => {
+    const index = selectedBenefits.findIndex((b) => b.benefitKey === key);
+    if (index === -1) return;
+    const parsed = parseInt(raw, 10);
+    setValue(`benefits.${index}.quotaValue`, isNaN(parsed) ? 0 : parsed);
   };
 
   const isTemplateSelected = (templateId: number) => {
     return selectedTemplateIds.includes(templateId);
   };
 
-  const getBenefitValue = (benefitId: number): string | number => {
-    const benefit = selectedBenefits.find(
-      (b: { benefitId: number }) => b.benefitId === benefitId,
-    );
-    const val = benefit?.value;
-    if (val === null || val === undefined || typeof val === 'boolean')
-      return '';
-    return val;
-  };
-
-  const handleBenefitValueChange = (
-    benefitId: number,
-    value: string | number | boolean,
-  ) => {
-    const benefit = benefits.find((b: TBenefit) => b.id === benefitId);
-    const index = selectedBenefits.findIndex(
-      (b: { benefitId: number }) => b.benefitId === benefitId,
-    );
-    if (index > -1) {
-      let finalValue = value;
-      if (benefit?.type === BENEFIT_TYPE.QUOTA) {
-        const parsed = parseInt(String(value), 10);
-        if (!isNaN(parsed)) finalValue = parsed;
-      }
-      setValue(
-        `benefits.${index}.value`,
-        finalValue as unknown as BenefitValue,
-      );
-    }
-  };
-
-  const getBenefitName = (benefitId: number) => {
-    const benefit = benefits.find((b: TBenefit) => b.id === benefitId);
-    if (!benefit) return '';
-    return SYSTEM_ACTION_LABELS[benefit.key as SystemAction] || benefit.key;
+  const toggleTemplate = (templateId: number) => {
+    const next = isTemplateSelected(templateId)
+      ? selectedTemplateIds.filter((id) => id !== templateId)
+      : [...selectedTemplateIds, templateId];
+    setValue('templateIds', next);
   };
 
   const getTemplateName = (templateId: number) => {
-    const template = templates.find((t: TTemplate) => t.id === templateId);
-    if (!template) return '';
-    return template.name;
+    return templates.find((t: TTemplate) => t.id === templateId)?.name ?? '';
   };
 
   return (
@@ -252,31 +198,59 @@ export default function PackageForm({
                     </p>
                   )}
                 </div>
-                <div className="space-y-2.5">
-                  <Label className="text-foreground text-xs font-bold">
-                    Status
-                  </Label>
-                  <Select
-                    value={statusValue}
-                    onValueChange={(val) =>
-                      setValue('status', val as TPackageStatus)
-                    }
-                  >
-                    <SelectTrigger className="border-border/60 h-12 rounded-xl bg-transparent px-4 text-sm shadow-sm">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="border-border rounded-xl shadow-2xl">
-                      {Object.values(PACKAGE_STATUS_OPTIONS).map((option) => (
-                        <SelectItem
-                          key={option.VALUE}
-                          value={option.VALUE}
-                          className="rounded-lg"
-                        >
-                          {option.LABEL}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="flex items-center gap-3">
+                  <div className="border-border/60 flex items-start gap-3 rounded-xl border p-4 shadow-sm">
+                    <Controller
+                      control={control}
+                      name="isActive"
+                      render={({ field }) => (
+                        <Checkbox
+                          id="isActive"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          className="mt-0.5"
+                        />
+                      )}
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label
+                        htmlFor="isActive"
+                        className="text-foreground cursor-pointer text-sm font-bold"
+                      >
+                        Paket Aktif
+                      </Label>
+                      <p className="text-muted-foreground text-xs font-medium">
+                        Paket ini hanya akan muncul pada halaman depan jika
+                        paket ini aktif
+                      </p>
+                    </div>
+                  </div>
+                  <div className="border-border/60 flex items-start gap-3 rounded-xl border p-4 shadow-sm">
+                    <Controller
+                      control={control}
+                      name="isPopular"
+                      render={({ field }) => (
+                        <Checkbox
+                          id="isPopular"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          className="mt-0.5"
+                        />
+                      )}
+                    />
+                    <div className="grid gap-1.5 leading-none">
+                      <Label
+                        htmlFor="isPopular"
+                        className="text-foreground cursor-pointer text-sm font-bold"
+                      >
+                        Paket Populer (Terlaris)
+                      </Label>
+                      <p className="text-muted-foreground text-xs font-medium">
+                        Tampilkan lencana &quot;Terlaris&quot; pada paket ini di
+                        halaman depan.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 <div className="space-y-2.5">
@@ -303,68 +277,59 @@ export default function PackageForm({
               </div>
 
               <div className="grid grid-cols-1 gap-3">
-                {isLoadingBenefits ? (
-                  <div className="text-primary py-20 text-center">
-                    <Loader2 className="mx-auto h-8 w-8 animate-spin opacity-20" />
-                  </div>
-                ) : (
-                  benefits.map((benefit) => {
-                    const selected = isBenefitSelected(benefit.id);
-                    return (
+                {BENEFITS_DATA.map((benefit, index) => {
+                  const selected = isBenefitSelected(benefit.key);
+                  return (
+                    <div
+                      key={`${benefit.key}-${index}`}
+                      className={`flex items-center gap-5 rounded-2xl border p-4 transition-all duration-300 ${
+                        selected
+                          ? 'bg-primary/[0.03] border-primary/30 shadow-sm'
+                          : 'border-border/40 hover:border-border bg-transparent'
+                      }`}
+                    >
                       <div
-                        key={benefit.id}
-                        className={`flex items-center gap-5 rounded-2xl border p-4 transition-all duration-300 ${
+                        onClick={() => toggleBenefit(benefit.key)}
+                        className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border-2 transition-all ${
                           selected
-                            ? 'bg-primary/[0.03] border-primary/30 shadow-sm'
-                            : 'border-border/40 hover:border-border bg-transparent'
+                            ? 'bg-primary border-primary text-primary-foreground shadow-primary/20 shadow-lg'
+                            : 'bg-background border-border/60 hover:border-primary/40 text-transparent'
                         }`}
                       >
-                        <div
-                          onClick={() => toggleBenefit(benefit.id)}
-                          className={`flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl border-2 transition-all ${
-                            selected
-                              ? 'bg-primary border-primary text-primary-foreground shadow-primary/20 shadow-lg'
-                              : 'bg-background border-border/60 hover:border-primary/40 text-transparent'
-                          }`}
-                        >
-                          <CheckIcon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-grow">
-                          <span
-                            className={`block text-sm font-bold ${selected ? 'text-primary' : 'text-foreground'}`}
-                          >
-                            {SYSTEM_ACTION_LABELS[benefit.key] || benefit.key}
-                          </span>
-                          <span className="text-muted-foreground text-[10px] font-medium tracking-tighter uppercase">
-                            {benefit.key} • {benefit.type}
-                          </span>
-                        </div>
-                        <AnimatePresence>
-                          {selected && benefit.type === BENEFIT_TYPE.QUOTA && (
-                            <motion.div
-                              initial={{ opacity: 0, scale: 0.95 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.95 }}
-                              className="w-44"
-                            >
-                              <Input
-                                placeholder="Nilai / Quota"
-                                value={getBenefitValue(benefit.id)}
-                                onChange={(e) =>
-                                  handleBenefitValueChange(
-                                    benefit.id,
-                                    e.target.value,
-                                  )
-                                }
-                                className="bg-background border-border/60 focus:ring-primary/10 h-10 rounded-xl text-xs shadow-inner focus:ring-2"
-                              />
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
+                        <CheckIcon className="h-5 w-5" />
                       </div>
-                    );
-                  })
-                )}
+                      <div className="flex-grow">
+                        <span
+                          className={`block text-sm font-bold ${selected ? 'text-primary' : 'text-foreground'}`}
+                        >
+                          {benefit.label}
+                        </span>
+                        <span className="text-muted-foreground text-[10px] font-medium tracking-tighter uppercase">
+                          {benefit.key} • {benefit.type}
+                        </span>
+                      </div>
+                      <AnimatePresence>
+                        {selected && benefit.type === 'quota' && (
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="w-44"
+                          >
+                            <Input
+                              placeholder="Nilai / Quota"
+                              value={getQuotaValue(benefit.key)}
+                              onChange={(e) =>
+                                handleQuotaChange(benefit.key, e.target.value)
+                              }
+                              className="bg-background border-border/60 focus:ring-primary/10 h-10 rounded-xl text-xs shadow-inner focus:ring-2"
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  );
+                })}
               </div>
 
               <div className="space-y-8 pt-4">
@@ -383,11 +348,11 @@ export default function PackageForm({
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
-                    {templates.map((template: TTemplate) => {
+                    {templates.map((template: TTemplate, index: number) => {
                       const selected = isTemplateSelected(template.id);
                       return (
                         <div
-                          key={template.id}
+                          key={`${template.id}-${index}`}
                           onClick={() => toggleTemplate(template.id)}
                           className={`group relative cursor-pointer overflow-hidden rounded-2xl border transition-all duration-300 ${
                             selected
@@ -456,19 +421,20 @@ export default function PackageForm({
 
                 <ul className="mb-10 flex-grow space-y-4">
                   {selectedBenefits.length > 0 ? (
-                    selectedBenefits.map(
-                      (
-                        b: { benefitId: number; value: BenefitValue },
-                        i: number,
-                      ) => (
-                        <li key={i} className="flex items-start gap-4">
+                    selectedBenefits.map((b, index) => {
+                      const def = BENEFITS_DATA.find(
+                        (d) => d.key === b.benefitKey,
+                      );
+                      return (
+                        <li key={index} className="flex items-start gap-4">
                           <CheckIcon className="text-primary mt-1 h-5 w-5 flex-shrink-0" />
                           <span className="text-foreground text-base leading-tight">
-                            {b.value} {getBenefitName(b.benefitId)}
+                            {def?.type === 'quota' ? `${b.quotaValue} ` : ''}
+                            {def?.label ?? b.benefitKey}
                           </span>
                         </li>
-                      ),
-                    )
+                      );
+                    })
                   ) : (
                     <li className="flex items-start gap-4 opacity-20">
                       <CheckIcon className="mt-1 h-5 w-5 flex-shrink-0" />
@@ -484,7 +450,7 @@ export default function PackageForm({
                       <span className="text-foreground text-base leading-tight">
                         {selectedTemplateIds.length} Template (
                         {selectedTemplateIds
-                          .map((id: number) => getTemplateName(id))
+                          .map((id) => getTemplateName(id))
                           .join(', ')}
                         )
                       </span>

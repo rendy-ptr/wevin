@@ -20,7 +20,7 @@ import {
 import { useUpdateMember } from '@/hooks/api/use-member';
 import { useGetPackages } from '@/hooks/api/use-package';
 import { useToast } from '@/hooks/use-toast';
-import { UserMember } from '@/types/member.type';
+import { UserWithRelationships } from '@/types/user.type';
 import {
   CreateUpdateMemberFormValues,
   createUpdateMemberSchema,
@@ -33,7 +33,7 @@ import { Controller, useForm } from 'react-hook-form';
 interface EditMemberModalProps {
   isOpen: boolean;
   onClose: () => void;
-  member: UserMember;
+  member: UserWithRelationships;
 }
 
 export default function EditMemberModal({

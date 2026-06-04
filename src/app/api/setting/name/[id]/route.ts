@@ -1,7 +1,7 @@
-import { getSession } from '@/lib/auth';
+import { getSession, login } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { settingService } from '@/services/setting.service';
-import { updateNameAndEmailSchema } from '@/validations/admin/create-update-member';
+import { updateNameSchema } from '@/validations/admin/create-update-setting';
 import { NextResponse } from 'next/server';
 
 export async function PATCH(
@@ -18,19 +18,26 @@ export async function PATCH(
       throw new AppError('Unauthorized', 401);
     }
 
-    const { name, email } = updateNameAndEmailSchema.parse(body);
+    const { name } = updateNameSchema.parse(body);
 
-    const user = await settingService.updateNameAndEmail({
+    const user = await settingService.updateName({
       id: Number(id),
       name,
-      email,
       userId: session.user.id,
+    });
+
+    await login({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      package: session.user.package,
     });
 
     return NextResponse.json(
       {
         success: true,
-        message: 'Name and email updated successfully',
+        message: 'Name updated successfully',
         data: user,
       },
       { status: 200 },

@@ -1,12 +1,14 @@
 import { BusinessError } from '@/lib/errors';
 import {
-  sendUpdateNameAndEmailNotificationEmail,
+  sendUpdateEmailNotificationEmail,
+  sendUpdateNameNotificationEmail,
   sendUpdatePasswordNotificationEmail,
 } from '@/lib/mailer';
 import { settingRepository } from '@/repositories/setting.repository';
 import { ActivityFilterParams } from '@/types/activity.type';
-import { TUser } from '@/types/user.type';
+import { BaseUserModel } from '@/types/user.type';
 import bcrypt from 'bcryptjs';
+import { jwtVerify } from 'jose';
 import { activityService } from './activity.service';
 
 export const settingService = {
@@ -23,7 +25,7 @@ export const settingService = {
     oldPassword,
     newPassword,
     userId,
-  }: Pick<TUser, 'id'> & {
+  }: Pick<BaseUserModel, 'id'> & {
     oldPassword: string;
     newPassword: string;
     userId: number;
@@ -67,22 +69,46 @@ export const settingService = {
     return user;
   },
 
-  updateNameAndEmail: async ({
+  updateEmail: async ({
     id,
-    name,
     email,
     userId,
-  }: Pick<TUser, 'id' | 'name' | 'email'> & { userId: number }) => {
-    const user = await settingRepository.updateNameAndEmail({
+    verificationToken,
+    otpCode,
+  }: Pick<BaseUserModel, 'id' | 'email'> & {
+    userId: number;
+    verificationToken: string | undefined;
+    otpCode: string | undefined;
+  }) => {
+    if (!verificationToken || !otpCode) {
+      throw new BusinessError('Email verification code is required');
+    }
+
+    try {
+      const { payload } = await jwtVerify(
+        verificationToken,
+        new TextEncoder().encode(process.env.JWT_SECRET),
+        {
+          algorithms: ['HS256'],
+        },
+      );
+      if (payload.otpCode !== otpCode || payload.email !== email) {
+        throw new BusinessError('Kode OTP tidak valid atau salah');
+      }
+    } catch (error) {
+      if (error instanceof BusinessError) throw error;
+      throw new BusinessError('Kode OTP kedaluwarsa atau tidak valid');
+    }
+
+    const user = await settingRepository.updateEmail({
       id,
-      name,
       email,
     });
     if (!user) {
       throw new BusinessError('User not found');
     }
 
-    await sendUpdateNameAndEmailNotificationEmail({
+    await sendUpdateEmailNotificationEmail({
       email: user.email,
       name: user.name,
     });
@@ -93,10 +119,43 @@ export const settingService = {
         action: 'UPDATE',
         entityType: 'MEMBER',
         entityId: id,
-        details: `Memperbarui Nama dan Email`,
+        details: `Memperbarui Email`,
       });
     }
     return user;
+  },
+
+  updateName: async ({
+    id,
+    name,
+    userId,
+  }: Pick<BaseUserModel, 'id' | 'name'> & {
+    userId: number;
+  }) => {
+    const updatedUser = await settingRepository.updateName({
+      id,
+      name,
+    });
+    if (!updatedUser) {
+      throw new BusinessError('User not found');
+    }
+
+    await sendUpdateNameNotificationEmail({
+      email: updatedUser.email,
+      name: updatedUser.name,
+    });
+
+    if (userId) {
+      await activityService.log({
+        userId,
+        action: 'UPDATE',
+        entityType: 'MEMBER',
+        entityId: id,
+        details: `Memperbarui Nama`,
+      });
+    }
+
+    return updatedUser;
   },
 
   getAllActivityLogs: async (params: ActivityFilterParams) => {

@@ -15,18 +15,3 @@ export const useGetTemplates = () => {
     },
   });
 };
-
-// export const useGetTemplateById = (id: number) => {
-//   return useQuery<TTemplate>({
-//     queryKey: ['templates', id],
-//     queryFn: async () => {
-//       const response = await api.get(API_URL.TEMPLATE.GET_BY_ID(id));
-//       if (!response.data.success) {
-//         throw new Error(response.data.message || 'Gagal mengambil data');
-//       }
-//       return response.data.data as TTemplate;
-//     },
-//     enabled: !!id,
-//     refetchOnWindowFocus: false,
-//   });
-// };

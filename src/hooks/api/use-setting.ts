@@ -1,7 +1,7 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
-import { ActivityFilterParams, TActivityLog } from '@/types/activity.type';
-import { TUser, TUserRelated } from '@/types/user.type';
+import { ActivityFilterParams, ActivityIndexItem } from '@/types/activity.type';
+import { BaseUserModel, UserWithRelationships } from '@/types/user.type';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useGetSettings = () => {
@@ -12,7 +12,7 @@ export const useGetSettings = () => {
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
-      return response.data.data as TUserRelated;
+      return response.data.data as UserWithRelationships;
     },
   });
 };
@@ -26,7 +26,7 @@ export const useUpdatePassword = () => {
       password,
       oldPassword,
       confirmPassword,
-    }: Pick<TUser, 'id' | 'password'> & {
+    }: Pick<BaseUserModel, 'id' | 'password'> & {
       oldPassword: string;
       confirmPassword: string;
     }) => {
@@ -44,24 +44,48 @@ export const useUpdatePassword = () => {
   });
 };
 
-export const useUpdateNameAndEmail = () => {
+export const useUpdateEmail = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async ({
       id,
-      name,
       email,
-    }: Pick<TUser, 'id' | 'name' | 'email'>) => {
-      const response = await api.patch(API_URL.SETTING.UPDATE_NAME_EMAIL(id), {
-        name,
+      verificationToken,
+      otpCode,
+    }: Pick<BaseUserModel, 'id' | 'email'> & {
+      verificationToken?: string;
+      otpCode?: string;
+    }) => {
+      const response = await api.patch(API_URL.SETTING.UPDATE_EMAIL(id), {
         email,
+        verificationToken,
+        otpCode,
       });
       return response.data;
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['settings'] });
       queryClient.invalidateQueries({ queryKey: ['settings', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['session'] });
+    },
+  });
+};
+
+export const useUpdateName = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, name }: Pick<BaseUserModel, 'id' | 'name'>) => {
+      const response = await api.patch(API_URL.SETTING.UPDATE_NAME(id), {
+        name,
+      });
+      return response.data;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['settings'] });
+      queryClient.invalidateQueries({ queryKey: ['settings', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['session'] });
     },
   });
 };
@@ -94,7 +118,19 @@ export const useGetAllActivityLogs = ({
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
-      return response.data.data as { items: TActivityLog[]; total: number };
+      return response.data.data as {
+        items: ActivityIndexItem[];
+        total: number;
+      };
+    },
+  });
+};
+
+export const useSendOtp = () => {
+  return useMutation({
+    mutationFn: async ({ email }: { email: string }) => {
+      const response = await api.post(API_URL.SETTING.SEND_OTP, { email });
+      return response.data;
     },
   });
 };

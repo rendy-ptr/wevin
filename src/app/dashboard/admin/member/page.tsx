@@ -24,8 +24,8 @@ import {
 } from '@/hooks/api/use-member';
 import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/date';
-import { UserMember } from '@/types/member.type';
 import { ModalType } from '@/types/modal.type';
+import { UserWithRelationships } from '@/types/user.type';
 import { isAxiosError } from 'axios';
 import {
   Filter,
@@ -43,7 +43,8 @@ import { useDebouncedCallback } from 'use-debounce';
 
 export default function MemberManagementPage() {
   const [activeModal, setActiveModal] = useState<ModalType>(null);
-  const [selectedMember, setSelectedMember] = useState<UserMember | null>(null);
+  const [selectedMember, setSelectedMember] =
+    useState<UserWithRelationships | null>(null);
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -78,7 +79,7 @@ export default function MemberManagementPage() {
     setSelectedMember(null);
   };
 
-  const handleOpenModal = (type: ModalType, member?: UserMember) => {
+  const handleOpenModal = (type: ModalType, member?: UserWithRelationships) => {
     if (member) setSelectedMember(member);
     setActiveModal(type);
   };
@@ -305,7 +306,7 @@ export default function MemberManagementPage() {
                               size="icon"
                               className={`hover:bg-secondary h-8 w-8 transition-colors ${
                                 member.status === USER_STATUS_VALUES.ACTIVE
-                                  ? 'text-accent hover:text-accent hover:bg-secondary'
+                                  ? 'text-accent-dark hover:text-accent-dark hover:bg-secondary'
                                   : 'text-success hover:text-success hover:bg-secondary'
                               }`}
                               onClick={() => handleOpenModal('status', member)}

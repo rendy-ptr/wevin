@@ -1,7 +1,7 @@
 import { getSession } from '@/lib/auth';
 import { AppError } from '@/lib/errors';
 import { settingService } from '@/services/setting.service';
-import { updatePasswordSchema } from '@/validations/admin/create-update-member';
+import { updatePasswordSchema } from '@/validations/admin/create-update-setting';
 import { NextResponse } from 'next/server';
 
 export async function PATCH(

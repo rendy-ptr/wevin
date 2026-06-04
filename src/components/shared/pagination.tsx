@@ -43,12 +43,12 @@ export default function Pagination({
             <span className="text-muted-foreground font-normal">Tampilkan</span>
             <SelectValue placeholder={limit} />
           </SelectTrigger>
-          <SelectContent className="rounded-xl border shadow-xl">
+          <SelectContent className="rounded-lg border shadow-xl">
             {[10, 20, 50, 100].map((val) => (
               <SelectItem
                 key={val}
                 value={val.toString()}
-                className="rounded-lg text-xs"
+                className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark rounded-lg text-xs transition-colors"
               >
                 {val}
               </SelectItem>

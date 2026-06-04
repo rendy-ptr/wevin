@@ -1,6 +1,8 @@
 import { activityLogs } from '@/db/schema';
+import { InferSelectModel } from 'drizzle-orm';
+import { BaseUserModel } from './user.type';
 
-export type TActivityLog = typeof activityLogs.$inferSelect;
+export type BaseActivityLogModel = InferSelectModel<typeof activityLogs>;
 export type TActivityAction =
   | 'CREATE'
   | 'UPDATE'
@@ -17,4 +19,8 @@ export type ActivityFilterParams = {
   limit: number;
 
   userId?: number;
+};
+
+export type ActivityIndexItem = Omit<BaseActivityLogModel, 'updatedAt'> & {
+  user: Pick<BaseUserModel, 'id' | 'name' | 'email' | 'role'>;
 };

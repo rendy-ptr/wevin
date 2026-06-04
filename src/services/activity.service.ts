@@ -1,7 +1,10 @@
 import { activityLogs } from '@/db/schema';
-import { NotFoundError } from '@/lib/errors';
 import { activityRepository } from '@/repositories/activity.repository';
-import { ActivityFilterParams } from '@/types/activity.type';
+import {
+  ActivityFilterParams,
+  ActivityIndexItem,
+  BaseActivityLogModel,
+} from '@/types/activity.type';
 import { InferInsertModel } from 'drizzle-orm';
 
 export const activityService = {
@@ -12,7 +15,10 @@ export const activityService = {
     action,
     page = 1,
     limit = 10,
-  }: ActivityFilterParams) => {
+  }: ActivityFilterParams): Promise<{
+    items: ActivityIndexItem[];
+    total: number;
+  }> => {
     return await activityRepository.getAll({
       search,
       startDate,
@@ -23,17 +29,19 @@ export const activityService = {
     });
   },
 
-  getById: async (id: number) => {
-    const activity = await activityRepository.getById(id);
+  // getById: async (id: number) => {
+  //   const activity = await activityRepository.getById(id);
 
-    if (!activity) {
-      throw new NotFoundError('Activity not found');
-    }
+  //   if (!activity) {
+  //     throw new NotFoundError('Activity not found');
+  //   }
 
-    return activity;
-  },
+  //   return activity;
+  // },
 
-  log: async (data: InferInsertModel<typeof activityLogs>) => {
+  log: async (
+    data: InferInsertModel<typeof activityLogs>,
+  ): Promise<BaseActivityLogModel> => {
     return await activityRepository.create(data);
   },
 };

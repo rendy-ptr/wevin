@@ -1,9 +1,9 @@
 export const ACTIVITY_ACTION_VALUES = {
-  CREATE: 'create',
-  UPDATE: 'update',
-  DELETE: 'delete',
-  LOGIN: 'login',
-  LOGOUT: 'logout',
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+  LOGIN: 'LOGIN',
+  LOGOUT: 'LOGOUT',
 } as const;
 
 export const ACTIVITY_ACTION_OPTIONS = {

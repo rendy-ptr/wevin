@@ -1,9 +1,20 @@
 import { AppError } from '@/lib/errors';
 import { activityService } from '@/services/activity.service';
-import { ActivityFilterParams } from '@/types/activity.type';
+import { ActivityFilterParams, ActivityIndexItem } from '@/types/activity.type';
 import { NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
+export async function GET(request: Request): Promise<
+  NextResponse<{
+    success: boolean;
+    message: string;
+    data:
+      | {
+          items: ActivityIndexItem[];
+          total: number;
+        }
+      | undefined;
+  }>
+> {
   try {
     const { searchParams } = new URL(request.url);
     const filters = {
@@ -35,7 +46,7 @@ export async function GET(request: Request) {
       {
         success: false,
         message,
-        data: null,
+        data: undefined,
       },
       { status },
     );

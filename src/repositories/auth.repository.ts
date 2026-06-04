@@ -6,6 +6,18 @@ export const authRepository = {
   getUserByEmail: async (email: string) => {
     const user = await db.query.users.findFirst({
       where: eq(users.email, email),
+      with: {
+        profile: {
+          with: {
+            package: {
+              with: {
+                benefits: true,
+                templates: true,
+              },
+            },
+          },
+        },
+      },
     });
     return user;
   },

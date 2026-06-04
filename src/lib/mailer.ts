@@ -1,26 +1,35 @@
 import {
   getDeletionNotificationEmailHtml,
+  getOtpEmailHtml,
   getStatusNotificationEmailHtml,
-  getUpdateNameAndEmailNotificationEmailHtml,
+  getUpdateEmailNotificationEmailHtml,
+  getUpdateNameNotificationEmailHtml,
   getUpdateNotificationEmailHtml,
   getUpdatePasswordNotificationEmailHtml,
   getWelcomeEmailHtml,
 } from '@/templates/email.template';
-import { TUser, TUserStatus } from '@/types/user.type';
+import { BaseUserModel, TUserStatus } from '@/types/user.type';
 import nodemailer from 'nodemailer';
 
-export const transporter = nodemailer.createTransport({
+const transporterConfig = {
   host: process.env.SMTP_HOST || 'localhost',
   port: Number(process.env.SMTP_PORT) || 1025,
   secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER || '',
-    pass: process.env.SMTP_PASS || '',
-  },
   tls: {
     rejectUnauthorized: process.env.NODE_ENV === 'production',
   },
-});
+  auth:
+    process.env.SMTP_USER && process.env.SMTP_PASS
+      ? {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        }
+      : undefined,
+};
+
+export const transporter = nodemailer.createTransport(
+  transporterConfig as nodemailer.TransportOptions,
+);
 
 export const sendAccountEmail = async (
   email: string,
@@ -31,7 +40,7 @@ export const sendAccountEmail = async (
   const loginUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/login`;
 
   const mailOptions = {
-    from: `"Admin Wevin" <${process.env.SMTP_FROM || 'admin@wevin.local'}>`,
+    from: process.env.SMTP_FROM || '"Admin Wevin" <admin@wevin.local>',
     to: email,
     subject: 'Akun Member Wevin Anda Telah Dibuat',
     html: getWelcomeEmailHtml({
@@ -59,7 +68,7 @@ export const sendUpdateNameAndPackageNotificationEmail = async (
   const loginUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}/login`;
 
   const mailOptions = {
-    from: `"Admin Wevin" <${process.env.SMTP_FROM || 'admin@wevin.local'}>`,
+    from: process.env.SMTP_FROM || '"Admin Wevin" <admin@wevin.local>',
     to: email,
     subject: 'Update Profil Member Wevin',
     html: getUpdateNotificationEmailHtml({ name, loginUrl, packageName }),
@@ -80,7 +89,7 @@ export const sendDeletionNotificationEmail = async (
   const subscribeUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}`;
 
   const mailOptions = {
-    from: `"Admin Wevin" <${process.env.SMTP_FROM || 'admin@wevin.local'}>`,
+    from: process.env.SMTP_FROM || '"Admin Wevin" <admin@wevin.local>',
     to: email,
     subject: 'Akun Member Wevin Anda Telah Dihapus',
     html: getDeletionNotificationEmailHtml({ name, subscribeUrl }),
@@ -109,7 +118,7 @@ export const sendStatusNotificationEmail = async (
       : 'Informasi Penonaktifan Akun Member Wevin';
 
   const mailOptions = {
-    from: `"Admin Wevin" <${process.env.SMTP_FROM || 'admin@wevin.local'}>`,
+    from: process.env.SMTP_FROM || '"Admin Wevin" <admin@wevin.local>',
     to: email,
     subject,
     html: getStatusNotificationEmailHtml({ name, status, loginUrl }),
@@ -128,11 +137,11 @@ export const sendStatusNotificationEmail = async (
 export const sendUpdatePasswordNotificationEmail = async ({
   email,
   name,
-}: Pick<TUser, 'email' | 'name'>) => {
+}: Pick<BaseUserModel, 'email' | 'name'>) => {
   const subscribeUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}`;
 
   const mailOptions = {
-    from: `"Admin Wevin" <${process.env.SMTP_FROM || 'admin@wevin.local'}>`,
+    from: process.env.SMTP_FROM || '"Admin Wevin" <admin@wevin.local>',
     to: email,
     subject: 'Notifikasi Perubahan Password Akun Wevin',
     html: getUpdatePasswordNotificationEmailHtml({
@@ -154,18 +163,48 @@ export const sendUpdatePasswordNotificationEmail = async ({
   }
 };
 
-export const sendUpdateNameAndEmailNotificationEmail = async ({
+export const sendUpdateNameNotificationEmail = async ({
   email,
   name,
-}: Pick<TUser, 'email' | 'name'>) => {
+}: Pick<BaseUserModel, 'email' | 'name'>) => {
   const subscribeUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}`;
 
   const mailOptions = {
-    from: `"Admin Wevin" <${process.env.SMTP_FROM || 'admin@wevin.local'}>`,
+    from: process.env.SMTP_FROM || '"Admin Wevin" <admin@wevin.local>',
     to: email,
-    subject: 'Notifikasi Perubahan Nama dan Email Akun Wevin',
-    html: getUpdateNameAndEmailNotificationEmailHtml({
+    subject: 'Notifikasi Perubahan Nama Akun Wevin',
+    html: getUpdateNameNotificationEmailHtml({
       name,
+      subscribeUrl,
+    }),
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(
+      `[MAILER] Email notifikasi ganti nama sukses terkirim ke ${email}`,
+    );
+  } catch (error) {
+    console.error(
+      `[MAILER] Gagal mengirim email notifikasi ganti nama ke ${email}:`,
+      error,
+    );
+  }
+};
+
+export const sendUpdateEmailNotificationEmail = async ({
+  email,
+  name,
+}: Pick<BaseUserModel, 'email' | 'name'>) => {
+  const subscribeUrl = `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000'}`;
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || '"Admin Wevin" <admin@wevin.local>',
+    to: email,
+    subject: 'Notifikasi Perubahan Email Akun Wevin',
+    html: getUpdateEmailNotificationEmailHtml({
+      name,
+      email,
       subscribeUrl,
     }),
   };
@@ -180,5 +219,21 @@ export const sendUpdateNameAndEmailNotificationEmail = async ({
       `[MAILER] Gagal mengirim email notifikasi ganti nama dan email ke ${email}:`,
       error,
     );
+  }
+};
+
+export const sendOtpEmail = async (email: string, otpCode: string) => {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || '"Admin Wevin" <admin@wevin.local>',
+    to: email,
+    subject: 'Kode Verifikasi Wevin',
+    html: getOtpEmailHtml({ otpCode }),
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`[MAILER] OTP terkirim ke ${email}`);
+  } catch (error) {
+    console.error(`[MAILER] Gagal mengirim OTP ke ${email}:`, error);
   }
 };
