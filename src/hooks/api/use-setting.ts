@@ -1,6 +1,6 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
-import { ActivityFilterParams, TActivityLog } from '@/types/activity.type';
+import { ActivityFilterParams, ActivityIndexItem } from '@/types/activity.type';
 import { BaseUserModel, UserWithRelationships } from '@/types/user.type';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -118,7 +118,10 @@ export const useGetAllActivityLogs = ({
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
-      return response.data.data as { items: TActivityLog[]; total: number };
+      return response.data.data as {
+        items: ActivityIndexItem[];
+        total: number;
+      };
     },
   });
 };

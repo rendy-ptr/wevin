@@ -4,7 +4,7 @@ import {
 } from '@/constants/user.constant';
 import { users } from '@/db/schema';
 import { InferSelectModel } from 'drizzle-orm';
-import { TActivityLog } from './activity.type';
+import { BaseActivityLogModel } from './activity.type';
 import { BasePackageBenefitModel } from './benefit.type';
 import { BaseMemberProfileModel } from './member.type';
 import { BasePackageModel } from './package.type';
@@ -21,5 +21,5 @@ export type UserWithRelationships = Omit<BaseUserModel, 'password'> & {
       benefits: BasePackageBenefitModel[];
     };
   };
-  activityLogs: TActivityLog[];
+  activityLogs: BaseActivityLogModel[];
 };

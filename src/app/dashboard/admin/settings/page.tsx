@@ -18,7 +18,10 @@ import { Label } from '@/components/ui/label';
 import { ACTIVITY_ACTION_COLOR } from '@/constants/activity.constant';
 import { useGetAllActivityLogs, useGetSettings } from '@/hooks/api/use-setting';
 import { formatDateTime } from '@/lib/date';
-import { ActivityFilterParams, TActivityLog } from '@/types/activity.type';
+import {
+  ActivityFilterParams,
+  BaseActivityLogModel,
+} from '@/types/activity.type';
 import { ModalType } from '@/types/modal.type';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -234,7 +237,10 @@ export default function SettingsPage() {
                 Akses ke fitur dasar
               </p>
             </div>
-            <Button className="w-full" variant="outline">
+            <Button
+              className="border-border hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark w-full cursor-pointer transition-colors"
+              variant="outline"
+            >
               Upgrade Paket
             </Button>
           </CardContent>
@@ -301,7 +307,7 @@ export default function SettingsPage() {
                 ) : (
                   activities.map(
                     (
-                      log: TActivityLog & {
+                      log: BaseActivityLogModel & {
                         user?: { name: string; email: string } | null;
                       },
                     ) => (

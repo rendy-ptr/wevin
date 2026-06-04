@@ -7,7 +7,10 @@ import { Input } from '@/components/ui/input';
 import { ACTIVITY_ACTION_COLOR } from '@/constants/activity.constant';
 import { useGetActivities } from '@/hooks/api/use-activity';
 import { formatDateTime } from '@/lib/date';
-import { ActivityFilterParams, TActivityLog } from '@/types/activity.type';
+import {
+  ActivityFilterParams,
+  BaseActivityLogModel,
+} from '@/types/activity.type';
 import { Filter, Heart, Loader2, Search } from 'lucide-react';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -148,7 +151,7 @@ export default function LogsActivityPage() {
               ) : (
                 activities.map(
                   (
-                    log: TActivityLog & {
+                    log: BaseActivityLogModel & {
                       user?: { name: string; email: string } | null;
                     },
                   ) => (
