@@ -25,6 +25,7 @@ export const authService = {
       email: user.email,
       name: user.name,
       role: user.role,
+      createdAt: user.createdAt,
       package: user.profile?.package
         ? {
             id: user.profile.package.id,

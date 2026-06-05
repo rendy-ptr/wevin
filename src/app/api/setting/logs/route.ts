@@ -22,7 +22,7 @@ export async function GET(request: Request) {
       limit: parseInt(searchParams.get('limit') || '10'),
     } as ActivityFilterParams;
 
-    const data = await settingService.getAllActivityLogs(filters);
+    const data = await settingService.getSettingActivityLogs(filters);
     return NextResponse.json({
       success: true,
       message: 'Activities Setting fetched successfully',

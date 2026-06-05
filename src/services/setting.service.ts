@@ -12,71 +12,62 @@ import { jwtVerify } from 'jose';
 import { activityService } from './activity.service';
 
 export const settingService = {
-  getSessionUser: async (id: number) => {
-    const user = await settingRepository.getSessionUser(id);
-    if (!user) {
-      throw new BusinessError('User not found');
-    }
-    return user;
-  },
-
   updatePassword: async ({
     id,
     oldPassword,
     newPassword,
-    userId,
   }: Pick<BaseUserModel, 'id'> & {
     oldPassword: string;
     newPassword: string;
-    userId: number;
   }) => {
-    const user = await settingRepository.getSessionUser(id);
-    if (!user) {
-      throw new BusinessError('User not found');
+    const passwordUser = await settingRepository.getPassword(id);
+    if (!passwordUser) {
+      throw new BusinessError('Password user not found');
     }
 
-    const passwordUser = await settingRepository.getPassword(user.id);
     const isPasswordValid = await bcrypt.compare(
       oldPassword,
-      passwordUser?.password || '',
+      passwordUser.password,
     );
+
     if (!isPasswordValid) {
       throw new BusinessError('Old Password Not Valid');
     }
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(newPassword, salt);
-    await settingRepository.updatePassword({
+
+    const updatedPassword = await settingRepository.updatePassword({
       id,
       password: hashedPassword,
     });
 
-    await sendUpdatePasswordNotificationEmail({
-      email: user.email,
-      name: user.name,
-    });
-
-    if (userId) {
-      await activityService.log({
-        userId,
-        action: 'UPDATE',
-        entityType: 'MEMBER',
-        entityId: id,
-        details: `Memperbarui Password`,
-      });
+    if (!updatedPassword) {
+      throw new BusinessError('Failed to update password');
     }
 
-    return user;
+    await sendUpdatePasswordNotificationEmail({
+      email: updatedPassword.email,
+      name: updatedPassword.name,
+    });
+
+    await activityService.log({
+      userId: updatedPassword.id,
+      action: 'UPDATE',
+      entityType: 'MEMBER',
+      entityId: id,
+      details: `Memperbarui Password`,
+    });
+
+    return updatedPassword;
   },
 
   updateEmail: async ({
     id,
     email,
-    userId,
     verificationToken,
     otpCode,
   }: Pick<BaseUserModel, 'id' | 'email'> & {
-    userId: number;
     verificationToken: string | undefined;
     otpCode: string | undefined;
   }) => {
@@ -100,42 +91,36 @@ export const settingService = {
       throw new BusinessError('Kode OTP kedaluwarsa atau tidak valid');
     }
 
-    const user = await settingRepository.updateEmail({
+    const updatedEmail = await settingRepository.updateEmail({
       id,
       email,
     });
-    if (!user) {
-      throw new BusinessError('User not found');
+
+    if (!updatedEmail) {
+      throw new BusinessError('Failed to update email');
     }
 
     await sendUpdateEmailNotificationEmail({
-      email: user.email,
-      name: user.name,
+      email: updatedEmail.email,
+      name: updatedEmail.name,
     });
 
-    if (userId) {
-      await activityService.log({
-        userId,
-        action: 'UPDATE',
-        entityType: 'MEMBER',
-        entityId: id,
-        details: `Memperbarui Email`,
-      });
-    }
-    return user;
+    await activityService.log({
+      userId: updatedEmail.id,
+      action: 'UPDATE',
+      entityType: 'MEMBER',
+      entityId: id,
+      details: `Memperbarui Email`,
+    });
+    return updatedEmail;
   },
 
-  updateName: async ({
-    id,
-    name,
-    userId,
-  }: Pick<BaseUserModel, 'id' | 'name'> & {
-    userId: number;
-  }) => {
+  updateName: async ({ id, name }: Pick<BaseUserModel, 'id' | 'name'>) => {
     const updatedUser = await settingRepository.updateName({
       id,
       name,
     });
+
     if (!updatedUser) {
       throw new BusinessError('User not found');
     }
@@ -145,20 +130,18 @@ export const settingService = {
       name: updatedUser.name,
     });
 
-    if (userId) {
-      await activityService.log({
-        userId,
-        action: 'UPDATE',
-        entityType: 'MEMBER',
-        entityId: id,
-        details: `Memperbarui Nama`,
-      });
-    }
+    await activityService.log({
+      userId: updatedUser.id,
+      action: 'UPDATE',
+      entityType: 'MEMBER',
+      entityId: id,
+      details: `Memperbarui Nama`,
+    });
 
     return updatedUser;
   },
 
-  getAllActivityLogs: async (params: ActivityFilterParams) => {
-    return await settingRepository.getAllActivityLogs(params);
+  getSettingActivityLogs: async (params: ActivityFilterParams) => {
+    return await settingRepository.getSettingActivityLogs(params);
   },
 };

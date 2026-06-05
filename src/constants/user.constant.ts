@@ -1,7 +1,4 @@
-export const USER_ROLE_VALUES = {
-  ADMIN: 'admin',
-  MEMBER: 'member',
-} as const;
+import { ADMIN, MEMBER } from './role';
 
 export const USER_STATUS_VALUES = {
   ACTIVE: 'active',
@@ -11,11 +8,11 @@ export const USER_STATUS_VALUES = {
 export const USER_ROLE_OPTIONS = {
   ADMIN: {
     LABEL: 'Admin',
-    VALUE: USER_ROLE_VALUES.ADMIN,
+    VALUE: ADMIN,
   },
   MEMBER: {
     LABEL: 'Member',
-    VALUE: USER_ROLE_VALUES.MEMBER,
+    VALUE: MEMBER,
   },
 } as const;
 

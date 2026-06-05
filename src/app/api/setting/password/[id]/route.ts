@@ -25,7 +25,6 @@ export async function PATCH(
       id: Number(id),
       oldPassword,
       newPassword,
-      userId: session.user.id,
     });
 
     return NextResponse.json(

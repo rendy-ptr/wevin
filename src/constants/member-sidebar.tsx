@@ -19,5 +19,5 @@ export const SIDEBAR_LINKS = [
     icon: MessageSquareHeart,
   },
   { href: '/dashboard/member/analytics', label: 'Analytics', icon: BarChart3 },
-  { href: '/dashboard/member/pengaturan', label: 'Pengaturan', icon: Settings },
+  { href: '/dashboard/member/settings', label: 'Pengaturan', icon: Settings },
 ];

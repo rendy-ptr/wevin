@@ -1,6 +1,5 @@
-import { USER_ROLE_VALUES } from '@/constants/user.constant';
+import { ADMIN, MEMBER } from '@/constants/role';
 import { SessionUser } from '@/types/session.type';
-import { TUserRole } from '@/types/user.type';
 import { JWTPayload, jwtVerify, SignJWT } from 'jose';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
@@ -10,9 +9,7 @@ interface Session extends JWTPayload {
   expires: string;
 }
 
-const secret = new TextEncoder().encode(
-  process.env.JWT_SECRET || 'configure-your-jwt-secret-key',
-);
+const secret = new TextEncoder().encode(process.env.JWT_SECRET);
 
 export async function encrypt(payload: Session) {
   return await new SignJWT(payload)
@@ -58,25 +55,17 @@ export async function getSession(): Promise<Session | null> {
   return await decrypt(session);
 }
 
-export async function requireAuth(role?: TUserRole) {
+export async function requireAuth(role?: typeof ADMIN | typeof MEMBER) {
   const session = await getSession();
 
   if (!session) redirect('/login');
   if (role && session.user.role !== role) {
-    redirect(
-      getRedirectPath(
-        session.user.role === USER_ROLE_VALUES.ADMIN
-          ? USER_ROLE_VALUES.MEMBER
-          : USER_ROLE_VALUES.ADMIN,
-      ),
-    );
+    redirect(getRedirectPath(session.user.role === ADMIN ? MEMBER : ADMIN));
   }
 
   return session;
 }
 
-export function getRedirectPath(role: TUserRole): string {
-  return role === USER_ROLE_VALUES.ADMIN
-    ? '/dashboard/admin'
-    : '/dashboard/member';
+export function getRedirectPath(role: typeof ADMIN | typeof MEMBER): string {
+  return role === ADMIN ? '/dashboard/admin' : '/dashboard/member';
 }

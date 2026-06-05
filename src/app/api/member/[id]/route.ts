@@ -5,7 +5,6 @@ import { memberService } from '@/services/member.service';
 import { TUserStatus } from '@/types/user.type';
 import { createUpdateMemberSchema } from '@/validations/admin/create-update-member';
 import { NextResponse } from 'next/server';
-import { ZodError } from 'zod';
 
 export async function PUT(
   request: Request,
@@ -19,13 +18,26 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const validatedData = createUpdateMemberSchema
+
+    const parsed = createUpdateMemberSchema
       .omit({ email: true })
-      .parse(body);
+      .safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Validation failed',
+          data: undefined,
+          errors: parsed.error,
+        },
+        { status: 400 },
+      );
+    }
 
     const member = await memberService.update(
       Number(id),
-      validatedData,
+      parsed.data,
       session.user.id,
     );
 
@@ -38,16 +50,6 @@ export async function PUT(
       { status: 200 },
     );
   } catch (error: unknown) {
-    if (error instanceof ZodError) {
-      return NextResponse.json(
-        {
-          success: false,
-          message: 'Validation failed',
-          errors: error.issues,
-        },
-        { status: 400 },
-      );
-    }
     const isAppError = error instanceof AppError;
     const message =
       error instanceof Error ? error.message : 'Internal Server Error';

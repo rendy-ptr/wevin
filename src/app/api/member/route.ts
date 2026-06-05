@@ -1,79 +1,52 @@
-import { getSession } from '@/lib/auth';
-import { AppError } from '@/lib/errors';
+import { ADMIN } from '@/constants/role';
+import { withAuth } from '@/lib/with-auth';
 import { memberService } from '@/services/member.service';
 import { MemberFilterParams } from '@/types/member.type';
 import { createUpdateMemberSchema } from '@/validations/admin/create-update-member';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const packageIdRaw = searchParams.get('packageId');
-    const filters = {
-      search: searchParams.get('search') || undefined,
-      packageId:
-        packageIdRaw && !isNaN(Number(packageIdRaw))
-          ? Number(packageIdRaw)
-          : undefined,
-      status: searchParams.get('status') || undefined,
-      page: parseInt(searchParams.get('page') || '1'),
-      limit: parseInt(searchParams.get('limit') || '10'),
-    } as MemberFilterParams;
+export const GET = withAuth([ADMIN], async (request: NextRequest) => {
+  const { searchParams } = new URL(request.url);
+  const packageIdRaw = searchParams.get('packageId');
+  const filters = {
+    search: searchParams.get('search') || undefined,
+    packageId:
+      packageIdRaw && !isNaN(Number(packageIdRaw))
+        ? Number(packageIdRaw)
+        : undefined,
+    status: searchParams.get('status') || undefined,
+    page: parseInt(searchParams.get('page') || '1'),
+    limit: parseInt(searchParams.get('limit') || '10'),
+  } as MemberFilterParams;
 
-    const memberData = await memberService.getAll(filters);
-    return NextResponse.json({
-      success: true,
-      message: 'Members fetched successfully',
-      data: memberData,
-    });
-  } catch (error: unknown) {
-    const isAppError = error instanceof AppError;
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-    const status = isAppError ? error.statusCode : 500;
+  const memberData = await memberService.getAll(filters);
+  return NextResponse.json({
+    success: true,
+    message: 'Members fetched successfully',
+    data: memberData,
+  });
+});
 
+export const POST = withAuth([ADMIN], async (request: NextRequest, session) => {
+  const body = await request.json();
+  const parsed = createUpdateMemberSchema.safeParse(body);
+
+  if (!parsed.success) {
     return NextResponse.json(
       {
         success: false,
-        message,
-        data: null,
+        message: 'Validation failed',
+        data: undefined,
+        errors: parsed.error.issues,
       },
-      { status },
+      { status: 400 },
     );
   }
-}
 
-export async function POST(request: Request) {
-  try {
-    const session = await getSession();
-    if (!session) {
-      throw new AppError('Unauthorized', 401);
-    }
-
-    const body = await request.json();
-    const validatedData = createUpdateMemberSchema.parse(body);
-    const memberData = await memberService.create(
-      validatedData,
-      session.user.id,
-    );
-    return NextResponse.json({
-      success: true,
-      message: 'Member created successfully',
-      data: memberData,
-    });
-  } catch (error: unknown) {
-    const isAppError = error instanceof AppError;
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-    const status = isAppError ? error.statusCode : 500;
-
-    return NextResponse.json(
-      {
-        success: false,
-        message,
-        data: null,
-      },
-      { status },
-    );
-  }
-}
+  const memberData = await memberService.create(parsed.data, session.user.id);
+  return NextResponse.json({
+    success: true,
+    message: 'Member created successfully',
+    data: memberData,
+  });
+});

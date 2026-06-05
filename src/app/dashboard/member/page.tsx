@@ -6,8 +6,9 @@ import {
   MEMBER_STATS,
   RECENT_INVITATIONS,
   RSVP_DATA,
-  VIEW_DATA,
+  TREN_VIEW_DATA,
 } from '@/constants/member-dashboard';
+import { useSession } from '@/hooks/use-session';
 import { BarChart3, FileHeart, Plus } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -23,6 +24,8 @@ import {
 } from 'recharts';
 
 export default function MemberDashboard() {
+  const { user, isLoading } = useSession();
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -34,34 +37,58 @@ export default function MemberDashboard() {
             Kelola undangan pernikahan Anda dengan mudah
           </p>
         </div>
-        <Link href="/dashboard/member/buat">
-          <Button className="bg-primary hover:bg-primary-dark gap-2 text-white">
-            <Plus className="h-4 w-4" />
-            Buat Undangan
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href="/dashboard/member/buat">
+            <Button
+              type="button"
+              className="bg-primary hover:bg-primary-dark shadow-primary/20 text-primary-foreground h-10 gap-2 text-xs font-medium tracking-wide shadow-lg transition-all active:scale-95"
+            >
+              <Plus className="h-4 w-4" />
+              Buat Undangan
+            </Button>
+          </Link>
+        </div>
       </div>
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
-        {MEMBER_STATS.map((stat) => (
-          <Card
-            key={stat.label}
-            className="border-sidebar-border p-6 transition-shadow hover:shadow-lg"
-          >
-            <div className="mb-4 flex items-start justify-between">
-              <div>
-                <p className="text-muted-foreground mb-1 text-sm">
-                  {stat.label}
-                </p>
-                <p className="text-foreground font-serif text-3xl font-bold">
-                  {stat.value}
-                </p>
+        {isLoading || !user ? (
+          <div className="col-span-4 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, index) => (
+              <Card
+                key={index}
+                className="border-sidebar-border p-6 transition-shadow hover:shadow-lg"
+              >
+                <div className="mb-4 flex items-start justify-between">
+                  <div>
+                    <div className="bg-sidebar-accent mb-1 h-4 w-32 animate-pulse rounded" />
+                    <div className="bg-sidebar-accent h-6 w-24 animate-pulse rounded" />
+                  </div>
+                  <div className="bg-sidebar-accent h-10 w-10 animate-pulse rounded-lg" />
+                </div>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          MEMBER_STATS(user).map((stat) => (
+            <Card
+              key={stat.label}
+              className="border-sidebar-border p-6 transition-shadow hover:shadow-lg"
+            >
+              <div className="mb-4 flex items-start justify-between">
+                <div>
+                  <p className="text-muted-foreground mb-1 text-sm">
+                    {stat.label}
+                  </p>
+                  <p className="text-foreground font-serif text-3xl font-bold">
+                    {stat.value}
+                  </p>
+                </div>
+                <div className={`${stat.color} bg-primary/10 rounded-lg p-3`}>
+                  <stat.icon className="h-6 w-6" />
+                </div>
               </div>
-              <div className={`${stat.color} bg-primary/10 rounded-lg p-3`}>
-                <stat.icon className="h-6 w-6" />
-              </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="border-sidebar-border p-6">
@@ -69,7 +96,7 @@ export default function MemberDashboard() {
             Tren Views
           </h2>
           <ResponsiveContainer width="100%" height={300}>
-            <LineChart data={VIEW_DATA}>
+            <LineChart data={TREN_VIEW_DATA}>
               <CartesianGrid strokeDasharray="3 3" stroke="#E8D4D0" />
               <XAxis dataKey="date" stroke="#8B7355" />
               <YAxis stroke="#8B7355" />

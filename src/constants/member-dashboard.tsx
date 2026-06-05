@@ -1,5 +1,6 @@
+import { SessionUser } from '@/types/session.type';
 import { BarChart3, Eye, FileHeart, UserCheck } from 'lucide-react';
-export const VIEW_DATA = [
+export const TREN_VIEW_DATA = [
   { date: '1 Jun', views: 245 },
   { date: '2 Jun', views: 320 },
   { date: '3 Jun', views: 280 },
@@ -38,19 +39,29 @@ export const RECENT_INVITATIONS = [
   },
 ];
 
-export const MEMBER_STATS = [
+export const MEMBER_STATS = (user: SessionUser) => [
   {
     label: 'Total Undangan',
     value: '3',
     icon: FileHeart,
-    color: 'text-primary',
+    color: 'text-primary-dark',
   },
-  { label: 'Total Views', value: '1.2K', icon: Eye, color: 'text-accent' },
+  {
+    label: 'Total Views',
+    value: '1.2K',
+    icon: Eye,
+    color: 'text-primary-dark',
+  },
   {
     label: 'Total RSVP',
     value: '95',
     icon: UserCheck,
     color: 'text-primary-dark',
   },
-  { label: 'Paket', value: 'Bahagia', icon: BarChart3, color: 'text-accent' },
+  {
+    label: 'Paket',
+    value: user.package?.name ?? '-',
+    icon: BarChart3,
+    color: 'text-primary-dark',
+  },
 ];

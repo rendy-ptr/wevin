@@ -2,9 +2,9 @@
 
 import { Button } from '@/components/ui/button';
 import { SIDEBAR_LINKS } from '@/constants/member-sidebar';
+import { useLogout } from '@/hooks/api/use-auth';
 import { useSession } from '@/hooks/use-session';
 import { useToast } from '@/hooks/use-toast';
-import api from '@/lib/axios';
 import { cn } from '@/lib/utils';
 import { isAxiosError } from 'axios';
 import { Heart, LogOut, Menu, X } from 'lucide-react';
@@ -18,27 +18,29 @@ export function MemberSidebar() {
   const router = useRouter();
   const { toast } = useToast();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-
-  const handleLogout = async () => {
-    try {
-      await api.post('/api/auth/logout');
-      toast({
-        title: 'Berhasil keluar',
-        description: 'Anda berhasil keluar dari akun',
-      });
-      router.push('/login');
-      router.refresh();
-    } catch (error) {
-      let message = 'Gagal keluar. Silakan coba lagi.';
-      if (isAxiosError(error)) {
-        message = error.response?.data?.message || 'Gagal keluar.';
-      }
-      toast({
-        variant: 'destructive',
-        title: 'Gagal keluar',
-        description: message,
-      });
-    }
+  const logoutMutation = useLogout();
+  const onSubmit = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast({
+          title: 'Berhasil keluar',
+          description: 'Anda telah berhasil keluar dari sistem.',
+        });
+        router.push('/login');
+      },
+      onError: (error) => {
+        let message = 'Gagal keluar. Silakan coba lagi.';
+        if (isAxiosError(error)) {
+          message =
+            error.response?.data?.message || 'Gagal keluar. Silakan coba lagi.';
+        }
+        toast({
+          variant: 'destructive',
+          title: 'Gagal keluar',
+          description: message,
+        });
+      },
+    });
   };
 
   return (
@@ -89,13 +91,6 @@ export function MemberSidebar() {
                 'Configure on ENV'}
             </span>
           </Link>
-        </div>
-
-        <div className="px-4 py-4">
-          <div className="bg-accent/10 border-accent/30 rounded-xl border px-4 py-3">
-            <p className="text-muted-foreground mb-1 text-xs">Paket Aktif</p>
-            <p className="text-accent font-serif font-semibold">Bahagia</p>
-          </div>
         </div>
 
         <nav className="flex-1 overflow-y-auto px-3 py-2">
@@ -162,11 +157,20 @@ export function MemberSidebar() {
           </div>
           <Button
             variant="outline"
-            className="border-sidebar-border hover:bg-sidebar-accent hover:text-primary w-full justify-start"
-            onClick={handleLogout}
+            className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark h-10 w-full cursor-pointer justify-start px-5 font-medium transition-colors"
+            onClick={onSubmit}
+            disabled={isLoading || logoutMutation.isPending}
           >
-            <LogOut className="mr-2 h-4 w-4" />
-            Keluar
+            {logoutMutation.isPending ? (
+              <>
+                <span className="animate-pulse">Keluar...</span>
+              </>
+            ) : (
+              <>
+                <LogOut className="mr-2 h-4 w-4" />
+                Keluar
+              </>
+            )}
           </Button>
         </div>
       </aside>

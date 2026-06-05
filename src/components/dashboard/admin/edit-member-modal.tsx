@@ -70,9 +70,9 @@ export default function EditMemberModal({
       {
         onSuccess: (res) => {
           toast({
-            title: 'Member berhasil ditambahkan',
+            title: 'Member berhasil diperbarui',
             variant: 'default',
-            description: `Member ${res.data.name} berhasil ditambahkan!`,
+            description: `Member ${res.data.name} berhasil diperbarui!`,
           });
           onClose();
           reset();
@@ -176,9 +176,12 @@ export default function EditMemberModal({
                           <SelectItem
                             key={pkg.id}
                             value={String(pkg.id)}
+                            disabled={!pkg.isActive}
                             className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer text-xs transition-colors"
                           >
-                            {pkg.name}
+                            {pkg.isActive
+                              ? pkg.name
+                              : `${pkg.name} (Tidak Aktif)`}
                           </SelectItem>
                         ))}
                       </SelectContent>

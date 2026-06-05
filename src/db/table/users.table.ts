@@ -1,7 +1,5 @@
-import {
-  USER_ROLE_VALUES,
-  USER_STATUS_VALUES,
-} from '@/constants/user.constant';
+import { ADMIN, MEMBER } from '@/constants/role';
+import { USER_STATUS_VALUES } from '@/constants/user.constant';
 import { relations } from 'drizzle-orm';
 import {
   pgEnum,
@@ -15,10 +13,7 @@ import { activityLogs } from './activity-log.table';
 import { memberProfiles } from './member-profiles.table';
 import { memberQuotaUsage } from './member-quota-usage.table';
 
-export const userRoleEnum = pgEnum('user_role', [
-  USER_ROLE_VALUES.ADMIN,
-  USER_ROLE_VALUES.MEMBER,
-]);
+export const userRoleEnum = pgEnum('user_role', [ADMIN, MEMBER]);
 
 export const userStatusEnum = pgEnum('user_status', [
   USER_STATUS_VALUES.ACTIVE,

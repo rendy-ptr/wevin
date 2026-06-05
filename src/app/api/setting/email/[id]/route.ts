@@ -29,7 +29,6 @@ export async function PATCH(
     const user = await settingService.updateEmail({
       id: Number(id),
       email,
-      userId: session.user.id,
       verificationToken,
       otpCode,
     });
@@ -39,6 +38,7 @@ export async function PATCH(
       email: user.email,
       name: user.name,
       role: user.role,
+      createdAt: user.createdAt,
       package: session.user.package,
     });
 

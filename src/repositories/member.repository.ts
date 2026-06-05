@@ -1,4 +1,4 @@
-import { USER_ROLE_VALUES } from '@/constants/user.constant';
+import { MEMBER } from '@/constants/role';
 import { db } from '@/db';
 import { memberProfiles, users } from '@/db/schema';
 import { MemberFilterParams } from '@/types/member.type';
@@ -31,7 +31,7 @@ export const memberRepository = {
     }
 
     const whereClause = and(
-      eq(users.role, USER_ROLE_VALUES.MEMBER),
+      eq(users.role, MEMBER),
       isNull(users.deletedAt),
       search ? ilike(users.name, `%${search}%`) : undefined,
       status ? eq(users.status, status as TUserStatus) : undefined,
@@ -78,7 +78,7 @@ export const memberRepository = {
           name: payload.name,
           email: payload.email,
           password: payload.password,
-          role: USER_ROLE_VALUES.MEMBER,
+          role: MEMBER,
         })
         .returning({ id: users.id, name: users.name, email: users.email });
 
@@ -105,11 +105,17 @@ export const memberRepository = {
         .returning({ id: users.id, name: users.name, email: users.email });
 
       await tx
-        .update(memberProfiles)
-        .set({
+        .insert(memberProfiles)
+        .values({
+          userId: id,
           packageId: payload.packageId,
         })
-        .where(eq(memberProfiles.userId, id));
+        .onConflictDoUpdate({
+          target: memberProfiles.userId,
+          set: {
+            packageId: payload.packageId,
+          },
+        });
 
       return updatedUser;
     });

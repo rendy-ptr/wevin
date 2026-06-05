@@ -23,7 +23,6 @@ export async function PATCH(
     const user = await settingService.updateName({
       id: Number(id),
       name,
-      userId: session.user.id,
     });
 
     await login({
@@ -31,6 +30,7 @@ export async function PATCH(
       email: user.email,
       name: user.name,
       role: user.role,
+      createdAt: user.createdAt,
       package: session.user.package,
     });
 

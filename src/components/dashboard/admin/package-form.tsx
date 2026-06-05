@@ -262,6 +262,11 @@ export default function PackageForm({
                     {...register('description')}
                     className="border-border/60 focus:ring-primary/20 focus:border-primary min-h-[120px] rounded-xl bg-transparent px-4 py-3 text-sm leading-relaxed shadow-sm transition-all focus:ring-2"
                   />
+                  {errors.description && (
+                    <p className="text-destructive px-1 text-[10px] font-medium">
+                      {errors.description.message as string}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -340,6 +345,11 @@ export default function PackageForm({
                   <p className="text-muted-foreground mt-1 text-xs">
                     Pilih desain template yang tersedia untuk paket ini.
                   </p>
+                  {errors.templateIds && (
+                    <p className="text-destructive mt-1 px-1 text-[10px] font-medium">
+                      {errors.templateIds.message as string}
+                    </p>
+                  )}
                 </div>
 
                 {isLoadingTemplates ? (
@@ -480,7 +490,9 @@ export default function PackageForm({
             </Button>
           </Link>
           <Button
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit(onSubmit, (errors) => {
+              console.log('Form validation errors:', errors);
+            })}
             disabled={isLoading}
             className="bg-primary hover:bg-primary-dark h-11 px-6 text-white shadow-sm transition-all active:scale-95"
           >
