@@ -91,7 +91,6 @@ export const useUpdateName = () => {
 };
 
 export const useGetAllActivityLogs = ({
-  userId,
   search,
   startDate,
   endDate,
@@ -103,7 +102,6 @@ export const useGetAllActivityLogs = ({
     queryKey: [
       'settings',
       'activity-logs',
-      userId,
       search,
       startDate,
       endDate,
@@ -113,7 +111,7 @@ export const useGetAllActivityLogs = ({
     ],
     queryFn: async () => {
       const response = await api.get(API_URL.SETTING.GET_ALL_ACTIVITY_LOGS, {
-        params: { userId, search, startDate, endDate, action, page, limit },
+        params: { search, startDate, endDate, action, page, limit },
       });
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');

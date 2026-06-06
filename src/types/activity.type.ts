@@ -17,8 +17,6 @@ export type ActivityFilterParams = {
   action?: string;
   page: number;
   limit: number;
-
-  userId?: number;
 };
 
 export type ActivityIndexItem = Omit<BaseActivityLogModel, 'updatedAt'> & {

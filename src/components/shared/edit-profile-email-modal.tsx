@@ -273,7 +273,18 @@ export default function EditProfileEmailModal({
                   </InputOTP>
 
                   <span className="text-muted-foreground text-center text-xs font-medium">
-                    Tidak menerima kode? Kirim ulang
+                    Tidak menerima kode?{' '}
+                    {otpSent && countdown > 0
+                      ? `Tunggu ${countdown}s`
+                      : otpSent &&
+                        countdown === 0 && (
+                          <span
+                            className="text-primary hover:text-primary-dark cursor-pointer font-semibold"
+                            onClick={handleSendOtp}
+                          >
+                            Kirim Ulang
+                          </span>
+                        )}
                   </span>
                 </div>
               </div>

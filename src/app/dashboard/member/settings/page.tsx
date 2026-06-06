@@ -1,9 +1,9 @@
 'use client';
 
-import EditPasswordModal from '@/components/dashboard/admin/edit-password-modal';
-import EditProfileEmailModal from '@/components/dashboard/admin/edit-profile-email-modal';
-import EditProfileNameModal from '@/components/dashboard/admin/edit-profile-name-modal';
 import FilterActivitySidebar from '@/components/dashboard/admin/filter-activity-sidebar';
+import EditPasswordModal from '@/components/shared/edit-password-modal';
+import EditProfileEmailModal from '@/components/shared/edit-profile-email-modal';
+import EditProfileNameModal from '@/components/shared/edit-profile-name-modal';
 import Pagination from '@/components/shared/pagination';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,7 +42,6 @@ export default function SettingsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<ActivityFilterParams>({
-    userId: undefined,
     search: '',
     startDate: undefined,
     endDate: undefined,
@@ -54,7 +53,6 @@ export default function SettingsPage() {
 
   const { data: activityData, isLoading: isLoadingGetActivities } =
     useGetAllActivityLogs({
-      userId: user?.id,
       search: filters.search,
       startDate: filters.startDate,
       endDate: filters.endDate,
@@ -86,7 +84,6 @@ export default function SettingsPage() {
 
   const handleResetFilter = () => {
     setFilters({
-      userId: undefined,
       search: '',
       startDate: undefined,
       endDate: undefined,
