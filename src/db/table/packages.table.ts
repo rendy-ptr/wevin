@@ -1,4 +1,7 @@
-import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
+import {
+  PACKAGE_STATUS_ACTIVE,
+  PACKAGE_STATUS_INACTIVE,
+} from '@/constants/package.constant';
 import { BenefitType } from '@/types/benefit.type';
 import { relations } from 'drizzle-orm';
 import {
@@ -21,8 +24,8 @@ export const benefitTypeEnum = pgEnum('benefit_type', ['toggle', 'quota'] as [
 ]);
 
 export const packageStatusEnum = pgEnum('package_status', [
-  PACKAGE_STATUS_VALUES.ACTIVE,
-  PACKAGE_STATUS_VALUES.INACTIVE,
+  PACKAGE_STATUS_ACTIVE,
+  PACKAGE_STATUS_INACTIVE,
 ]);
 
 export const packages = pgTable('packages', {

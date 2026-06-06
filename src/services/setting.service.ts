@@ -141,7 +141,10 @@ export const settingService = {
     return updatedUser;
   },
 
-  getSettingActivityLogs: async (params: ActivityFilterParams) => {
-    return await settingRepository.getSettingActivityLogs(params);
+  getSettingActivityLogs: async (
+    params: ActivityFilterParams,
+    userId: number,
+  ) => {
+    return await settingRepository.getSettingActivityLogs(params, userId);
   },
 };

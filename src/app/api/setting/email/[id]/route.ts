@@ -1,5 +1,6 @@
-import { getSession, login } from '@/lib/auth';
-import { AppError } from '@/lib/errors';
+import { ADMIN, MEMBER } from '@/constants/role';
+import { login } from '@/lib/auth';
+import { withAuth } from '@/lib/with-auth';
 import { settingService } from '@/services/setting.service';
 import { updateEmailSchema } from '@/validations/admin/create-update-setting';
 import { NextResponse } from 'next/server';
@@ -10,27 +11,35 @@ const extendedSchema = updateEmailSchema.extend({
   otpCode: z.string().optional(),
 });
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await getSession();
-
+export const PATCH = withAuth(
+  [ADMIN, MEMBER],
+  async (
+    request: Request,
+    session,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
     const { id } = await params;
     const body = await request.json();
 
-    if (!session || session.user.id !== Number(id)) {
-      throw new AppError('Unauthorized', 401);
-    }
+    const parsed = extendedSchema.safeParse(body);
 
-    const { email, verificationToken, otpCode } = extendedSchema.parse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: 'Validation failed',
+          data: undefined,
+          errors: parsed.error.issues,
+        },
+        { status: 400 },
+      );
+    }
 
     const user = await settingService.updateEmail({
       id: Number(id),
-      email,
-      verificationToken,
-      otpCode,
+      email: parsed.data.email,
+      verificationToken: parsed.data.verificationToken,
+      otpCode: parsed.data.otpCode,
     });
 
     await login({
@@ -45,24 +54,10 @@ export async function PATCH(
     return NextResponse.json(
       {
         success: true,
-        message: 'Name and email updated successfully',
+        message: 'Email updated successfully',
         data: user,
       },
       { status: 200 },
     );
-  } catch (error: unknown) {
-    const isAppError = error instanceof AppError;
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-    const status = isAppError ? error.statusCode : 500;
-
-    return NextResponse.json(
-      {
-        success: false,
-        message,
-        data: null,
-      },
-      { status },
-    );
-  }
-}
+  },
+);

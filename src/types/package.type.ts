@@ -1,4 +1,3 @@
-import { PACKAGE_STATUS_VALUES } from '@/constants/package.constant';
 import { packageBenefits, packages, packageTemplates } from '@/db/schema';
 import { InferSelectModel } from 'drizzle-orm';
 import { BasePackageBenefitModel } from './benefit.type';
@@ -8,17 +7,8 @@ import { BaseUserModel } from './user.type';
 
 export type BasePackageModel = InferSelectModel<typeof packages>;
 
-export type TPackageStatus =
-  (typeof PACKAGE_STATUS_VALUES)[keyof typeof PACKAGE_STATUS_VALUES];
 export type TPackageBenefitPivot = typeof packageBenefits.$inferSelect;
 export type TPackageTemplatePivot = typeof packageTemplates.$inferSelect;
-
-export type PackageWithBenefits = Omit<
-  BasePackageModel,
-  'createdAt' | 'updatedAt'
-> & {
-  benefits: BasePackageBenefitModel[];
-};
 
 export type PackageFilterParams = {
   search?: string;
@@ -28,28 +18,52 @@ export type PackageFilterParams = {
   limit?: number;
 };
 
+// ----------------------------------------------------
+// Sub-types / Relationship Details
+// ----------------------------------------------------
+
+export type PackageBenefitDetail = Pick<
+  BasePackageBenefitModel,
+  'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
+>;
+
+export type PackageTemplateDetail = BasePackageTemplateModel & {
+  template: Pick<BaseTemplateModel, 'id' | 'name'>;
+};
+
+export type PackageMemberDetail = BaseMemberProfileModel & {
+  user: Pick<BaseUserModel, 'id' | 'name'>;
+};
+
+// ----------------------------------------------------
+// Composite / Main Package Types
+// ----------------------------------------------------
+
+export type PackageWithBenefits = Omit<
+  BasePackageModel,
+  'createdAt' | 'updatedAt'
+> & {
+  benefits: BasePackageBenefitModel[];
+};
+
 export type PackageWithRelationships = Omit<
   BasePackageModel,
   'createdAt' | 'updatedAt'
 > & {
-  benefits: Pick<
-    BasePackageBenefitModel,
-    'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-  >[];
-  templates: (BasePackageTemplateModel & {
-    template: Pick<BaseTemplateModel, 'id' | 'name'>;
-  })[];
-  members: (BaseMemberProfileModel & {
-    user: Pick<BaseUserModel, 'id' | 'name'>;
-  })[];
+  benefits: PackageBenefitDetail[];
+  templates: PackageTemplateDetail[];
+  members: PackageMemberDetail[];
 };
 
 export type PackageIndexItem = Omit<BasePackageModel, 'updatedAt'> & {
-  benefits: Pick<
-    BasePackageBenefitModel,
-    'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-  >[];
-  templates: (BasePackageTemplateModel & {
-    template: Pick<BaseTemplateModel, 'id' | 'name'>;
-  })[];
+  benefits: PackageBenefitDetail[];
+  templates: PackageTemplateDetail[];
+};
+
+export type ActivePackageWithBenefits = Pick<
+  BasePackageModel,
+  'id' | 'name' | 'price'
+> & {
+  benefits: PackageBenefitDetail[];
+  templates: PackageTemplateDetail[];
 };

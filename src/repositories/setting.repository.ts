@@ -62,15 +62,10 @@ export const settingRepository = {
     return updatedUser;
   },
 
-  getSettingActivityLogs: async ({
-    userId,
-    search,
-    startDate,
-    endDate,
-    action,
-    page,
-    limit,
-  }: ActivityFilterParams) => {
+  getSettingActivityLogs: async (
+    { search, startDate, endDate, action, page, limit }: ActivityFilterParams,
+    userId: number,
+  ) => {
     const offset = (page - 1) * limit;
 
     const whereClause = and(

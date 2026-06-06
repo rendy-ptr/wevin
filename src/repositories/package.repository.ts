@@ -1,17 +1,13 @@
 import { BENEFITS_DATA } from '@/constants/benefit.constant';
 import { db } from '@/db';
 import { packageBenefits, packages, packageTemplates } from '@/db/schema';
-import { BasePackageBenefitModel } from '@/types/benefit.type';
 import type {
+  ActivePackageWithBenefits,
   BasePackageModel,
   PackageFilterParams,
   PackageIndexItem,
   PackageWithRelationships,
 } from '@/types/package.type';
-import {
-  BasePackageTemplateModel,
-  BaseTemplateModel,
-} from '@/types/template.type';
 import type { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 import { and, count, eq, ilike } from 'drizzle-orm';
 
@@ -236,15 +232,7 @@ export const packageRepository = {
   },
 
   getPackageActiveWithBenefits: async (): Promise<
-    (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
-      benefits: Pick<
-        BasePackageBenefitModel,
-        'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-      >[];
-      templates: (BasePackageTemplateModel & {
-        template: Pick<BaseTemplateModel, 'id' | 'name'>;
-      })[];
-    })[]
+    ActivePackageWithBenefits[]
   > => {
     return db.query.packages.findMany({
       where: eq(packages.isActive, true),
@@ -266,16 +254,6 @@ export const packageRepository = {
           },
         },
       },
-    }) as Promise<
-      (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
-        benefits: Pick<
-          BasePackageBenefitModel,
-          'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-        >[];
-        templates: (BasePackageTemplateModel & {
-          template: Pick<BaseTemplateModel, 'id' | 'name'>;
-        })[];
-      })[]
-    >;
+    });
   },
 };
