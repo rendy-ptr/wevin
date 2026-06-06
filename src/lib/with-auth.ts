@@ -4,17 +4,17 @@ import { AppError } from '@/lib/errors';
 import { SessionUser } from '@/types/session.type';
 import { NextRequest, NextResponse } from 'next/server';
 
-type RouteHandler = (
+type RouteHandler<T extends unknown[]> = (
   request: NextRequest,
   session: { user: SessionUser },
-  ...args: unknown[]
+  ...args: T
 ) => Promise<Response> | Response;
 
-export function withAuth(
+export function withAuth<T extends unknown[]>(
   roles: (typeof ADMIN | typeof MEMBER)[],
-  handler: RouteHandler,
+  handler: RouteHandler<T>,
 ) {
-  return async (request: NextRequest, ...args: unknown[]) => {
+  return async (request: NextRequest, ...args: T) => {
     try {
       const session = await getSession();
       if (!session) {

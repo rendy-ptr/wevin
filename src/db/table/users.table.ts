@@ -1,5 +1,5 @@
 import { ADMIN, MEMBER } from '@/constants/role';
-import { USER_STATUS_VALUES } from '@/constants/user.constant';
+import { ACTIVE, INACTIVE } from '@/constants/user.constant';
 import { relations } from 'drizzle-orm';
 import {
   pgEnum,
@@ -15,10 +15,7 @@ import { memberQuotaUsage } from './member-quota-usage.table';
 
 export const userRoleEnum = pgEnum('user_role', [ADMIN, MEMBER]);
 
-export const userStatusEnum = pgEnum('user_status', [
-  USER_STATUS_VALUES.ACTIVE,
-  USER_STATUS_VALUES.INACTIVE,
-]);
+export const userStatusEnum = pgEnum('user_status', [ACTIVE, INACTIVE]);
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),

@@ -1,34 +1,20 @@
-import { getSession } from '@/lib/auth';
-import { AppError } from '@/lib/errors';
+import { ADMIN, MEMBER } from '@/constants/role';
+import { withAuth } from '@/lib/with-auth';
 import { authService } from '@/services/auth.service';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST() {
-  try {
-    const session = await getSession();
-    await authService.logout(session?.user?.id);
+export const POST = withAuth(
+  [ADMIN, MEMBER],
+  async (_request: NextRequest, session) => {
+    const result = await authService.logout(session.user.id);
 
     return NextResponse.json(
       {
-        success: true,
-        message: 'User logged out successfully',
-        data: null,
+        success: result.success,
+        message: result.message,
+        data: result.data,
       },
       { status: 200 },
     );
-  } catch (error: unknown) {
-    const isAppError = error instanceof AppError;
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-    const status = isAppError ? error.statusCode : 500;
-
-    return NextResponse.json(
-      {
-        success: false,
-        message,
-        data: null,
-      },
-      { status },
-    );
-  }
-}
+  },
+);

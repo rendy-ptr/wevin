@@ -65,6 +65,10 @@ export const authService = {
         details: `Berhasil logout.`,
       });
     }
-    return { success: true };
+    return {
+      success: true,
+      message: 'User logged out successfully',
+      data: null,
+    };
   },
 };
