@@ -1,6 +1,10 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
-import { LoginFormValues } from '@/validations/auth';
+import {
+  ForgotPasswordFormValues,
+  LoginFormValues,
+  ResetPasswordPayload,
+} from '@/validations/auth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useLogin = () => {
@@ -38,5 +42,39 @@ export const useGetMe = () => {
     },
     retry: false,
     staleTime: 1000 * 60 * 5,
+  });
+};
+
+export const useForgotPassword = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: ForgotPasswordFormValues) => {
+      const response = await api.post(API_URL.AUTH.VERIFY_EMAIL, data);
+      if (!response.data.success) {
+        throw new Error(
+          response.data.message || 'Gagal mengirim link reset password',
+        );
+      }
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['forgot-password'] });
+    },
+  });
+};
+
+export const useResetPassword = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: ResetPasswordPayload) => {
+      const response = await api.post(API_URL.AUTH.RESET_PASSWORD, data);
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Gagal reset password');
+      }
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reset-password'] });
+    },
   });
 };

@@ -1,7 +1,14 @@
+import { TokenSchema } from '@/app/api/auth/forgot-password/reset-password/route';
 import { getRedirectPath, login, logout } from '@/lib/auth';
-import { AuthError, NotFoundError } from '@/lib/errors';
+import { AuthError, BusinessError, NotFoundError } from '@/lib/errors';
+import {
+  sendResetPasswordLinkEmail,
+  sendUpdatePasswordNotificationEmail,
+} from '@/lib/mailer';
 import { authRepository } from '@/repositories/auth.repository';
+import { settingRepository } from '@/repositories/setting.repository';
 import bcrypt from 'bcryptjs';
+import { SignJWT, jwtVerify } from 'jose';
 import { activityService } from './activity.service';
 
 export const authService = {
@@ -70,5 +77,77 @@ export const authService = {
       message: 'User logged out successfully',
       data: null,
     };
+  },
+
+  forgotPasswordRequest: async (email: string) => {
+    const user = await authRepository.getUserByEmail(email);
+
+    if (!user) {
+      throw new NotFoundError('Email tidak ditemukan');
+    }
+
+    const verificationToken = await new SignJWT({ email })
+      .setProtectedHeader({ alg: 'HS256' })
+      .setIssuedAt()
+      .setExpirationTime('15m')
+      .sign(new TextEncoder().encode(process.env.JWT_SECRET!));
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const resetLink = `${appUrl}/reset-password?token=${verificationToken}`;
+
+    await sendResetPasswordLinkEmail(email, resetLink);
+    console.log(`[FORGOT PASSWORD] Reset link for ${email} is: ${resetLink}`);
+
+    return { verificationToken };
+  },
+
+  resetPassword: async ({ token, password }: TokenSchema) => {
+    let email: string;
+    try {
+      const { payload } = await jwtVerify(
+        token,
+        new TextEncoder().encode(process.env.JWT_SECRET),
+        {
+          algorithms: ['HS256'],
+        },
+      );
+      email = payload.email as string;
+    } catch {
+      throw new BusinessError(
+        'Token reset password kedaluwarsa atau tidak valid',
+      );
+    }
+
+    const user = await authRepository.getUserByEmail(email);
+
+    if (!user) {
+      throw new NotFoundError('User tidak ditemukan');
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+
+    const updatedUser = await settingRepository.updatePassword({
+      id: user.id,
+      password: hashedPassword,
+    });
+
+    if (!updatedUser) {
+      throw new BusinessError('Gagal memperbarui password');
+    }
+
+    await sendUpdatePasswordNotificationEmail({
+      email: updatedUser.email,
+      name: updatedUser.name,
+    });
+
+    await activityService.log({
+      userId: user.id,
+      action: 'UPDATE',
+      entityType: 'AUTH',
+      details: `Mengatur ulang password melalui Lupa Password.`,
+    });
+
+    return updatedUser;
   },
 };

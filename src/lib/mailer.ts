@@ -1,6 +1,7 @@
 import {
   getDeletionNotificationEmailHtml,
   getOtpEmailHtml,
+  getResetPasswordEmailHtml,
   getStatusNotificationEmailHtml,
   getUpdateEmailNotificationEmailHtml,
   getUpdateNameNotificationEmailHtml,
@@ -235,5 +236,24 @@ export const sendOtpEmail = async (email: string, otpCode: string) => {
     console.log(`[MAILER] OTP terkirim ke ${email}`);
   } catch (error) {
     console.error(`[MAILER] Gagal mengirim OTP ke ${email}:`, error);
+  }
+};
+
+export const sendResetPasswordLinkEmail = async (
+  email: string,
+  resetLink: string,
+) => {
+  const mailOptions = {
+    from: process.env.SMTP_FROM || '"Admin Wevin" <admin@wevin.local>',
+    to: email,
+    subject: 'Atur Ulang Password Akun Wevin Anda',
+    html: getResetPasswordEmailHtml({ resetLink }),
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`[MAILER] Reset link terkirim ke ${email}`);
+  } catch (error) {
+    console.error(`[MAILER] Gagal mengirim reset link ke ${email}:`, error);
   }
 };

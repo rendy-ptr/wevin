@@ -7,6 +7,9 @@ export const API_URL = {
     ME: `${API_BASE_URL}/api/auth/me`,
     LOGIN_PAGE: `${API_BASE_URL}/login`,
     SESSION: `${API_BASE_URL}/api/auth/session`,
+    VERIFY_EMAIL: `${API_BASE_URL}/api/auth/forgot-password/verify-email`,
+    VERIFY_OTP: `${API_BASE_URL}/api/auth/forgot-password/verify-otp`,
+    RESET_PASSWORD: `${API_BASE_URL}/api/auth/forgot-password/reset-password`,
   },
   MEMBER: {
     GET: `${API_BASE_URL}/api/member`,
