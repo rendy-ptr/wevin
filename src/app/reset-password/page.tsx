@@ -130,7 +130,7 @@ function ResetPasswordForm() {
               halaman masuk dalam beberapa saat...
             </p>
             <Button
-              className="h-12 w-full rounded-xl"
+              className="bg-primary-dark hover:bg-primary-dark/90 h-12 w-full rounded-xl font-medium text-white transition-all duration-300"
               onClick={() => router.push('/login')}
             >
               Masuk Sekarang

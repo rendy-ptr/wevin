@@ -74,8 +74,7 @@ export default function ForgotPasswordPage() {
               ini.
             </p>
             <Button
-              className="border-border hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark h-12 w-full cursor-pointer rounded-xl px-4 transition-colors"
-              variant="outline"
+              className="bg-primary-dark hover:bg-primary-dark/90 h-12 w-full rounded-xl font-medium text-white transition-all duration-300"
               asChild
             >
               <Link href="/login">Kembali ke Halaman Masuk</Link>

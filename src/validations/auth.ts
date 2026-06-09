@@ -32,3 +32,11 @@ export const resetPasswordSchema = z
   });
 
 export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+
+export const resetPasswordWithTokenSchema = resetPasswordSchema.extend({
+  token: z.string(),
+});
+
+export type ResetPasswordWithTokenFormValues = z.infer<
+  typeof resetPasswordWithTokenSchema
+>;

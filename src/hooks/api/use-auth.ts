@@ -3,7 +3,7 @@ import api from '@/lib/axios';
 import {
   ForgotPasswordFormValues,
   LoginFormValues,
-  ResetPasswordPayload,
+  ResetPasswordWithTokenFormValues,
 } from '@/validations/auth';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -66,7 +66,7 @@ export const useForgotPassword = () => {
 export const useResetPassword = () => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: ResetPasswordPayload) => {
+    mutationFn: async (data: ResetPasswordWithTokenFormValues) => {
       const response = await api.post(API_URL.AUTH.RESET_PASSWORD, data);
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal reset password');

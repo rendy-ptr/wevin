@@ -1,4 +1,3 @@
-import { TokenSchema } from '@/app/api/auth/forgot-password/reset-password/route';
 import { getRedirectPath, login, logout } from '@/lib/auth';
 import { AuthError, BusinessError, NotFoundError } from '@/lib/errors';
 import {
@@ -7,6 +6,7 @@ import {
 } from '@/lib/mailer';
 import { authRepository } from '@/repositories/auth.repository';
 import { settingRepository } from '@/repositories/setting.repository';
+import { ResetPasswordWithTokenFormValues } from '@/validations/auth';
 import bcrypt from 'bcryptjs';
 import { SignJWT, jwtVerify } from 'jose';
 import { activityService } from './activity.service';
@@ -101,7 +101,10 @@ export const authService = {
     return { verificationToken };
   },
 
-  resetPassword: async ({ token, password }: TokenSchema) => {
+  resetPassword: async ({
+    token,
+    password,
+  }: ResetPasswordWithTokenFormValues) => {
     let email: string;
     try {
       const { payload } = await jwtVerify(

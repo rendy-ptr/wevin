@@ -1,19 +1,12 @@
 import { AppError } from '@/lib/errors';
 import { authService } from '@/services/auth.service';
-import { resetPasswordSchema } from '@/validations/auth';
+import { resetPasswordWithTokenSchema } from '@/validations/auth';
 import { NextResponse } from 'next/server';
-import { z } from 'zod';
-
-const tokenschema = resetPasswordSchema.extend({
-  token: z.string(),
-});
-
-export type TokenSchema = z.infer<typeof tokenschema>;
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const parsed = tokenschema.safeParse(body);
+    const parsed = resetPasswordWithTokenSchema.safeParse(body);
 
     if (!parsed.success) {
       return NextResponse.json(
