@@ -13,7 +13,7 @@ import { TEMPLATES } from '@/constants/template.constant';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 
 export interface PreviewData {
   prefixTitle: string;
@@ -51,7 +51,7 @@ export interface PreviewData {
   enabledFeatures: Record<string, boolean>;
 }
 
-export default function PreviewPage() {
+function PreviewContent() {
   const searchParams = useSearchParams();
   const guestName = searchParams.get('to')?.replace(/\+/g, ' ') || '';
 
@@ -242,5 +242,19 @@ export default function PreviewPage() {
         </div>
       )}
     </AnimatePresence>
+  );
+}
+
+export default function PreviewPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-muted/20 flex min-h-screen items-center justify-center">
+          <Loader2 className="text-primary h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
+      <PreviewContent />
+    </Suspense>
   );
 }
