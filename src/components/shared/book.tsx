@@ -1,6 +1,7 @@
 'use client';
 
 import { TEMPLATES } from '@/constants/template.constant';
+import { formatDate } from '@/lib/date';
 import { cn } from '@/lib/utils';
 import { motion } from 'motion/react';
 import { useState } from 'react';
@@ -13,6 +14,11 @@ interface BookProps {
   bride: string;
   guestName: string;
   showHint?: boolean;
+  prefixTitle: string;
+  coverGreeting: string;
+  coverQuote: string;
+  eventDate: Date;
+  placement: string;
 }
 
 export default function Book({
@@ -23,6 +29,11 @@ export default function Book({
   bride,
   guestName,
   showHint = true,
+  prefixTitle,
+  coverGreeting,
+  coverQuote,
+  eventDate,
+  placement,
 }: BookProps) {
   const [isCoverHovered, setIsCoverHovered] = useState(false);
 
@@ -69,7 +80,7 @@ export default function Book({
           )}
         />
         <div className="relative z-10 space-y-4 pl-12 opacity-40">
-          <p className="font-script text-xl">With Love,</p>
+          <p className="font-script text-xl">{coverGreeting || 'With Love,'}</p>
           <h4 className="font-display text-2xl italic">
             {groom}
             <br />
@@ -78,8 +89,8 @@ export default function Book({
             {bride}
           </h4>
           <p className="mx-auto max-w-[200px] text-[10px] leading-relaxed italic">
-            &quot;Two souls with but a single thought, two hearts that beat as
-            one.&quot;
+            {coverQuote ||
+              '&quot;Two souls with but a single thought, two hearts that beat as one.&quot;'}
           </p>
         </div>
       </div>
@@ -158,7 +169,7 @@ export default function Book({
 
         <div className="absolute inset-0 z-10 flex flex-col items-center justify-center p-8 text-center">
           <p className="font-script mb-1 text-lg opacity-80 md:text-xl">
-            The Wedding of
+            {prefixTitle || 'The Wedding of'}
           </p>
           <h3 className="font-display text-primary mb-3 text-3xl leading-tight font-semibold italic md:text-5xl">
             {groom}
@@ -172,10 +183,10 @@ export default function Book({
 
           <div className="mb-6 space-y-1">
             <p className="text-sm font-medium tracking-wide opacity-80 md:text-base">
-              Sabtu, 08 Desember 2005
+              {formatDate(eventDate) || 'Sabtu, 08 Desember 2005'}
             </p>
             <p className="text-[10px] opacity-60 md:text-xs">
-              Hotel Grand Ballroom, Jakarta
+              {placement || 'Hotel Grand Ballroom, Jakarta'}
             </p>
           </div>
 

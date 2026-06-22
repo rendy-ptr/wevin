@@ -15,6 +15,8 @@ interface CoverSectionProps {
   onOpen: () => void;
   currentIndex: number;
   onIndexChange: (index: number) => void;
+  groom?: string;
+  bride?: string;
 }
 
 export default function CoverSection({
@@ -23,6 +25,8 @@ export default function CoverSection({
   onOpen,
   currentIndex,
   onIndexChange,
+  groom = 'Groom',
+  bride = 'Bride',
 }: CoverSectionProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -142,8 +146,8 @@ export default function CoverSection({
             isActive={isActive}
             isOpen={isOpen}
             handleToggleOpen={handleToggleOpen}
-            groom="Groom"
-            bride="Bride"
+            groom={groom}
+            bride={bride}
             guestName={guestName}
           />
         </div>

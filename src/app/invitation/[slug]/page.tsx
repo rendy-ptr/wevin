@@ -1,10 +1,10 @@
 'use client';
 
-import CountdownTimer from '@/components/invitation/count-time-section';
-import CoverSection from '@/components/invitation/cover-section';
-import EventCard from '@/components/invitation/event-section';
-import GuestbookForm from '@/components/invitation/guest-book-section';
-import RSVPForm from '@/components/invitation/rsvp-section';
+import CountdownTimer from '@/components/invitation-example/count-time-section';
+import CoverSection from '@/components/invitation-example/cover-section';
+import EventCard from '@/components/invitation-example/event-section';
+import GuestbookForm from '@/components/invitation-example/guest-book-section';
+import RSVPForm from '@/components/invitation-example/rsvp-section';
 import { TEMPLATES } from '@/constants/template.constant';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, Music, VolumeX } from 'lucide-react';

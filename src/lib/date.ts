@@ -5,13 +5,14 @@ export function formatDate(
   const d = new Date(date);
 
   if (isNaN(d.getTime())) {
-    return '-';
+    return '...';
   }
 
   const defaultOptions: Intl.DateTimeFormatOptions = {
+    weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric',
+    day: '2-digit',
   };
 
   return d.toLocaleDateString('id-ID', options || defaultOptions);

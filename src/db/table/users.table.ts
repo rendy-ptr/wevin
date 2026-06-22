@@ -11,7 +11,6 @@ import {
 } from 'drizzle-orm/pg-core';
 import { activityLogs } from './activity-log.table';
 import { memberProfiles } from './member-profiles.table';
-import { memberQuotaUsage } from './member-quota-usage.table';
 
 export const userRoleEnum = pgEnum('user_role', [ADMIN, MEMBER]);
 
@@ -33,10 +32,9 @@ export const users = pgTable('users', {
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
-  profile: one(memberProfiles, {
+  memberProfile: one(memberProfiles, {
     fields: [users.id],
     references: [memberProfiles.userId],
   }),
-  quotaUsages: many(memberQuotaUsage),
   activityLogs: many(activityLogs),
 }));

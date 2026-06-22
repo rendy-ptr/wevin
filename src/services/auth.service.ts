@@ -33,16 +33,23 @@ export const authService = {
       name: user.name,
       role: user.role,
       createdAt: user.createdAt,
-      package: user.profile?.package
+      package: user.memberProfile?.package
         ? {
-            id: user.profile.package.id,
-            name: user.profile.package.name,
-            benefits: user.profile.package.benefits.map((b) => ({
-              benefitKey: b.benefitKey,
-              toggleValue: b.toggleValue,
-              quotaValue: b.quotaValue,
-            })),
-            templateIds: user.profile.package.templates.map(
+            id: user.memberProfile.package.id,
+            name: user.memberProfile.package.name,
+            benefits: [
+              ...user.memberProfile.package.benefits.map((b) => ({
+                benefitKey: b.benefitKey,
+                toggleValue: b.value,
+                quotaValue: null,
+              })),
+              ...user.memberProfile.package.quotas.map((q) => ({
+                benefitKey: q.quotaKey,
+                toggleValue: null,
+                quotaValue: q.value,
+              })),
+            ],
+            templateIds: user.memberProfile.package.templates.map(
               (t) => t.templateId,
             ),
           }

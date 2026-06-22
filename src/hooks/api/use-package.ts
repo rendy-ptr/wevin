@@ -1,8 +1,8 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
-import { BasePackageBenefitModel } from '@/types/benefit.type';
 import {
   BasePackageModel,
+  PackageBenefitDetail,
   PackageFilterParams,
   PackageIndexItem,
   PackageWithRelationships,
@@ -131,10 +131,7 @@ export const useDeletePackage = (): UseMutationResult<
 
 export const useGetActivePackages = (): UseQueryResult<
   (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
-    benefits: Pick<
-      BasePackageBenefitModel,
-      'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-    >[];
+    benefits: PackageBenefitDetail[];
     templates: (BasePackageTemplateModel & {
       template: Pick<BaseTemplateModel, 'id' | 'name'>;
     })[];
@@ -151,10 +148,7 @@ export const useGetActivePackages = (): UseQueryResult<
         BasePackageModel,
         'id' | 'name' | 'price'
       > & {
-        benefits: Pick<
-          BasePackageBenefitModel,
-          'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-        >[];
+        benefits: PackageBenefitDetail[];
         templates: (BasePackageTemplateModel & {
           template: Pick<BaseTemplateModel, 'id' | 'name'>;
         })[];

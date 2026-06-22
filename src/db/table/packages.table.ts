@@ -16,6 +16,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { memberProfiles } from './member-profiles.table';
 import { packageBenefits } from './package-benefits.table';
+import { packageQuotas } from './package-quotas.table';
 import { packageTemplates } from './package-templates.table';
 
 export const benefitTypeEnum = pgEnum('benefit_type', ['toggle', 'quota'] as [
@@ -44,6 +45,7 @@ export const packages = pgTable('packages', {
 
 export const packageRelations = relations(packages, ({ many }) => ({
   benefits: many(packageBenefits),
+  quotas: many(packageQuotas),
   templates: many(packageTemplates),
   members: many(memberProfiles),
 }));

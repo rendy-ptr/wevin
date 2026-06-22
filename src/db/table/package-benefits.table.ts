@@ -1,4 +1,4 @@
-import { BenefitKeyType } from '@/types/benefit.type';
+import { ToggleBenefitKeyType } from '@/types/benefit.type';
 import { relations } from 'drizzle-orm';
 import {
   boolean,
@@ -17,9 +17,8 @@ export const packageBenefits = pgTable('package_benefits', {
     .references(() => packages.id, { onDelete: 'cascade' }),
   benefitKey: varchar('benefit_key', { length: 50 })
     .notNull()
-    .$type<BenefitKeyType>(),
-  toggleValue: boolean('toggle_value'),
-  quotaValue: integer('quota_value'),
+    .$type<ToggleBenefitKeyType>(),
+  value: boolean('value').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

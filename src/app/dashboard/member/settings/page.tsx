@@ -223,7 +223,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-primary-dark text-3xl font-bold tracking-tight">
-                {user.package?.name || 'Gratis'}
+                {user.package?.name || '-'}
               </p>
               <p className="text-muted-foreground mt-1 text-sm">
                 Akses ke fitur dasar

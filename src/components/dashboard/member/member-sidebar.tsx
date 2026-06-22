@@ -59,6 +59,7 @@ export function MemberSidebar() {
           size="icon"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          className="hover:bg-primary/10 hover:text-primary-dark"
         >
           {isMobileMenuOpen ? (
             <X className="h-6 w-6" />

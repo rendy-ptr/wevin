@@ -47,7 +47,7 @@ export const memberRepository = {
         password: false,
       },
       with: {
-        profile: {
+        memberProfile: {
           with: {
             package: true,
           },

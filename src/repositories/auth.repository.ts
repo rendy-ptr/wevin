@@ -7,11 +7,12 @@ export const authRepository = {
     const user = await db.query.users.findFirst({
       where: eq(users.email, email),
       with: {
-        profile: {
+        memberProfile: {
           with: {
             package: {
               with: {
                 benefits: true,
+                quotas: true,
                 templates: true,
               },
             },

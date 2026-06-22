@@ -43,7 +43,7 @@ describe('PUT /api/package/[id] (Update Package)', () => {
     isPopular: true,
     benefits: [
       {
-        benefitKey: 'guest_limit',
+        benefitKey: 'photo_limit',
         quotaValue: 10,
       },
     ],

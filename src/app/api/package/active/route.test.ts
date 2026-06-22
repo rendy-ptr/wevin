@@ -18,7 +18,7 @@ const mockPackageActiveWithBenefitsData = {
   benefits: [
     {
       id: 1,
-      benefitKey: 'guest_limit',
+      benefitKey: 'photo_limit',
       toggleValue: null,
       quotaValue: 10,
     },

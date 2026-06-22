@@ -25,7 +25,7 @@ const mockGetAll = mock(() =>
         benefits: [
           {
             id: 1,
-            benefitKey: 'guest_limit',
+            benefitKey: 'photo_limit',
             toggleValue: null,
             quotaValue: 10,
           },
@@ -141,7 +141,7 @@ describe('POST /api/package (Create Package)', () => {
     isPopular: false,
     benefits: [
       {
-        benefitKey: 'guest_limit',
+        benefitKey: 'photo_limit',
         quotaValue: 5,
       },
     ],

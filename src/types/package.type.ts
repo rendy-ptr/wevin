@@ -1,6 +1,11 @@
-import { packageBenefits, packages, packageTemplates } from '@/db/schema';
+import {
+  packageBenefits,
+  packageQuotas,
+  packages,
+  packageTemplates,
+} from '@/db/schema';
 import { InferSelectModel } from 'drizzle-orm';
-import { BasePackageBenefitModel } from './benefit.type';
+import { BenefitKeyType } from './benefit.type';
 import { BaseMemberProfileModel } from './member.type';
 import { BasePackageTemplateModel, BaseTemplateModel } from './template.type';
 import { BaseUserModel } from './user.type';
@@ -8,6 +13,7 @@ import { BaseUserModel } from './user.type';
 export type BasePackageModel = InferSelectModel<typeof packages>;
 
 export type TPackageBenefitPivot = typeof packageBenefits.$inferSelect;
+export type TPackageQuotaPivot = typeof packageQuotas.$inferSelect;
 export type TPackageTemplatePivot = typeof packageTemplates.$inferSelect;
 
 export type PackageFilterParams = {
@@ -22,10 +28,12 @@ export type PackageFilterParams = {
 // Sub-types / Relationship Details
 // ----------------------------------------------------
 
-export type PackageBenefitDetail = Pick<
-  BasePackageBenefitModel,
-  'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
->;
+export type PackageBenefitDetail = {
+  id: string;
+  benefitKey: BenefitKeyType;
+  toggleValue: boolean | null;
+  quotaValue: number | null;
+};
 
 export type PackageTemplateDetail = BasePackageTemplateModel & {
   template: Pick<BaseTemplateModel, 'id' | 'name'>;
@@ -43,7 +51,7 @@ export type PackageWithBenefits = Omit<
   BasePackageModel,
   'createdAt' | 'updatedAt'
 > & {
-  benefits: BasePackageBenefitModel[];
+  benefits: PackageBenefitDetail[];
 };
 
 export type PackageWithRelationships = Omit<
