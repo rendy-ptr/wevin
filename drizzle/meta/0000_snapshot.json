@@ -58,12 +58,8 @@
           "name": "activity_logs_user_id_users_id_fk",
           "tableFrom": "activity_logs",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -153,12 +149,8 @@
           "name": "invitation_books_invitation_id_invitations_id_fk",
           "tableFrom": "invitation_books",
           "tableTo": "invitations",
-          "columnsFrom": [
-            "invitation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invitation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -212,12 +204,8 @@
           "name": "invitation_galleries_invitation_id_invitations_id_fk",
           "tableFrom": "invitation_galleries",
           "tableTo": "invitations",
-          "columnsFrom": [
-            "invitation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invitation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -285,12 +273,8 @@
           "name": "invitation_guests_invitation_id_invitations_id_fk",
           "tableFrom": "invitation_guests",
           "tableTo": "invitations",
-          "columnsFrom": [
-            "invitation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invitation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -425,12 +409,8 @@
           "name": "invitation_information_invitation_id_invitations_id_fk",
           "tableFrom": "invitation_information",
           "tableTo": "invitations",
-          "columnsFrom": [
-            "invitation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invitation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -438,12 +418,8 @@
           "name": "invitation_information_template_id_templates_id_fk",
           "tableFrom": "invitation_information",
           "tableTo": "templates",
-          "columnsFrom": [
-            "template_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["template_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -453,9 +429,7 @@
         "invitation_information_slug_unique": {
           "name": "invitation_information_slug_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "slug"
-          ]
+          "columns": ["slug"]
         }
       },
       "policies": {},
@@ -531,12 +505,8 @@
           "name": "invitation_rsvps_invitation_id_invitations_id_fk",
           "tableFrom": "invitation_rsvps",
           "tableTo": "invitations",
-          "columnsFrom": [
-            "invitation_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invitation_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -544,12 +514,8 @@
           "name": "invitation_rsvps_invitation_guest_id_invitation_guests_id_fk",
           "tableFrom": "invitation_rsvps",
           "tableTo": "invitation_guests",
-          "columnsFrom": [
-            "invitation_guest_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invitation_guest_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -603,12 +569,8 @@
           "name": "invitations_member_id_member_profiles_id_fk",
           "tableFrom": "invitations",
           "tableTo": "member_profiles",
-          "columnsFrom": [
-            "member_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -616,12 +578,8 @@
           "name": "invitations_template_id_templates_id_fk",
           "tableFrom": "invitations",
           "tableTo": "templates",
-          "columnsFrom": [
-            "template_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["template_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -675,12 +633,8 @@
           "name": "member_profiles_user_id_users_id_fk",
           "tableFrom": "member_profiles",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -688,12 +642,8 @@
           "name": "member_profiles_package_id_packages_id_fk",
           "tableFrom": "member_profiles",
           "tableTo": "packages",
-          "columnsFrom": [
-            "package_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["package_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -703,9 +653,7 @@
         "member_profiles_user_id_unique": {
           "name": "member_profiles_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "user_id"
-          ]
+          "columns": ["user_id"]
         }
       },
       "policies": {},
@@ -761,12 +709,8 @@
           "name": "member_quota_usage_member_id_member_profiles_id_fk",
           "tableFrom": "member_quota_usage",
           "tableTo": "member_profiles",
-          "columnsFrom": [
-            "member_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["member_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -776,10 +720,7 @@
         "member_quota_usage_member_id_benefit_key_unique": {
           "name": "member_quota_usage_member_id_benefit_key_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "member_id",
-            "benefit_key"
-          ]
+          "columns": ["member_id", "benefit_key"]
         }
       },
       "policies": {},
@@ -836,12 +777,8 @@
           "name": "package_benefits_package_id_packages_id_fk",
           "tableFrom": "package_benefits",
           "tableTo": "packages",
-          "columnsFrom": [
-            "package_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["package_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -902,12 +839,8 @@
           "name": "package_quotas_package_id_packages_id_fk",
           "tableFrom": "package_quotas",
           "tableTo": "packages",
-          "columnsFrom": [
-            "package_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["package_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1013,12 +946,8 @@
           "name": "package_templates_package_id_packages_id_fk",
           "tableFrom": "package_templates",
           "tableTo": "packages",
-          "columnsFrom": [
-            "package_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["package_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1026,12 +955,8 @@
           "name": "package_templates_template_id_templates_id_fk",
           "tableFrom": "package_templates",
           "tableTo": "templates",
-          "columnsFrom": [
-            "template_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["template_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1107,9 +1032,7 @@
         "packages_name_unique": {
           "name": "packages_name_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "name"
-          ]
+          "columns": ["name"]
         }
       },
       "policies": {},
@@ -1166,9 +1089,7 @@
         "templates_key_unique": {
           "name": "templates_key_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "key"
-          ]
+          "columns": ["key"]
         }
       },
       "policies": {},
@@ -1247,9 +1168,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -1261,60 +1180,37 @@
     "public.invitation_guest_status": {
       "name": "invitation_guest_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "sent",
-        "opened"
-      ]
+      "values": ["draft", "sent", "opened"]
     },
     "public.invitation_status": {
       "name": "invitation_status",
       "schema": "public",
-      "values": [
-        "draft",
-        "published",
-        "expired"
-      ]
+      "values": ["draft", "published", "expired"]
     },
     "public.rsvp_status": {
       "name": "rsvp_status",
       "schema": "public",
-      "values": [
-        "hadir",
-        "tidak_hadir"
-      ]
+      "values": ["hadir", "tidak_hadir"]
     },
     "public.benefit_type": {
       "name": "benefit_type",
       "schema": "public",
-      "values": [
-        "toggle",
-        "quota"
-      ]
+      "values": ["toggle", "quota"]
     },
     "public.package_status": {
       "name": "package_status",
       "schema": "public",
-      "values": [
-        "active",
-        "inactive"
-      ]
+      "values": ["active", "inactive"]
     },
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": [
-        "admin",
-        "member"
-      ]
+      "values": ["admin", "member"]
     },
     "public.user_status": {
       "name": "user_status",
       "schema": "public",
-      "values": [
-        "active",
-        "inactive"
-      ]
+      "values": ["active", "inactive"]
     }
   },
   "schemas": {},
