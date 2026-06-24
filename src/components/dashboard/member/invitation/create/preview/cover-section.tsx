@@ -1,41 +1,35 @@
-'use client';
-
 import Book from '@/components/shared/book';
 import { TEMPLATES } from '@/constants/template.constant';
 import { cn } from '@/lib/utils';
 
-interface MemberPreviewCoverSectionProps {
+interface CoverSectionProps {
   guestName: string;
   isOpen: boolean;
   onOpen: () => void;
   currentIndex: number;
-  groom: string;
-  bride: string;
+  groomName: string;
+  brideName: string;
+  eventDate: Date;
   prefixTitle: string;
   coverGreeting: string;
   coverQuote: string;
-  eventDate: Date;
   placement: string;
 }
 
-export default function MemberPreviewCoverSection({
+export default function PreviewCoverSection({
   guestName,
   isOpen,
   onOpen,
   currentIndex,
-  groom,
-  bride,
+  groomName,
+  brideName,
+  eventDate,
   prefixTitle,
   coverGreeting,
   coverQuote,
-  eventDate,
   placement,
-}: MemberPreviewCoverSectionProps) {
-  const isActive = TEMPLATES[currentIndex];
-
-  const handleToggleOpen = () => {
-    onOpen();
-  };
+}: CoverSectionProps) {
+  const isActive = TEMPLATES[currentIndex] || TEMPLATES[0];
 
   return (
     <section
@@ -51,9 +45,9 @@ export default function MemberPreviewCoverSection({
           <Book
             isActive={isActive}
             isOpen={isOpen}
-            handleToggleOpen={handleToggleOpen}
-            groom={groom}
-            bride={bride}
+            handleToggleOpen={onOpen}
+            groom={groomName}
+            bride={brideName}
             guestName={guestName}
             prefixTitle={prefixTitle}
             coverGreeting={coverGreeting}

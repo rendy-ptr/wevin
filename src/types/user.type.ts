@@ -10,9 +10,9 @@ export type BaseUserModel = InferSelectModel<typeof users>;
 export type TUserStatus = typeof ACTIVE | typeof INACTIVE;
 
 export type UserWithRelationships = Omit<BaseUserModel, 'password'> & {
-  profile: BaseMemberProfileModel & {
-    package: BasePackageModel & {
-      benefits: BasePackageBenefitModel[];
+  memberProfile?: BaseMemberProfileModel & {
+    package?: BasePackageModel & {
+      benefits?: BasePackageBenefitModel[];
     };
   };
   activityLogs: BaseActivityLogModel[];

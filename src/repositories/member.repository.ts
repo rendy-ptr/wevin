@@ -26,7 +26,15 @@ export const memberRepository = {
       matchingUserIds = profiles.map((p) => p.userId);
 
       if (matchingUserIds.length === 0) {
-        return { items: [], total: 0 };
+        return {
+          data: [],
+          meta: {
+            total: 0,
+            page,
+            limit,
+            totalPages: 0,
+          },
+        };
       }
     }
 
@@ -61,8 +69,13 @@ export const memberRepository = {
       .where(whereClause);
 
     return {
-      items,
-      total: totalResult.value,
+      data: items,
+      meta: {
+        total: totalResult.value,
+        page,
+        limit,
+        totalPages: Math.ceil(totalResult.value / limit),
+      },
     };
   },
 

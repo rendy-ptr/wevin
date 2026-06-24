@@ -72,9 +72,9 @@ export default function MemberManagementPage() {
   const { mutate: updateStatus, isPending: isStatusUpdating } =
     useUpdateMemberStatus();
 
-  const members = membersData?.items || [];
-  const totalItems = membersData?.total || 0;
-  const totalPages = Math.ceil(totalItems / filters.limit);
+  const members = membersData?.data || [];
+  const totalItems = membersData?.meta?.total || 0;
+  const totalPages = membersData?.meta?.totalPages || 1;
 
   const closeModal = () => {
     setActiveModal(null);
@@ -260,7 +260,7 @@ export default function MemberManagementPage() {
                       {member.email}
                     </td>
                     <td className="text-muted-foreground px-6 py-4 text-xs">
-                      {member.profile?.package?.name || '-'}
+                      {member.memberProfile?.package?.name || '-'}
                     </td>
                     <td className="px-6 py-4">
                       <span

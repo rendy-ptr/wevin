@@ -48,4 +48,14 @@ export const API_URL = {
     GET_ALL_ACTIVITY_LOGS: `${API_BASE_URL}/api/setting/logs`,
     SEND_OTP: `${API_BASE_URL}/api/setting/send-otp`,
   },
+  GUEST: {
+    GET: `${API_BASE_URL}/api/member/guest`,
+    CREATE: `${API_BASE_URL}/api/member/guest`,
+    UPDATE: (id: number) => `${API_BASE_URL}/api/member/guest/${id}`,
+    DELETE: (id: number) => `${API_BASE_URL}/api/member/guest/${id}`,
+  },
+  INVITATION: {
+    GET: `${API_BASE_URL}/api/member/invitation`,
+    CREATE: `${API_BASE_URL}/api/member/invitation`,
+  },
 };

@@ -1,8 +1,13 @@
 export enum GuestBookStatusEnum {
+  Pending = 'pending',
+  Approved = 'approved',
+  Rejected = 'rejected',
+}
+
+export enum GuestStatusEnum {
   Draft = 'draft',
   Sent = 'sent',
   Opened = 'opened',
-  RSVPConfirmed = 'rsvp_confirmed',
 }
 
 export enum InvitationStatusEnum {
@@ -14,4 +19,10 @@ export enum InvitationStatusEnum {
 export enum RSVPStatusEnum {
   Present = 'hadir',
   NotPresent = 'tidak_hadir',
+}
+
+export enum TimezoneEnum {
+  WIB = 'WIB',
+  WITA = 'WITA',
+  WIT = 'WIT',
 }

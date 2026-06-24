@@ -29,8 +29,13 @@ export const packageRepository = {
     page = 1,
     limit = 10,
   }: PackageFilterParams): Promise<{
-    items: PackageIndexItem[];
-    total: number;
+    data: PackageIndexItem[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
   }> => {
     const offset = (page - 1) * limit;
 
@@ -102,8 +107,13 @@ export const packageRepository = {
     });
 
     return {
-      items: mappedItems,
-      total: totalResult.value,
+      data: mappedItems,
+      meta: {
+        total: totalResult.value,
+        page,
+        limit,
+        totalPages: Math.ceil(totalResult.value / limit),
+      },
     };
   },
 

@@ -21,8 +21,13 @@ export const useGetActivities = ({
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
       return response.data.data as {
-        items: ActivityIndexItem[];
-        total: number;
+        data: ActivityIndexItem[];
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
       };
     },
   });

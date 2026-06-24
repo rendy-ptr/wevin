@@ -1,83 +1,78 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { useCreateInvitation } from '@/hooks/api/use-invitation';
 import { useGetTemplates } from '@/hooks/api/use-template';
 import { usePermission } from '@/hooks/use-permission';
 import { useSession } from '@/hooks/use-session';
+import { useToast } from '@/hooks/use-toast';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { isAxiosError } from 'axios';
 import { Check, ChevronLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useRef } from 'react';
-import { FormProvider, useForm, useWatch } from 'react-hook-form';
-import * as z from 'zod';
+import { FieldErrors, FormProvider, useForm, useWatch } from 'react-hook-form';
 
-import InvitationBookPreview from '@/components/dashboard/member/invitation/create/invitation-book-preview';
-import InvitationBookStep from '@/components/dashboard/member/invitation/create/invitation-book-step';
-import InvitationFeaturesStep from '@/components/dashboard/member/invitation/create/invitation-features-step';
-import InvitationTemplateStep from '@/components/dashboard/member/invitation/create/invitation-template-step';
-
+import InvitationTemplateStep from '@/components/dashboard/member/invitation/create/steps/step-1-template';
+import InvitationProfilesStep from '@/components/dashboard/member/invitation/create/steps/step-2-profiles';
+import InvitationTextsStep from '@/components/dashboard/member/invitation/create/steps/step-3-texts';
+import InvitationEventsStep from '@/components/dashboard/member/invitation/create/steps/step-4-events';
+import InvitationGalleryStep from '@/components/dashboard/member/invitation/create/steps/step-5-gallery';
+import InvitationFeaturesStep from '@/components/dashboard/member/invitation/create/steps/step-6-features';
+import InvitationPublishStep from '@/components/dashboard/member/invitation/create/steps/step-7-publish';
+import { DEFAULT_INVITATION_VALUES } from '@/constants/invitation.constant';
 import {
-  createUpdateInvitationBookSchema,
-  createUpdateInvitationFeatureSchema,
-  createUpdateInvitationSchema,
+  createInvitationSchema,
+  CreateUpdateInvitationFormValues,
 } from '@/validations/member/create-update-invitation';
 
-const createInvitationSchema = createUpdateInvitationSchema
-  .extend(createUpdateInvitationBookSchema.shape)
-  .extend(createUpdateInvitationFeatureSchema.shape);
+const STEP_FIELDS: Record<number, (keyof CreateUpdateInvitationFormValues)[]> =
+  {
+    1: ['templateId'],
+    2: [
+      'groomName',
+      'groomFullName',
+      'groomParents',
+      'brideName',
+      'brideFullName',
+      'brideParents',
+    ],
+    3: [
+      'prefixTitle',
+      'coverGreeting',
+      'coverQuote',
+      'openingGreeting',
+      'openingMessage',
+      'closingGreeting',
+      'closingMessage',
+    ],
+    4: ['events'],
+    5: ['gallery'],
+    6: ['musicUrl', 'liveStreamUrl', 'enabledFeatures'],
+    7: ['status', 'recipientName'],
+  };
 function InvitationFormContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const currentStep = Number(searchParams.get('step')) || 1;
-  const totalSteps = 3;
+  const totalSteps = 7;
 
   const { user, isLoading: isLoadingSession } = useSession();
   const { hasTemplate, isLoading: isLoadingPermissions } = usePermission();
+
+  const { toast } = useToast();
   const { data: templatesData = [], isLoading: isLoadingTemplates } =
     useGetTemplates();
 
+  const { mutate: createInvitation, isPending: isCreating } =
+    useCreateInvitation();
+
   const methods = useForm({
     resolver: zodResolver(createInvitationSchema),
-    defaultValues: {
-      templateId: 1,
-
-      prefixTitle: 'The Wedding of',
-      coverGreeting: 'With Love,',
-      coverQuote:
-        '"Two souls with but a single thought, two hearts that beat as one."',
-      groomName: '',
-      brideName: '',
-      eventDate: '',
-      placement: 'Hotel Grand Ballroom, Jakarta',
-
-      openingGreeting: 'Bismillahirrahmanirrahim',
-      openingMessage:
-        'Dengan memohon rahmat dan ridho Allah SWT, kami bermaksud menyelenggarakan pernikahan putra-putri kami:',
-      groomFullName: '',
-      groomParents: '',
-      brideFullName: '',
-      brideParents: '',
-      akadDate: '',
-      akadTime: '',
-      akadLocation: '',
-      akadAddress: '',
-      akadMapsUrl: '',
-      resepsiDate: '',
-      resepsiTime: '',
-      resepsiLocation: '',
-      resepsiAddress: '',
-      resepsiMapsUrl: '',
-      closingMessage:
-        'Merupakan suatu kehormatan dan kebahagiaan bagi kami apabila Bapak/Ibu/Saudara/i berkenan hadir untuk memberikan doa restu kepada kedua mempelai.',
-      closingGreeting:
-        'Atas kehadiran dan doa restunya, kami ucapkan terima kasih.',
-      enabledFeatures: {},
-      gallery: [],
-      musicUrl: '',
-      liveStreamUrl: '',
-    },
+    defaultValues: DEFAULT_INVITATION_VALUES,
+    mode: 'onChange',
   });
 
   const { reset } = methods;
@@ -115,24 +110,34 @@ function InvitationFormContent() {
   };
 
   const nextStep = async () => {
-    if (currentStep === 1) {
-      const isValid = await methods.trigger(['templateId']);
-      if (isValid) {
-        setStep(2);
+    const fieldsToValidate = STEP_FIELDS[currentStep];
+    if (fieldsToValidate) {
+      if (currentStep === 4) {
+        const currentEvents = methods.getValues('events') || [];
+        if (currentEvents.length === 0) {
+          methods.setError('events', {
+            type: 'manual',
+            message: 'Minimal harus ada 1 acara (misal: Akad/Pemberkatan)',
+          });
+          return;
+        }
       }
-    } else if (currentStep === 2) {
-      const isValid = await methods.trigger([
-        'eventDate',
-        'prefixTitle',
-        'groomName',
-        'brideName',
-        'coverGreeting',
-        'coverQuote',
-        'placement',
-      ]);
-      if (isValid) {
-        setStep(3);
+
+      if (currentStep === 5) {
+        const currentGallery = methods.getValues('gallery') || [];
+        if (currentGallery.length === 0) {
+          methods.setError('gallery', {
+            type: 'manual',
+            message: 'Minimal harus mengunggah 1 foto galeri',
+          });
+          return;
+        }
       }
+
+      const isValid = await methods.trigger(fieldsToValidate, {
+        shouldFocus: true,
+      });
+      if (isValid) setStep(currentStep + 1);
     }
   };
 
@@ -142,10 +147,41 @@ function InvitationFormContent() {
     }
   };
 
-  const handleCreate = (data: z.infer<typeof createInvitationSchema>) => {
-    console.log('Submitted Data:', data);
-    alert('Form valid! Siap dikirim ke API oleh backend integration.');
-    localStorage.removeItem('wevin_invitation_draft_values');
+  const handleCreate = (data: CreateUpdateInvitationFormValues) => {
+    createInvitation(data, {
+      onSuccess: () => {
+        toast({
+          title: 'Undangan berhasil dibuat',
+          variant: 'default',
+          description: `Undangan untuk ${data.groomName} & ${data.brideName} berhasil ditambahkan!`,
+        });
+        localStorage.removeItem('wevin_invitation_draft_values');
+        router.push('/dashboard/member/invitations');
+      },
+      onError: (error) => {
+        let message = 'Gagal membuat undangan. Silakan coba lagi.';
+        if (isAxiosError(error)) {
+          message =
+            error.response?.data?.message ||
+            'Gagal membuat undangan. Silakan coba lagi.';
+        }
+        toast({
+          variant: 'destructive',
+          title: 'Gagal membuat undangan',
+          description: message,
+        });
+      },
+    });
+  };
+
+  const onFormError = (errors: FieldErrors) => {
+    console.log('Form validation errors:', errors);
+    toast({
+      title: 'Validasi Gagal',
+      description:
+        'Mohon periksa kembali form Anda. Pastikan semua data acara, nama mempelai, dan salam sudah terisi.',
+      variant: 'destructive',
+    });
   };
 
   const allowedTemplates = templatesData.filter((template) =>
@@ -196,13 +232,11 @@ function InvitationFormContent() {
 
           <FormProvider {...methods}>
             <form
-              onSubmit={methods.handleSubmit(handleCreate)}
-              className={`grid grid-cols-1 items-start gap-8 ${currentStep === 3 ? '' : 'lg:grid-cols-12'}`}
+              onSubmit={methods.handleSubmit(handleCreate, onFormError)}
+              className="mx-auto w-full max-w-4xl space-y-8"
             >
-              <div
-                className={`space-y-8 ${currentStep === 3 ? 'mx-auto w-full max-w-4xl' : 'lg:col-span-7'}`}
-              >
-                <div className="border-border/40 flex items-center justify-between border-b pb-6">
+              <div>
+                <div className="border-border/40 mb-6 flex items-center justify-between border-b pb-6">
                   <div className="flex items-center gap-2">
                     <span className="text-muted-foreground text-xs font-bold uppercase">
                       Step {currentStep} of {totalSteps}
@@ -210,8 +244,12 @@ function InvitationFormContent() {
                     <span className="bg-border h-1.5 w-1.5 rounded-full" />
                     <span className="text-primary text-xs font-bold">
                       {currentStep === 1 && 'Template & Desain Sampul'}
-                      {currentStep === 2 && 'Detail Buku Undangan'}
-                      {currentStep === 3 && 'Fitur & Galeri'}
+                      {currentStep === 2 && 'Data Identitas Mempelai'}
+                      {currentStep === 3 && 'Kata & Pesan Sambutan'}
+                      {currentStep === 4 && 'Jadwal & Lokasi Acara'}
+                      {currentStep === 5 && 'Galeri Foto'}
+                      {currentStep === 6 && 'Fitur & Media Tambahan'}
+                      {currentStep === 7 && 'Review & Publish'}
                     </span>
                   </div>
                   <div className="flex gap-1.5">
@@ -234,17 +272,20 @@ function InvitationFormContent() {
                   {currentStep === 1 && (
                     <InvitationTemplateStep
                       allowedTemplates={allowedTemplates}
-                      errors={methods.formState.errors}
                     />
                   )}
 
-                  {currentStep === 2 && (
-                    <InvitationBookStep errors={methods.formState.errors} />
-                  )}
+                  {currentStep === 2 && <InvitationProfilesStep />}
 
-                  {currentStep === 3 && (
-                    <InvitationFeaturesStep errors={methods.formState.errors} />
-                  )}
+                  {currentStep === 3 && <InvitationTextsStep />}
+
+                  {currentStep === 4 && <InvitationEventsStep />}
+
+                  {currentStep === 5 && <InvitationGalleryStep />}
+
+                  {currentStep === 6 && <InvitationFeaturesStep />}
+
+                  {currentStep === 7 && <InvitationPublishStep />}
                 </div>
 
                 <div className="border-border/40 mt-12 flex items-center justify-end gap-3 border-t py-6">
@@ -279,28 +320,19 @@ function InvitationFormContent() {
                   ) : (
                     <Button
                       type="submit"
+                      disabled={isCreating}
                       className="bg-primary hover:bg-primary-dark h-11 px-6 text-white shadow-sm transition-all active:scale-95"
                     >
-                      <Check className="mr-2 h-4 w-4" />
+                      {isCreating ? (
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      ) : (
+                        <Check className="mr-2 h-4 w-4" />
+                      )}
                       Simpan Undangan
                     </Button>
                   )}
                 </div>
               </div>
-
-              {currentStep < 3 && (
-                <div className="border-border/40 bg-secondary/[0.15] flex min-h-[520px] flex-col items-center justify-center rounded-3xl border p-6 py-10 shadow-sm lg:sticky lg:top-8 lg:col-span-5">
-                  <div className="mb-6 text-center">
-                    <h4 className="text-foreground font-serif text-sm font-bold">
-                      Live Preview Sampul
-                    </h4>
-                    <p className="text-muted-foreground text-[10px]">
-                      Tampilan sampul buku undangan digital Anda
-                    </p>
-                  </div>
-                  <InvitationBookPreview templates={templatesData} />
-                </div>
-              )}
             </form>
           </FormProvider>
         </div>

@@ -1,7 +1,8 @@
 import {
-  GuestBookStatusEnum,
+  GuestStatusEnum,
   InvitationStatusEnum,
   RSVPStatusEnum,
+  TimezoneEnum,
 } from '@/enums/invitation.enum';
 import { pgEnum } from 'drizzle-orm/pg-core';
 
@@ -17,8 +18,13 @@ export const rsvpStatusEnum = pgEnum('rsvp_status', [
 ]);
 
 export const invitationGuestStatusEnum = pgEnum('invitation_guest_status', [
-  GuestBookStatusEnum.Draft,
-  GuestBookStatusEnum.Sent,
-  GuestBookStatusEnum.Opened,
-  GuestBookStatusEnum.RSVPConfirmed,
+  GuestStatusEnum.Draft,
+  GuestStatusEnum.Sent,
+  GuestStatusEnum.Opened,
+]);
+
+export const timezoneEnum = pgEnum('timezone', [
+  TimezoneEnum.WIB,
+  TimezoneEnum.WITA,
+  TimezoneEnum.WIT,
 ]);

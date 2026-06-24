@@ -40,6 +40,17 @@ export async function seedUsers(db: NeonHttpDatabase<typeof schema>) {
       })
       .returning();
 
+    if (user.role === MEMBER) {
+      await db
+        .insert(schema.memberProfiles)
+        .values({
+          userId: user.id,
+          packageId: 1,
+        })
+        .onConflictDoNothing();
+      console.log(`  ✓ Member Profile created for "${user.name}"`);
+    }
+
     console.log(`  ✓ User "${user.name}" (${user.role})`);
   }
 

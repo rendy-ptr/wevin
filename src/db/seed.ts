@@ -19,9 +19,9 @@ async function main() {
   console.log('⏳ Seeding database...');
 
   try {
-    await seedUsers(db);
     await seedTemplates(db);
     await seedPackages(db);
+    await seedUsers(db);
 
     console.log('✅ Seeding complete!');
   } catch (error) {

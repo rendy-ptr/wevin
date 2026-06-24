@@ -25,8 +25,13 @@ export const activityRepository = {
     page = 1,
     limit = 10,
   }: ActivityFilterParams): Promise<{
-    items: ActivityIndexItem[];
-    total: number;
+    data: ActivityIndexItem[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
   }> => {
     const offset = (page - 1) * limit;
 
@@ -64,8 +69,13 @@ export const activityRepository = {
       .where(whereClause);
 
     return {
-      items: items as ActivityIndexItem[],
-      total: totalResult.value,
+      data: items as ActivityIndexItem[],
+      meta: {
+        total: totalResult.value,
+        page,
+        limit,
+        totalPages: Math.ceil(totalResult.value / limit),
+      },
     };
   },
 

@@ -1,4 +1,4 @@
-import { GuestBookStatusEnum } from '@/enums/invitation.enum';
+import { GuestStatusEnum } from '@/enums/invitation.enum';
 import { relations } from 'drizzle-orm';
 import {
   integer,
@@ -8,22 +8,20 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { invitationGuestStatusEnum } from './enums';
-import { invitationBooks } from './invitation-books.table';
-import { invitationRSVP } from './invitation-rsvp.table';
+import { invitations } from './invitations.table';
 
 export const invitationGuests = pgTable('invitation_guests', {
   id: serial('id').primaryKey(),
-  invitationBookId: integer('invitation_book_id')
-    .references(() => invitationBooks.id, {
+  invitationId: integer('invitation_id')
+    .references(() => invitations.id, {
       onDelete: 'cascade',
     })
     .notNull(),
 
   guestName: varchar('guest_name', { length: 255 }).notNull(),
-  slug: varchar('slug', { length: 255 }).notNull(),
   phoneNumber: varchar('phone_number', { length: 50 }),
   status: invitationGuestStatusEnum('status')
-    .default(GuestBookStatusEnum.Draft)
+    .default(GuestStatusEnum.Draft)
     .notNull(),
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -36,13 +34,9 @@ export const invitationGuests = pgTable('invitation_guests', {
 export const invitationGuestRelations = relations(
   invitationGuests,
   ({ one }) => ({
-    invitationBook: one(invitationBooks, {
-      fields: [invitationGuests.invitationBookId],
-      references: [invitationBooks.id],
-    }),
-    rsvp: one(invitationRSVP, {
-      fields: [invitationGuests.id],
-      references: [invitationRSVP.invitationGuestId],
+    invitation: one(invitations, {
+      fields: [invitationGuests.invitationId],
+      references: [invitations.id],
     }),
   }),
 );

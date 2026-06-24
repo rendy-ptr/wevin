@@ -40,8 +40,4 @@ export const invitationRSVPRelations = relations(invitationRSVP, ({ one }) => ({
     fields: [invitationRSVP.invitationId],
     references: [invitations.id],
   }),
-  guest: one(invitationGuests, {
-    fields: [invitationRSVP.invitationGuestId],
-    references: [invitationGuests.id],
-  }),
 }));

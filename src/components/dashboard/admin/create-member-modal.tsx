@@ -58,7 +58,7 @@ export default function CreateMemberModal({
   const { data: packagesData, isLoading: isLoadingPackages } = useGetPackages({
     limit: 100,
   });
-  const packages = packagesData?.items || [];
+  const packages = packagesData?.data || [];
 
   const { mutate, isPending } = useCreateMember();
 

@@ -53,14 +53,14 @@ export default function EditMemberModal({
     resolver: zodResolver(createUpdateMemberSchema.omit({ email: true })),
     defaultValues: {
       name: member.name,
-      packageId: member.profile?.package?.id || 0,
+      packageId: member.memberProfile?.package?.id || 0,
     },
   });
 
   const { data: packagesData, isLoading: isLoadingPackages } = useGetPackages({
     limit: 100,
   });
-  const packages = packagesData?.items || [];
+  const packages = packagesData?.data || [];
 
   const { mutate, isPending } = useUpdateMember();
 

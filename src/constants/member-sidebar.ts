@@ -20,7 +20,11 @@ export const SIDEBAR_LINKS = [
     label: 'Undangan',
     icon: FileHeart,
   },
-  { href: '/dashboard/member/kelola', label: 'Kelola Undangan', icon: Users },
+  {
+    href: '/dashboard/member/manage-invitation',
+    label: 'Kelola Undangan',
+    icon: Users,
+  },
   { href: '/dashboard/member/rsvp', label: 'RSVP Tracking', icon: UserCheck },
   { href: '/dashboard/member/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/member/settings', label: 'Pengaturan', icon: Settings },

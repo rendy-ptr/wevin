@@ -67,6 +67,7 @@ export function DemoPreview() {
                   coverQuote="Two souls with but a single thought, two hearts that beat as one."
                   eventDate={new Date()}
                   placement="Hotel Grand Ballroom, Jakarta"
+                  showHint={false}
                 />
               </div>
 

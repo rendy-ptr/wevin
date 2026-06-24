@@ -27,8 +27,13 @@ export const useGetPackages = ({
   page = 1,
   limit = 10,
 }: PackageFilterParams): UseQueryResult<{
-  items: PackageIndexItem[];
-  total: number;
+  data: PackageIndexItem[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }> => {
   return useQuery({
     queryKey: ['packages', search, isActive, isPopular, page, limit],
@@ -40,8 +45,13 @@ export const useGetPackages = ({
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
       return response.data.data as {
-        items: PackageIndexItem[];
-        total: number;
+        data: PackageIndexItem[];
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
       };
     },
   });

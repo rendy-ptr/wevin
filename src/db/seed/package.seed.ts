@@ -17,6 +17,8 @@ const PACKAGE_SEED_DATA = [
     benefits: {
       photo_limit: 5,
       active_days: 30,
+      rsvp_form: true,
+      guestbook: true,
     },
     templateIds: [1, 2],
   },
@@ -28,7 +30,6 @@ const PACKAGE_SEED_DATA = [
     isPopular: false,
     benefits: {
       rsvp_form: true,
-      music_player: true,
       photo_limit: 10,
       active_days: 180,
     },
@@ -42,7 +43,6 @@ const PACKAGE_SEED_DATA = [
     isPopular: true,
     benefits: {
       rsvp_form: true,
-      music_player: true,
       guestbook: true,
 
       analytics: true,
@@ -60,12 +60,10 @@ const PACKAGE_SEED_DATA = [
     isPopular: false,
     benefits: {
       rsvp_form: true,
-      music_player: true,
       guestbook: true,
 
       analytics: true,
       export_rsvp: true,
-      live_streaming: true,
       photo_limit: 20,
       active_days: 730,
     },
