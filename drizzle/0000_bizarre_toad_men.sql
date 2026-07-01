@@ -1,6 +1,7 @@
 CREATE TYPE "public"."invitation_guest_status" AS ENUM('draft', 'sent', 'opened');--> statement-breakpoint
 CREATE TYPE "public"."invitation_status" AS ENUM('draft', 'published', 'expired');--> statement-breakpoint
 CREATE TYPE "public"."rsvp_status" AS ENUM('hadir', 'tidak_hadir');--> statement-breakpoint
+CREATE TYPE "public"."timezone" AS ENUM('WIB', 'WITA', 'WIT');--> statement-breakpoint
 CREATE TYPE "public"."benefit_type" AS ENUM('toggle', 'quota');--> statement-breakpoint
 CREATE TYPE "public"."package_status" AS ENUM('active', 'inactive');--> statement-breakpoint
 CREATE TYPE "public"."user_role" AS ENUM('admin', 'member');--> statement-breakpoint
@@ -15,16 +16,17 @@ CREATE TABLE "activity_logs" (
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "invitation_books" (
+CREATE TABLE "invitation_events" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"invitation_id" integer NOT NULL,
-	"prefix_title" varchar(100) NOT NULL,
-	"cover_greeting" varchar(100) NOT NULL,
-	"cover_quote" varchar(100) NOT NULL,
-	"groom_name" varchar(100) NOT NULL,
-	"bride_name" varchar(100) NOT NULL,
-	"event_date" timestamp NOT NULL,
-	"placement" varchar(255) NOT NULL,
+	"title" varchar(150) NOT NULL,
+	"date" timestamp NOT NULL,
+	"time" varchar(100) NOT NULL,
+	"timezone" timezone DEFAULT 'WIB' NOT NULL,
+	"location" varchar(255) NOT NULL,
+	"address" text NOT NULL,
+	"maps_url" varchar(500),
+	"sort_order" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
@@ -47,28 +49,6 @@ CREATE TABLE "invitation_guests" (
 	"updated_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
-CREATE TABLE "invitation_information" (
-	"id" serial PRIMARY KEY NOT NULL,
-	"invitation_id" integer NOT NULL,
-	"slug" varchar(255) NOT NULL,
-	"status" "invitation_status" DEFAULT 'draft' NOT NULL,
-	"groom_full_name" varchar(255),
-	"groom_parents" varchar(255),
-	"bride_full_name" varchar(255),
-	"bride_parents" varchar(255),
-	"opening_greeting" varchar(255),
-	"opening_message" text,
-	"closing_greeting" varchar(255),
-	"closing_message" text,
-	"enabled_features" jsonb DEFAULT '{}'::jsonb,
-	"template_id" integer,
-	"music_url" varchar(500),
-	"live_stream_url" varchar(500),
-	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "invitation_information_slug_unique" UNIQUE("slug")
-);
---> statement-breakpoint
 CREATE TABLE "invitation_rsvps" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"invitation_id" integer NOT NULL,
@@ -85,8 +65,22 @@ CREATE TABLE "invitations" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"member_id" integer NOT NULL,
 	"template_id" integer,
+	"slug" varchar(255) NOT NULL,
+	"status" "invitation_status" DEFAULT 'draft' NOT NULL,
+	"groom_name" varchar(100),
+	"bride_name" varchar(100),
+	"groom_full_name" varchar(255),
+	"bride_full_name" varchar(255),
+	"groom_parents" varchar(255),
+	"bride_parents" varchar(255),
+	"music_url" varchar(500),
+	"live_stream_url" varchar(500),
+	"enabled_features" jsonb DEFAULT '{}'::jsonb,
+	"wording" jsonb DEFAULT '{}'::jsonb,
+	"published_at" timestamp,
 	"created_at" timestamp DEFAULT now() NOT NULL,
-	"updated_at" timestamp DEFAULT now() NOT NULL
+	"updated_at" timestamp DEFAULT now() NOT NULL,
+	CONSTRAINT "invitations_slug_unique" UNIQUE("slug")
 );
 --> statement-breakpoint
 CREATE TABLE "member_profiles" (
@@ -170,11 +164,9 @@ CREATE TABLE "users" (
 );
 --> statement-breakpoint
 ALTER TABLE "activity_logs" ADD CONSTRAINT "activity_logs_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "invitation_books" ADD CONSTRAINT "invitation_books_invitation_id_invitations_id_fk" FOREIGN KEY ("invitation_id") REFERENCES "public"."invitations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "invitation_events" ADD CONSTRAINT "invitation_events_invitation_id_invitations_id_fk" FOREIGN KEY ("invitation_id") REFERENCES "public"."invitations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitation_galleries" ADD CONSTRAINT "invitation_galleries_invitation_id_invitations_id_fk" FOREIGN KEY ("invitation_id") REFERENCES "public"."invitations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitation_guests" ADD CONSTRAINT "invitation_guests_invitation_id_invitations_id_fk" FOREIGN KEY ("invitation_id") REFERENCES "public"."invitations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "invitation_information" ADD CONSTRAINT "invitation_information_invitation_id_invitations_id_fk" FOREIGN KEY ("invitation_id") REFERENCES "public"."invitations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "invitation_information" ADD CONSTRAINT "invitation_information_template_id_templates_id_fk" FOREIGN KEY ("template_id") REFERENCES "public"."templates"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitation_rsvps" ADD CONSTRAINT "invitation_rsvps_invitation_id_invitations_id_fk" FOREIGN KEY ("invitation_id") REFERENCES "public"."invitations"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitation_rsvps" ADD CONSTRAINT "invitation_rsvps_invitation_guest_id_invitation_guests_id_fk" FOREIGN KEY ("invitation_guest_id") REFERENCES "public"."invitation_guests"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "invitations" ADD CONSTRAINT "invitations_member_id_member_profiles_id_fk" FOREIGN KEY ("member_id") REFERENCES "public"."member_profiles"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint

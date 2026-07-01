@@ -57,6 +57,8 @@ export const invitations = pgTable('invitations', {
     }>()
     .default({}),
 
+  publishedAt: timestamp('published_at'),
+
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at')
     .defaultNow()

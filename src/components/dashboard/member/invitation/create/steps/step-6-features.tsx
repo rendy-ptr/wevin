@@ -94,8 +94,8 @@ export default function InvitationFeaturesStep() {
                 }`}
               >
                 {!isAllowed && (
-                  <div className="bg-background/50 absolute inset-0 z-10 flex items-center justify-end pr-4 backdrop-blur-[1.5px]">
-                    <span className="bg-primary/90 flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-bold tracking-wide text-white uppercase shadow-sm">
+                  <div className="bg-background/50 absolute inset-0 z-10 flex items-center justify-center pr-4 backdrop-blur-[1.5px]">
+                    <span className="bg-primary/90 flex items-center gap-1 rounded-md px-2.5 py-1 text-[9px] font-bold tracking-wide text-white uppercase shadow-sm">
                       <Lock className="h-2.5 w-2.5" />
                       Upgrade Package
                     </span>

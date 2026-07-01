@@ -49,13 +49,15 @@ export const API_URL = {
     SEND_OTP: `${API_BASE_URL}/api/setting/send-otp`,
   },
   GUEST: {
-    GET: `${API_BASE_URL}/api/member/guest`,
-    CREATE: `${API_BASE_URL}/api/member/guest`,
-    UPDATE: (id: number) => `${API_BASE_URL}/api/member/guest/${id}`,
-    DELETE: (id: number) => `${API_BASE_URL}/api/member/guest/${id}`,
+    GET: `${API_BASE_URL}/api/guest`,
+    CREATE: `${API_BASE_URL}/api/guest`,
+    UPDATE: (id: number) => `${API_BASE_URL}/api/guest/${id}`,
+    DELETE: (id: number) => `${API_BASE_URL}/api/guest/${id}`,
   },
   INVITATION: {
-    GET: `${API_BASE_URL}/api/member/invitation`,
-    CREATE: `${API_BASE_URL}/api/member/invitation`,
+    GET: `${API_BASE_URL}/api/invitation`,
+    CREATE: `${API_BASE_URL}/api/invitation`,
+    GET_BY_ID: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
+    UPDATE: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
   },
 };

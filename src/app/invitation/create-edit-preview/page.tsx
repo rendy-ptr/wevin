@@ -8,11 +8,11 @@ import { Heart, Loader2, Music, VolumeX } from 'lucide-react';
 import Image from 'next/image';
 import { Suspense, useEffect, useRef, useState } from 'react';
 
-import PreviewCountdownTimer from '@/components/dashboard/member/invitation/create/preview/count-time-section';
-import PreviewCoverSection from '@/components/dashboard/member/invitation/create/preview/cover-section';
-import PreviewEventCard from '@/components/dashboard/member/invitation/create/preview/event-section';
-import PreviewGuestbookForm from '@/components/dashboard/member/invitation/create/preview/guest-book-section';
-import PreviewRSVPForm from '@/components/dashboard/member/invitation/create/preview/rsvp-section';
+import PreviewCountdownTimer from '@/components/shared/preview/count-time-section';
+import PreviewCoverSection from '@/components/shared/preview/cover-section';
+import PreviewEventCard from '@/components/shared/preview/event-section';
+import PreviewGuestbookForm from '@/components/shared/preview/guest-book-section';
+import PreviewRSVPForm from '@/components/shared/preview/rsvp-section';
 
 function PreviewContent() {
   const [values, setValues] = useState<CreateUpdateInvitationFormValues | null>(
@@ -39,6 +39,7 @@ function PreviewContent() {
   const [hasStarted, setHasStarted] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const hasRewoundRef = useRef(false);
 
   useEffect(() => {
     if (!hasStarted) return;
@@ -52,13 +53,45 @@ function PreviewContent() {
     }
 
     if (ytId && iframeRef.current) {
-      const command = isMusicPlaying ? 'unMute' : 'mute';
-      iframeRef.current.contentWindow?.postMessage(
-        JSON.stringify({ event: 'command', func: command, args: [] }),
-        '*',
-      );
+      if (isMusicPlaying) {
+        if (!hasRewoundRef.current) {
+          iframeRef.current.contentWindow?.postMessage(
+            JSON.stringify({
+              event: 'command',
+              func: 'seekTo',
+              args: [0, true],
+            }),
+            '*',
+          );
+          hasRewoundRef.current = true;
+        }
+        iframeRef.current.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func: 'unMute', args: [] }),
+          '*',
+        );
+        iframeRef.current.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func: 'playVideo', args: [] }),
+          '*',
+        );
+      } else {
+        iframeRef.current.contentWindow?.postMessage(
+          JSON.stringify({ event: 'command', func: 'mute', args: [] }),
+          '*',
+        );
+      }
     } else if (audioRef.current) {
-      audioRef.current.muted = !isMusicPlaying;
+      if (isMusicPlaying) {
+        if (!hasRewoundRef.current) {
+          audioRef.current.currentTime = 0;
+          hasRewoundRef.current = true;
+        }
+        audioRef.current.muted = false;
+        audioRef.current
+          .play()
+          .catch((e) => console.log('Audio autoplay prevented:', e));
+      } else {
+        audioRef.current.muted = true;
+      }
     }
   }, [isMusicPlaying, hasStarted, values?.musicUrl]);
 

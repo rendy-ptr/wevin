@@ -1,7 +1,10 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { useCreateInvitation } from '@/hooks/api/use-invitation';
+import {
+  useGetInvitationById,
+  useUpdateInvitation,
+} from '@/hooks/api/use-invitation';
 import { useGetTemplates } from '@/hooks/api/use-template';
 import { usePermission } from '@/hooks/use-permission';
 import { useSession } from '@/hooks/use-session';
@@ -10,9 +13,14 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
 import { Check, ChevronLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import {
+  useParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from 'next/navigation';
 import { Suspense, useEffect, useRef } from 'react';
-import { FieldErrors, FormProvider, useForm, useWatch } from 'react-hook-form';
+import { FieldErrors, FormProvider, useForm } from 'react-hook-form';
 
 import InvitationTemplateStep from '@/components/dashboard/member/invitation/create/steps/step-1-template';
 import InvitationProfilesStep from '@/components/dashboard/member/invitation/create/steps/step-2-profiles';
@@ -52,11 +60,14 @@ const STEP_FIELDS: Record<number, (keyof CreateUpdateInvitationFormValues)[]> =
     6: ['musicUrl', 'liveStreamUrl', 'enabledFeatures'],
     7: ['status', 'recipientName'],
   };
-function InvitationFormContent() {
+
+function EditInvitationFormContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+  const params = useParams();
   const currentStep = Number(searchParams.get('step')) || 1;
+  const invitationId = Number(params.id);
   const totalSteps = 7;
 
   const { user, isLoading: isLoadingSession } = useSession();
@@ -66,8 +77,11 @@ function InvitationFormContent() {
   const { data: templatesData = [], isLoading: isLoadingTemplates } =
     useGetTemplates();
 
-  const { mutate: createInvitation, isPending: isCreating } =
-    useCreateInvitation();
+  const { data: initialData, isLoading: isLoadingData } =
+    useGetInvitationById(invitationId);
+
+  const { mutate: updateInvitation, isPending: isUpdating } =
+    useUpdateInvitation();
 
   const methods = useForm({
     resolver: zodResolver(createInvitationSchema),
@@ -76,32 +90,17 @@ function InvitationFormContent() {
   });
 
   const { reset } = methods;
-  const isDraftLoadedRef = useRef(false);
-  const values = useWatch({ control: methods.control });
+  const isDataLoadedRef = useRef(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem('wevin_invitation_draft_values');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed) {
-          reset(parsed);
-        }
-      } catch (error) {
-        console.error('Failed to load form draft:', error);
-      }
+    if (initialData && !isDataLoadedRef.current) {
+      reset({
+        ...DEFAULT_INVITATION_VALUES,
+        ...initialData,
+      });
+      isDataLoadedRef.current = true;
     }
-    isDraftLoadedRef.current = true;
-  }, [reset]);
-
-  useEffect(() => {
-    if (isDraftLoadedRef.current) {
-      localStorage.setItem(
-        'wevin_invitation_draft_values',
-        JSON.stringify(values),
-      );
-    }
-  }, [values]);
+  }, [initialData, reset]);
 
   const setStep = (step: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -147,31 +146,35 @@ function InvitationFormContent() {
     }
   };
 
-  const handleCreate = (data: CreateUpdateInvitationFormValues) => {
-    createInvitation(data, {
-      onSuccess: () => {
-        toast({
-          title: 'Undangan berhasil dibuat',
-          variant: 'default',
-          description: `Undangan ${data.groomName} & ${data.brideName} berhasil dibuat!`,
-        });
-        localStorage.removeItem('wevin_invitation_draft_values');
-        router.push('/dashboard/member/invitations');
+  const handleUpdate = (data: CreateUpdateInvitationFormValues) => {
+    if (!invitationId) return;
+
+    updateInvitation(
+      { id: invitationId, data },
+      {
+        onSuccess: () => {
+          toast({
+            title: 'Undangan berhasil diperbarui',
+            variant: 'default',
+            description: `Undangan ${data.groomName} & ${data.brideName} berhasil disimpan!`,
+          });
+          router.push('/dashboard/member/invitations');
+        },
+        onError: (error) => {
+          let message = 'Gagal memperbarui undangan. Silakan coba lagi.';
+          if (isAxiosError(error)) {
+            message =
+              error.response?.data?.message ||
+              'Gagal memperbarui undangan. Silakan coba lagi.';
+          }
+          toast({
+            variant: 'destructive',
+            title: 'Gagal memperbarui',
+            description: message,
+          });
+        },
       },
-      onError: (error) => {
-        let message = 'Gagal membuat undangan. Silakan coba lagi.';
-        if (isAxiosError(error)) {
-          message =
-            error.response?.data?.message ||
-            'Gagal membuat undangan. Silakan coba lagi.';
-        }
-        toast({
-          variant: 'destructive',
-          title: 'Gagal membuat undangan',
-          description: message,
-        });
-      },
-    });
+    );
   };
 
   const onFormError = (errors: FieldErrors) => {
@@ -184,14 +187,34 @@ function InvitationFormContent() {
     });
   };
 
-  if (isLoadingSession || isLoadingPermissions || isLoadingTemplates) {
+  if (
+    isLoadingSession ||
+    isLoadingPermissions ||
+    isLoadingTemplates ||
+    isLoadingData
+  ) {
     return (
       <div className="bg-background flex min-h-screen items-center justify-center">
         <div className="text-center">
           <Loader2 className="text-primary mx-auto h-10 w-10 animate-spin opacity-80" />
           <p className="text-muted-foreground mt-4 text-sm font-medium">
-            Memuat konfigurasi paket member...
+            Memuat data undangan...
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!invitationId) {
+    return (
+      <div className="bg-background flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="text-muted-foreground mt-4 text-sm font-medium">
+            ID Undangan tidak ditemukan.
+          </p>
+          <Link href="/dashboard/member/invitations">
+            <Button className="mt-4">Kembali</Button>
+          </Link>
         </div>
       </div>
     );
@@ -214,7 +237,7 @@ function InvitationFormContent() {
               </Link>
               <div>
                 <h2 className="text-foreground font-serif text-xl font-bold tracking-tight">
-                  Buat Undangan Baru
+                  Edit Undangan
                 </h2>
                 <p className="text-muted-foreground mt-1 text-xs">
                   Paket aktif Anda:{' '}
@@ -228,7 +251,7 @@ function InvitationFormContent() {
 
           <FormProvider {...methods}>
             <form
-              onSubmit={methods.handleSubmit(handleCreate, onFormError)}
+              onSubmit={methods.handleSubmit(handleUpdate, onFormError)}
               className="mx-auto w-full max-w-4xl space-y-8"
             >
               <div>
@@ -298,6 +321,7 @@ function InvitationFormContent() {
                   ) : (
                     <Link href="/dashboard/member/invitations">
                       <Button
+                        type="button"
                         variant="ghost"
                         className="text-muted-foreground hover:bg-secondary hover:text-foreground h-11 px-6 text-xs font-semibold tracking-wide uppercase"
                       >
@@ -312,20 +336,25 @@ function InvitationFormContent() {
                       onClick={nextStep}
                       className="bg-primary hover:bg-primary-dark h-11 px-6 text-white shadow-sm transition-all active:scale-95"
                     >
-                      Lanjut
+                      Selanjutnya
                     </Button>
                   ) : (
                     <Button
                       type="submit"
-                      disabled={isCreating}
+                      disabled={isUpdating}
                       className="bg-primary hover:bg-primary-dark h-11 px-6 text-white shadow-sm transition-all active:scale-95"
                     >
-                      {isCreating ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {isUpdating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          Menyimpan...
+                        </>
                       ) : (
-                        <Check className="mr-2 h-4 w-4" />
+                        <>
+                          <Check className="h-4 w-4" />
+                          Simpan Perubahan
+                        </>
                       )}
-                      Simpan Undangan
                     </Button>
                   )}
                 </div>
@@ -338,21 +367,16 @@ function InvitationFormContent() {
   );
 }
 
-export default function InvitationForm() {
+export default function EditInvitationPage() {
   return (
     <Suspense
       fallback={
-        <div className="bg-background flex min-h-screen items-center justify-center">
-          <div className="text-center">
-            <Loader2 className="text-primary mx-auto h-10 w-10 animate-spin opacity-80" />
-            <p className="text-muted-foreground mt-4 text-sm font-medium">
-              Memuat konfigurasi...
-            </p>
-          </div>
+        <div className="flex h-screen items-center justify-center">
+          <Loader2 className="text-primary h-10 w-10 animate-spin" />
         </div>
       }
     >
-      <InvitationFormContent />
+      <EditInvitationFormContent />
     </Suspense>
   );
 }

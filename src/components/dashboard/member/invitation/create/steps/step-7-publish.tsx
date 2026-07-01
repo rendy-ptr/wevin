@@ -28,7 +28,7 @@ export default function InvitationPublishStep() {
     name: 'recipientName',
   });
 
-  const previewUrl = `http://localhost:3000/invitation/demo?to=${encodeURIComponent(
+  const previewUrl = `http://localhost:3000/invitation/create-edit-preview?to=${encodeURIComponent(
     recipientName || 'Tamu Undangan',
   )}`;
 
@@ -112,7 +112,8 @@ export default function InvitationPublishStep() {
                       <SelectItem
                         key={opt.value}
                         value={opt.value}
-                        className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer text-xs transition-colors"
+                        className={`text-xs transition-colors ${opt.value === InvitationStatusEnum.Expired ? 'text-muted-foreground cursor-not-allowed' : 'hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer'}`}
+                        disabled={opt.value === InvitationStatusEnum.Expired}
                       >
                         {opt.label}
                       </SelectItem>
@@ -157,7 +158,7 @@ export default function InvitationPublishStep() {
                   JSON.stringify(values),
                 );
                 window.open(
-                  `/invitation/preview?to=${encodeURIComponent(
+                  `/invitation/create-edit-preview?to=${encodeURIComponent(
                     form.getValues().recipientName || 'Tamu Undangan',
                   )}`,
                   '_blank',

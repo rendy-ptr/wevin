@@ -3,12 +3,30 @@ import { invitationEvents } from '@/db/table/invitation/invitation-events.table'
 import { invitationGallery } from '@/db/table/invitation/invitation-galleries.table';
 import { invitations } from '@/db/table/invitation/invitations.table';
 import { memberProfiles } from '@/db/table/member-profiles.table';
-import { templates } from '@/db/table/template.table';
+import { packageQuotas } from '@/db/table/package-quotas.table';
+import { InvitationStatusEnum } from '@/enums/invitation.enum';
 import { InvitationFilterParams } from '@/types/invitation.type';
 import { CreateUpdateInvitationFormValues } from '@/validations/member/create-update-invitation';
 import { and, count, desc, eq, ilike, or } from 'drizzle-orm';
 
 export const invitationRepository = {
+  getActiveDaysQuota: async (memberProfileId: number) => {
+    const quota = await db
+      .select({ activeDays: packageQuotas.value })
+      .from(memberProfiles)
+      .leftJoin(
+        packageQuotas,
+        and(
+          eq(packageQuotas.packageId, memberProfiles.packageId),
+          eq(packageQuotas.quotaKey, 'active_days'),
+        ),
+      )
+      .where(eq(memberProfiles.id, memberProfileId))
+      .limit(1);
+
+    return quota;
+  },
+
   getAll: async (
     memberProfileId: number,
     { search, status, page = 1, limit = 10 }: InvitationFilterParams,
@@ -40,22 +58,33 @@ export const invitationRepository = {
       .from(invitations)
       .where(whereClause);
 
-    const data = await db
-      .select({
-        id: invitations.id,
-        slug: invitations.slug,
-        status: invitations.status,
-        groomName: invitations.groomName,
-        brideName: invitations.brideName,
-        templateName: templates.name,
-        createdAt: invitations.createdAt,
-      })
-      .from(invitations)
-      .leftJoin(templates, eq(invitations.templateId, templates.id))
-      .where(whereClause)
-      .limit(limit)
-      .offset(offset)
-      .orderBy(desc(invitations.createdAt));
+    const rawData = await db.query.invitations.findMany({
+      where: whereClause,
+      limit,
+      offset,
+      orderBy: [desc(invitations.createdAt)],
+      with: {
+        template: {
+          columns: { name: true },
+        },
+        invitationEvents: {
+          columns: { date: true, time: true },
+          orderBy: (events, { asc }) => [asc(events.sortOrder)],
+        },
+      },
+    });
+
+    const data = rawData.map((item) => ({
+      id: item.id,
+      slug: item.slug,
+      status: item.status,
+      groomName: item.groomName,
+      brideName: item.brideName,
+      templateName: item.template?.name || '',
+      createdAt: item.createdAt,
+      publishedAt: item.publishedAt,
+      events: item.invitationEvents,
+    }));
 
     return {
       data,
@@ -66,6 +95,21 @@ export const invitationRepository = {
         totalPages: Math.ceil(Number(totalCount.count) / limit),
       },
     };
+  },
+
+  getById: async (id: number) => {
+    const invitation = await db.query.invitations.findFirst({
+      where: eq(invitations.id, id),
+      with: {
+        invitationEvents: {
+          orderBy: (events, { asc }) => [asc(events.sortOrder)],
+        },
+        invitationGallery: {
+          orderBy: (gallery, { asc }) => [asc(gallery.sortOrder)],
+        },
+      },
+    });
+    return invitation;
   },
 
   checkMemberId: async (userId: number) => {
@@ -85,6 +129,9 @@ export const invitationRepository = {
           memberId: memberProfileId,
           templateId: Number(data.templateId),
           slug: data.slug || '',
+          status: data.status,
+          publishedAt:
+            data.status === InvitationStatusEnum.Published ? new Date() : null,
           groomName: data.groomName,
           brideName: data.brideName,
           groomFullName: data.groomFullName,
@@ -125,6 +172,80 @@ export const invitationRepository = {
           })),
         );
       }
+
+      if (data.gallery && data.gallery.length > 0) {
+        await tx.insert(invitationGallery).values(
+          data.gallery.map((galleryItem, index) => ({
+            invitationId,
+            imageUrl: galleryItem.imageUrl,
+            sortOrder: index,
+          })),
+        );
+      }
+
+      return invitationId;
+    });
+  },
+
+  updateInvitation: async (
+    invitationId: number,
+    data: CreateUpdateInvitationFormValues & { slug: string },
+  ) => {
+    return await db.transaction(async (tx) => {
+      await tx
+        .update(invitations)
+        .set({
+          templateId: Number(data.templateId),
+          slug: data.slug,
+          status: data.status,
+          publishedAt:
+            data.status === InvitationStatusEnum.Published ? new Date() : null,
+          musicUrl: data.musicUrl || '',
+          liveStreamUrl: data.liveStreamUrl || '',
+          enabledFeatures:
+            (data.enabledFeatures as Record<string, boolean>) || {},
+          groomName: data.groomName,
+          groomFullName: data.groomFullName,
+          groomParents: data.groomParents,
+          brideName: data.brideName,
+          brideFullName: data.brideFullName,
+          brideParents: data.brideParents,
+          wording: {
+            prefixTitle: data.prefixTitle,
+            coverGreeting: data.coverGreeting,
+            coverQuote: data.coverQuote,
+            openingGreeting: data.openingGreeting,
+            openingMessage: data.openingMessage,
+            closingGreeting: data.closingGreeting,
+            closingMessage: data.closingMessage,
+          },
+          updatedAt: new Date(),
+        })
+        .where(eq(invitations.id, invitationId));
+
+      await tx
+        .delete(invitationEvents)
+        .where(eq(invitationEvents.invitationId, invitationId));
+
+      if (data.events && data.events.length > 0) {
+        await tx.insert(invitationEvents).values(
+          data.events.map((event, index) => ({
+            invitationId,
+            title: event.title,
+            date: new Date(event.date),
+            time: event.time,
+            timezone: event.timezone,
+            location: event.location,
+            address: event.address,
+            mapsUrl: event.mapsUrl,
+            sortOrder: index,
+          })),
+        );
+      }
+
+      await tx
+        .delete(invitationGallery)
+        .where(eq(invitationGallery.invitationId, invitationId));
 
       if (data.gallery && data.gallery.length > 0) {
         await tx.insert(invitationGallery).values(

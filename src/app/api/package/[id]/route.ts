@@ -12,6 +12,14 @@ export const PUT = withAuth(
     { params }: { params: Promise<{ id: string }> },
   ) => {
     const { id } = await params;
+
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
+    }
+
     const body = await request.json();
     const parsed = createUpdatePackageSchema.safeParse(body);
 
@@ -52,6 +60,14 @@ export const DELETE = withAuth(
     { params }: { params: Promise<{ id: string }> },
   ) => {
     const { id } = await params;
+
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
+    }
+
     const packageData = await packageService.delete(
       Number(id),
       session.user.id,

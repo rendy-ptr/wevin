@@ -11,6 +11,14 @@ export const GET = withAuth(
     { params }: { params: Promise<{ id: string }> },
   ) => {
     const { id } = await params;
+
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
+    }
+
     const packageData = await packageService.getWithRelationships(Number(id));
 
     return NextResponse.json(

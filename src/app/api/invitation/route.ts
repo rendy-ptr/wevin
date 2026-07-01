@@ -8,7 +8,8 @@ import { NextRequest, NextResponse } from 'next/server';
 export const GET = withAuth([MEMBER], async (request: NextRequest, session) => {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get('search') || undefined;
-  const status = searchParams.get('status') as InvitationStatusEnum | undefined;
+  const status =
+    (searchParams.get('status') as InvitationStatusEnum) || undefined;
   const page = parseInt(searchParams.get('page') || '1');
   const limit = parseInt(searchParams.get('limit') || '10');
 

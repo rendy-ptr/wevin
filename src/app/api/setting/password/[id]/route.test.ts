@@ -135,4 +135,24 @@ describe('PATCH /api/setting/password/[id] (Update Password)', () => {
     expect(body.message).toBe('Validation failed');
     expect(mockUpdatePassword).not.toHaveBeenCalled();
   });
+
+  it('returns 400 if ID is invalid', async () => {
+    mockSession = { user: { id: 1, email: 'admin@wevin.com', role: ADMIN } };
+    const request = new NextRequest(
+      'http://localhost/api/setting/password/abc',
+      {
+        method: 'PATCH',
+        body: JSON.stringify(payload),
+      },
+    );
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: 'abc' }),
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.success).toBe(false);
+    expect(body.message).toBe('Invalid ID');
+    expect(mockUpdatePassword).not.toHaveBeenCalled();
+  });
 });

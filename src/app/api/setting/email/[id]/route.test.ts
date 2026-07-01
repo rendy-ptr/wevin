@@ -141,4 +141,22 @@ describe('PATCH /api/setting/email/[id] (Update Email)', () => {
     expect(mockUpdateEmail).not.toHaveBeenCalled();
     expect(mockLogin).not.toHaveBeenCalled();
   });
+
+  it('returns 400 if ID is invalid', async () => {
+    mockSession = { user: { id: 1, email: 'admin@wevin.com', role: ADMIN } };
+    const request = new NextRequest(`http://localhost/api/setting/email/abc`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: 'abc' }),
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.success).toBe(false);
+    expect(body.message).toBe('Invalid ID');
+    expect(mockUpdateEmail).not.toHaveBeenCalled();
+    expect(mockLogin).not.toHaveBeenCalled();
+  });
 });

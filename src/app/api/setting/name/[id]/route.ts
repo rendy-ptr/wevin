@@ -14,6 +14,13 @@ export const PATCH = withAuth(
   ) => {
     const { id } = await params;
 
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
+    }
+
     const body = await request.json();
     const parsed = updateNameSchema.safeParse(body);
 

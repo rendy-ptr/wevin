@@ -9,6 +9,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import { InvitationStatusEnum } from '@/enums/invitation.enum';
 import { useGetInvitations } from '@/hooks/api/use-invitation';
 import { formatDate } from '@/lib/date';
@@ -33,9 +39,14 @@ type InvitationItem = {
   status: string;
   groomName: string;
   brideName: string;
-  eventDate: string | Date | null;
+  events: Array<{
+    date: string | Date | null;
+    time: string | null;
+  }>;
   templateName: string;
   createdAt: string | Date;
+  publishedAt?: string | Date | null;
+  expiredText: string;
 };
 
 export default function MemberInvitationsPage() {
@@ -138,13 +149,14 @@ export default function MemberInvitationsPage() {
                 <th className="px-6 py-4 font-semibold">Tanggal Event</th>
                 <th className="px-6 py-4 font-semibold">Total View</th>
                 <th className="px-6 py-4 font-semibold">Total RSVP</th>
+                <th className="px-6 py-4 font-semibold">Link Kadaluarsa</th>
                 <th className="px-6 py-4 text-right font-semibold">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-border divide-y">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-20 text-center">
+                  <td colSpan={8} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Loader2 className="text-primary h-8 w-8 animate-spin" />
                       <p className="text-muted-foreground text-xs font-medium">
@@ -155,7 +167,7 @@ export default function MemberInvitationsPage() {
                 </tr>
               ) : invitations.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-20 text-center">
+                  <td colSpan={8} className="px-6 py-20 text-center">
                     <div className="flex flex-col items-center gap-2">
                       <Heart className="text-primary fill-primary h-8 w-8" />
                       <p className="text-muted-foreground text-xs font-medium">
@@ -196,8 +208,8 @@ export default function MemberInvitationsPage() {
                       </span>
                     </td>
                     <td className="text-muted-foreground px-6 py-4 text-xs">
-                      {invitation.eventDate
-                        ? formatDate(invitation.eventDate)
+                      {invitation.events.length > 0 && invitation.events[0].date
+                        ? formatDate(invitation.events[0].date)
                         : '-'}
                     </td>
                     <td className="text-muted-foreground px-6 py-4 text-xs">
@@ -205,6 +217,27 @@ export default function MemberInvitationsPage() {
                     </td>
                     <td className="text-muted-foreground px-6 py-4 text-xs">
                       0 Konfirmasi
+                    </td>
+                    <td className="text-muted-foreground px-6 py-4 text-xs">
+                      {invitation.publishedAt ? (
+                        <TooltipProvider>
+                          <Tooltip delayDuration={300}>
+                            <TooltipTrigger asChild>
+                              <span className="cursor-help underline decoration-dashed underline-offset-4">
+                                {invitation.expiredText}
+                              </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>
+                                Masa aktif dihitung sejak dipublikasikan pada{' '}
+                                {formatDate(invitation.publishedAt)}
+                              </p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                      ) : (
+                        invitation.expiredText
+                      )}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end">
@@ -220,24 +253,32 @@ export default function MemberInvitationsPage() {
                           </PopoverTrigger>
                           <PopoverContent align="end" className="w-36 p-1">
                             <div className="flex flex-col gap-0.5">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-primary-dark hover:text-primary-dark hover:bg-primary/10 h-9 w-full cursor-pointer justify-start gap-2 px-2 text-xs font-medium"
-                                //   onClick={() => handleOpenModal('share', invitation)}
+                              <Link
+                                href={`/invitation/index-preview?id=${invitation.id}&to=Tamu+Spesial`}
+                                passHref
                               >
-                                <Eye className="h-3.5 w-3.5" />
-                                Preview
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-primary-dark hover:text-primary-dark hover:bg-primary/10 h-9 w-full cursor-pointer justify-start gap-2 px-2 text-xs font-medium"
-                                //   onClick={() => handleOpenModal('edit', invitation)}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-primary-dark hover:text-primary-dark hover:bg-primary/10 h-9 w-full cursor-pointer justify-start gap-2 px-2 text-xs font-medium"
+                                >
+                                  <Eye className="h-3.5 w-3.5" />
+                                  Preview
+                                </Button>
+                              </Link>
+                              <Link
+                                href={`/dashboard/member/invitations/edit/${invitation.id}`}
+                                passHref
                               >
-                                <SquarePen className="h-3.5 w-3.5" />
-                                Edit
-                              </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-primary-dark hover:text-primary-dark hover:bg-primary/10 h-9 w-full cursor-pointer justify-start gap-2 px-2 text-xs font-medium"
+                                >
+                                  <SquarePen className="h-3.5 w-3.5" />
+                                  Edit
+                                </Button>
+                              </Link>
                               <Button
                                 variant="ghost"
                                 size="sm"

@@ -1,5 +1,5 @@
 {
-  "id": "9b68af0a-214d-469b-99b2-e194417e096a",
+  "id": "e05fc431-0c11-4b18-9571-33d3a3482835",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -58,8 +58,12 @@
           "name": "activity_logs_user_id_users_id_fk",
           "tableFrom": "activity_logs",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -70,8 +74,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.invitation_books": {
-      "name": "invitation_books",
+    "public.invitation_events": {
+      "name": "invitation_events",
       "schema": "",
       "columns": {
         "id": {
@@ -86,47 +90,56 @@
           "primaryKey": false,
           "notNull": true
         },
-        "prefix_title": {
-          "name": "prefix_title",
-          "type": "varchar(100)",
+        "title": {
+          "name": "title",
+          "type": "varchar(150)",
           "primaryKey": false,
           "notNull": true
         },
-        "cover_greeting": {
-          "name": "cover_greeting",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "cover_quote": {
-          "name": "cover_quote",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "groom_name": {
-          "name": "groom_name",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bride_name": {
-          "name": "bride_name",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "event_date": {
-          "name": "event_date",
+        "date": {
+          "name": "date",
           "type": "timestamp",
           "primaryKey": false,
           "notNull": true
         },
-        "placement": {
-          "name": "placement",
+        "time": {
+          "name": "time",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timezone": {
+          "name": "timezone",
+          "type": "timezone",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'WIB'"
+        },
+        "location": {
+          "name": "location",
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": true
+        },
+        "address": {
+          "name": "address",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "maps_url": {
+          "name": "maps_url",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sort_order": {
+          "name": "sort_order",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
         },
         "created_at": {
           "name": "created_at",
@@ -145,12 +158,16 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "invitation_books_invitation_id_invitations_id_fk": {
-          "name": "invitation_books_invitation_id_invitations_id_fk",
-          "tableFrom": "invitation_books",
+        "invitation_events_invitation_id_invitations_id_fk": {
+          "name": "invitation_events_invitation_id_invitations_id_fk",
+          "tableFrom": "invitation_events",
           "tableTo": "invitations",
-          "columnsFrom": ["invitation_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "invitation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -204,8 +221,12 @@
           "name": "invitation_galleries_invitation_id_invitations_id_fk",
           "tableFrom": "invitation_galleries",
           "tableTo": "invitations",
-          "columnsFrom": ["invitation_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "invitation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -273,165 +294,18 @@
           "name": "invitation_guests_invitation_id_invitations_id_fk",
           "tableFrom": "invitation_guests",
           "tableTo": "invitations",
-          "columnsFrom": ["invitation_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "invitation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.invitation_information": {
-      "name": "invitation_information",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "serial",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "invitation_id": {
-          "name": "invitation_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "slug": {
-          "name": "slug",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "invitation_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'draft'"
-        },
-        "groom_full_name": {
-          "name": "groom_full_name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "groom_parents": {
-          "name": "groom_parents",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "bride_full_name": {
-          "name": "bride_full_name",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "bride_parents": {
-          "name": "bride_parents",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "opening_greeting": {
-          "name": "opening_greeting",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "opening_message": {
-          "name": "opening_message",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "closing_greeting": {
-          "name": "closing_greeting",
-          "type": "varchar(255)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "closing_message": {
-          "name": "closing_message",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "enabled_features": {
-          "name": "enabled_features",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false,
-          "default": "'{}'::jsonb"
-        },
-        "template_id": {
-          "name": "template_id",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "music_url": {
-          "name": "music_url",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "live_stream_url": {
-          "name": "live_stream_url",
-          "type": "varchar(500)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "invitation_information_invitation_id_invitations_id_fk": {
-          "name": "invitation_information_invitation_id_invitations_id_fk",
-          "tableFrom": "invitation_information",
-          "tableTo": "invitations",
-          "columnsFrom": ["invitation_id"],
-          "columnsTo": ["id"],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        },
-        "invitation_information_template_id_templates_id_fk": {
-          "name": "invitation_information_template_id_templates_id_fk",
-          "tableFrom": "invitation_information",
-          "tableTo": "templates",
-          "columnsFrom": ["template_id"],
-          "columnsTo": ["id"],
-          "onDelete": "set null",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {
-        "invitation_information_slug_unique": {
-          "name": "invitation_information_slug_unique",
-          "nullsNotDistinct": false,
-          "columns": ["slug"]
-        }
-      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -505,8 +379,12 @@
           "name": "invitation_rsvps_invitation_id_invitations_id_fk",
           "tableFrom": "invitation_rsvps",
           "tableTo": "invitations",
-          "columnsFrom": ["invitation_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "invitation_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -514,8 +392,12 @@
           "name": "invitation_rsvps_invitation_guest_id_invitation_guests_id_fk",
           "tableFrom": "invitation_rsvps",
           "tableTo": "invitation_guests",
-          "columnsFrom": ["invitation_guest_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "invitation_guest_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -548,6 +430,88 @@
           "primaryKey": false,
           "notNull": false
         },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "invitation_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'draft'"
+        },
+        "groom_name": {
+          "name": "groom_name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bride_name": {
+          "name": "bride_name",
+          "type": "varchar(100)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "groom_full_name": {
+          "name": "groom_full_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bride_full_name": {
+          "name": "bride_full_name",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "groom_parents": {
+          "name": "groom_parents",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bride_parents": {
+          "name": "bride_parents",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "music_url": {
+          "name": "music_url",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "live_stream_url": {
+          "name": "live_stream_url",
+          "type": "varchar(500)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "enabled_features": {
+          "name": "enabled_features",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "wording": {
+          "name": "wording",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "'{}'::jsonb"
+        },
+        "published_at": {
+          "name": "published_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp",
@@ -569,8 +533,12 @@
           "name": "invitations_member_id_member_profiles_id_fk",
           "tableFrom": "invitations",
           "tableTo": "member_profiles",
-          "columnsFrom": ["member_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -578,14 +546,26 @@
           "name": "invitations_template_id_templates_id_fk",
           "tableFrom": "invitations",
           "tableTo": "templates",
-          "columnsFrom": ["template_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "template_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
       },
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "invitations_slug_unique": {
+          "name": "invitations_slug_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -633,8 +613,12 @@
           "name": "member_profiles_user_id_users_id_fk",
           "tableFrom": "member_profiles",
           "tableTo": "users",
-          "columnsFrom": ["user_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -642,8 +626,12 @@
           "name": "member_profiles_package_id_packages_id_fk",
           "tableFrom": "member_profiles",
           "tableTo": "packages",
-          "columnsFrom": ["package_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "package_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -653,7 +641,9 @@
         "member_profiles_user_id_unique": {
           "name": "member_profiles_user_id_unique",
           "nullsNotDistinct": false,
-          "columns": ["user_id"]
+          "columns": [
+            "user_id"
+          ]
         }
       },
       "policies": {},
@@ -709,8 +699,12 @@
           "name": "member_quota_usage_member_id_member_profiles_id_fk",
           "tableFrom": "member_quota_usage",
           "tableTo": "member_profiles",
-          "columnsFrom": ["member_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "member_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -720,7 +714,10 @@
         "member_quota_usage_member_id_benefit_key_unique": {
           "name": "member_quota_usage_member_id_benefit_key_unique",
           "nullsNotDistinct": false,
-          "columns": ["member_id", "benefit_key"]
+          "columns": [
+            "member_id",
+            "benefit_key"
+          ]
         }
       },
       "policies": {},
@@ -777,8 +774,12 @@
           "name": "package_benefits_package_id_packages_id_fk",
           "tableFrom": "package_benefits",
           "tableTo": "packages",
-          "columnsFrom": ["package_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "package_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -839,8 +840,12 @@
           "name": "package_quotas_package_id_packages_id_fk",
           "tableFrom": "package_quotas",
           "tableTo": "packages",
-          "columnsFrom": ["package_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "package_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -946,8 +951,12 @@
           "name": "package_templates_package_id_packages_id_fk",
           "tableFrom": "package_templates",
           "tableTo": "packages",
-          "columnsFrom": ["package_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "package_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -955,8 +964,12 @@
           "name": "package_templates_template_id_templates_id_fk",
           "tableFrom": "package_templates",
           "tableTo": "templates",
-          "columnsFrom": ["template_id"],
-          "columnsTo": ["id"],
+          "columnsFrom": [
+            "template_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1032,7 +1045,9 @@
         "packages_name_unique": {
           "name": "packages_name_unique",
           "nullsNotDistinct": false,
-          "columns": ["name"]
+          "columns": [
+            "name"
+          ]
         }
       },
       "policies": {},
@@ -1089,7 +1104,9 @@
         "templates_key_unique": {
           "name": "templates_key_unique",
           "nullsNotDistinct": false,
-          "columns": ["key"]
+          "columns": [
+            "key"
+          ]
         }
       },
       "policies": {},
@@ -1168,7 +1185,9 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": ["email"]
+          "columns": [
+            "email"
+          ]
         }
       },
       "policies": {},
@@ -1180,37 +1199,69 @@
     "public.invitation_guest_status": {
       "name": "invitation_guest_status",
       "schema": "public",
-      "values": ["draft", "sent", "opened"]
+      "values": [
+        "draft",
+        "sent",
+        "opened"
+      ]
     },
     "public.invitation_status": {
       "name": "invitation_status",
       "schema": "public",
-      "values": ["draft", "published", "expired"]
+      "values": [
+        "draft",
+        "published",
+        "expired"
+      ]
     },
     "public.rsvp_status": {
       "name": "rsvp_status",
       "schema": "public",
-      "values": ["hadir", "tidak_hadir"]
+      "values": [
+        "hadir",
+        "tidak_hadir"
+      ]
+    },
+    "public.timezone": {
+      "name": "timezone",
+      "schema": "public",
+      "values": [
+        "WIB",
+        "WITA",
+        "WIT"
+      ]
     },
     "public.benefit_type": {
       "name": "benefit_type",
       "schema": "public",
-      "values": ["toggle", "quota"]
+      "values": [
+        "toggle",
+        "quota"
+      ]
     },
     "public.package_status": {
       "name": "package_status",
       "schema": "public",
-      "values": ["active", "inactive"]
+      "values": [
+        "active",
+        "inactive"
+      ]
     },
     "public.user_role": {
       "name": "user_role",
       "schema": "public",
-      "values": ["admin", "member"]
+      "values": [
+        "admin",
+        "member"
+      ]
     },
     "public.user_status": {
       "name": "user_status",
       "schema": "public",
-      "values": ["active", "inactive"]
+      "values": [
+        "active",
+        "inactive"
+      ]
     }
   },
   "schemas": {},

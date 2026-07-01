@@ -155,6 +155,22 @@ describe('PUT /api/member/[id] (Update Member)', () => {
     expect(body.errors).toBeDefined();
     expect(mockUpdate).not.toHaveBeenCalled();
   });
+
+  it('returns 400 if ID is invalid', async () => {
+    mockSession = { user: { id: 1, email: 'admin@wevin.com', role: ADMIN } };
+
+    const request = new NextRequest('http://localhost/api/member/abc');
+    const response = await PUT(request, {
+      params: Promise.resolve({ id: 'abc' }),
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.success).toBe(false);
+    expect(body.message).toBe('Invalid ID');
+
+    expect(mockUpdate).not.toHaveBeenCalled();
+  });
 });
 
 describe('PATCH /api/member/[id] (Update Status Member)', () => {
@@ -258,6 +274,22 @@ describe('PATCH /api/member/[id] (Update Status Member)', () => {
     expect(body.errors).toBeDefined();
     expect(mockUpdateStatus).not.toHaveBeenCalled();
   });
+
+  it('returns 400 if ID is invalid', async () => {
+    mockSession = { user: { id: 1, email: 'admin@wevin.com', role: ADMIN } };
+
+    const request = new NextRequest('http://localhost/api/member/abc');
+    const response = await PATCH(request, {
+      params: Promise.resolve({ id: 'abc' }),
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.success).toBe(false);
+    expect(body.message).toBe('Invalid ID');
+
+    expect(mockUpdateStatus).not.toHaveBeenCalled();
+  });
 });
 
 describe('DELETE /api/member/[id] (Delete Member)', () => {
@@ -329,6 +361,22 @@ describe('DELETE /api/member/[id] (Delete Member)', () => {
     expect(response.status).toBe(401);
     expect(body.success).toBe(false);
     expect(body.message).toBe('Unauthorized');
+    expect(mockDelete).not.toHaveBeenCalled();
+  });
+
+  it('returns 400 if ID is invalid', async () => {
+    mockSession = { user: { id: 1, email: 'admin@wevin.com', role: ADMIN } };
+
+    const request = new NextRequest('http://localhost/api/member/abc');
+    const response = await DELETE(request, {
+      params: Promise.resolve({ id: 'abc' }),
+    });
+
+    const body = await response.json();
+    expect(response.status).toBe(400);
+    expect(body.success).toBe(false);
+    expect(body.message).toBe('Invalid ID');
+
     expect(mockDelete).not.toHaveBeenCalled();
   });
 });
