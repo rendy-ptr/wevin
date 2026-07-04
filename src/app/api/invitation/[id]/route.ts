@@ -83,3 +83,35 @@ export const PUT = withAuth(
     );
   },
 );
+
+export const DELETE = withAuth(
+  [MEMBER],
+  async (
+    _request: NextRequest,
+    session,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
+    const { id } = await params;
+
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
+    }
+
+    const invitationData = await invitationService.deleteInvitation(
+      Number(id),
+      session.user.id,
+    );
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: 'Invitation deleted successfully',
+        data: invitationData,
+      },
+      { status: 200 },
+    );
+  },
+);

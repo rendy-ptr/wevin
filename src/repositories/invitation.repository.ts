@@ -260,4 +260,16 @@ export const invitationRepository = {
       return invitationId;
     });
   },
+
+  deleteInvitation: async (id: number) => {
+    return await db.transaction(async (tx) => {
+      await tx
+        .delete(invitationEvents)
+        .where(eq(invitationEvents.invitationId, id));
+      await tx
+        .delete(invitationGallery)
+        .where(eq(invitationGallery.invitationId, id));
+      await tx.delete(invitations).where(eq(invitations.id, id));
+    });
+  },
 };

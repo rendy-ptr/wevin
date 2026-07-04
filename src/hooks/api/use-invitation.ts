@@ -2,7 +2,7 @@ import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
 import { InvitationFilterParams } from '@/types/invitation.type';
 import { CreateUpdateInvitationFormValues } from '@/validations/member/create-update-invitation';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export function useCreateInvitation() {
   return useMutation({
@@ -47,3 +47,20 @@ export function useUpdateInvitation() {
     },
   });
 }
+
+export const useDeleteInvitation = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const response = await api.delete(API_URL.INVITATION.DELETE(id));
+      if (!response.data.success) {
+        throw new Error(response.data.message || 'Gagal menghapus undangan');
+      }
+      return response.data.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['invitations'] });
+    },
+  });
+};

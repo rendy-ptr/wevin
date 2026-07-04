@@ -1,6 +1,7 @@
 'use client';
 
 import FilterInvitationSidebar from '@/components/dashboard/member/filter-invitation-sidebar';
+import DeleteModal from '@/components/shared/delete-modal';
 import Pagination from '@/components/shared/pagination';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,8 +17,14 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { InvitationStatusEnum } from '@/enums/invitation.enum';
-import { useGetInvitations } from '@/hooks/api/use-invitation';
+import {
+  useDeleteInvitation,
+  useGetInvitations,
+} from '@/hooks/api/use-invitation';
+import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/date';
+import { ModalType } from '@/types/modal.type';
+import { isAxiosError } from 'axios';
 import {
   Eye,
   Filter,
@@ -58,6 +65,9 @@ export default function MemberInvitationsPage() {
     limit: 10,
   });
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
+  const [activeModal, setActiveModal] = useState<ModalType>(null);
+  const [selectedInvitation, setSelectedInvitation] =
+    useState<InvitationItem | null>(null);
 
   const { data: invitationsData, isLoading } = useGetInvitations({
     search: filters.search,
@@ -66,6 +76,34 @@ export default function MemberInvitationsPage() {
     limit: filters.limit,
   });
 
+  const { mutate: deleteInvitation, isPending: isPendingDelete } =
+    useDeleteInvitation();
+
+  const { toast } = useToast();
+
+  const handleDelete = () => {
+    if (!selectedInvitation) return;
+    deleteInvitation(selectedInvitation.id, {
+      onSuccess: () => {
+        toast({
+          title: 'Undangan dihapus',
+          description: 'Undangan berhasil dihapus.',
+        });
+        closeModal();
+      },
+      onError: (error) => {
+        let message = 'Gagal menghapus undangan.';
+        if (isAxiosError(error)) {
+          message = error.response?.data?.message || message;
+        }
+        toast({
+          variant: 'destructive',
+          title: 'Gagal menghapus undangan',
+          description: message,
+        });
+      },
+    });
+  };
   const invitations = invitationsData?.data || [];
   const totalItems = invitationsData?.meta?.total || 0;
   const totalPages = invitationsData?.meta?.totalPages || 1;
@@ -94,6 +132,16 @@ export default function MemberInvitationsPage() {
       limit: 10,
     });
     setSearchTerm('');
+  };
+
+  const handleOpenModal = (type: ModalType, invitation?: InvitationItem) => {
+    if (invitation) setSelectedInvitation(invitation);
+    setActiveModal(type);
+  };
+
+  const closeModal = () => {
+    setActiveModal(null);
+    setSelectedInvitation(null);
   };
 
   return (
@@ -283,7 +331,9 @@ export default function MemberInvitationsPage() {
                                 variant="ghost"
                                 size="sm"
                                 className="text-destructive hover:text-destructive hover:bg-destructive/10 h-9 w-full cursor-pointer justify-start gap-2 px-2 text-xs font-medium"
-                                //   onClick={() => handleOpenModal('delete', invitation)}
+                                onClick={() =>
+                                  handleOpenModal('delete', invitation)
+                                }
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
                                 Hapus
@@ -313,34 +363,13 @@ export default function MemberInvitationsPage() {
         />
       </div>
 
-      {/* <CreateMemberModal
-        isOpen={activeModal === 'create'}
-        onClose={closeModal}
-      /> */}
-
-      {/* {selectedMember && (
-        <EditMemberModal
-          isOpen={activeModal === 'edit'}
-          onClose={closeModal}
-          member={selectedMember}
-        />
-      )} */}
-
-      {/* <DeleteModal
+      <DeleteModal
         isOpen={activeModal === 'delete'}
         onClose={closeModal}
         onConfirm={handleDelete}
-        isLoading={isDeleting}
-        title={`Hapus Member ${selectedMember?.name}?`}
-      /> */}
-
-      {/* <DeactiveModal
-        isOpen={activeModal === 'status'}
-        onClose={closeModal}
-        onConfirm={handleUpdateStatus}
-        isLoading={isStatusUpdating}
-        member={selectedMember}
-      /> */}
+        isLoading={isPendingDelete}
+        title={`Hapus Undangan ${selectedInvitation?.groomName} & ${selectedInvitation?.brideName}?`}
+      />
 
       <FilterInvitationSidebar
         isOpen={isFilterSidebarOpen}

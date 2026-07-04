@@ -162,4 +162,24 @@ export const invitationService = {
       slug,
     };
   },
+
+  deleteInvitation: async (id: number, userId: number) => {
+    const existingInvitation = await invitationRepository.getById(id);
+
+    if (!existingInvitation) {
+      throw new Error('Invitation not found');
+    }
+
+    const result = await invitationRepository.deleteInvitation(id);
+
+    await activityRepository.create({
+      userId,
+      action: 'DELETE',
+      entityType: 'INVITATION',
+      entityId: id,
+      details: `User deleted invitation ${existingInvitation.groomName} - ${existingInvitation.brideName}`,
+    });
+
+    return result;
+  },
 };

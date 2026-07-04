@@ -59,5 +59,6 @@ export const API_URL = {
     CREATE: `${API_BASE_URL}/api/invitation`,
     GET_BY_ID: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
     UPDATE: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
+    DELETE: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
   },
 };
