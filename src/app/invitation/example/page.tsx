@@ -9,7 +9,7 @@ import { TEMPLATES } from '@/constants/template.constant';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Heart, Music, VolumeX } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 
 const weddingData = {
   groom: '-',
@@ -59,13 +59,7 @@ const mockMessages = [
   },
 ];
 
-export default function UndanganPage(
-  {
-    //   params,
-  }: {
-    params: Promise<{ slug: string }>;
-  },
-) {
+function UndanganContent({ params }: { params: Promise<{ slug: string }> }) {
   //   const resolvedParams = use(params);
   const searchParams = useSearchParams();
   const guestName = searchParams.get('to')?.replace(/\+/g, ' ') || '';
@@ -348,5 +342,23 @@ export default function UndanganPage(
         </div>
       )}
     </AnimatePresence>
+  );
+}
+
+export default function UndanganPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          Loading...
+        </div>
+      }
+    >
+      <UndanganContent params={params} />
+    </Suspense>
   );
 }
