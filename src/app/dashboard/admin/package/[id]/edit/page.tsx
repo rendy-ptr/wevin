@@ -40,7 +40,7 @@ export default function EditPackagePage() {
         toggleValue: b.toggleValue ?? undefined,
         quotaValue: b.quotaValue ?? undefined,
       })),
-      templateIds: pkg.templates.map((t) => t.id),
+      templateIds: pkg.templates.map((t) => t.templateId),
     };
   }, [pkg]);
 

@@ -1,8 +1,8 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
-import { BasePackageBenefitModel } from '@/types/benefit.type';
 import {
   BasePackageModel,
+  PackageBenefitDetail,
   PackageFilterParams,
   PackageIndexItem,
   PackageWithRelationships,
@@ -27,8 +27,13 @@ export const useGetPackages = ({
   page = 1,
   limit = 10,
 }: PackageFilterParams): UseQueryResult<{
-  items: PackageIndexItem[];
-  total: number;
+  data: PackageIndexItem[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }> => {
   return useQuery({
     queryKey: ['packages', search, isActive, isPopular, page, limit],
@@ -40,8 +45,13 @@ export const useGetPackages = ({
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
       return response.data.data as {
-        items: PackageIndexItem[];
-        total: number;
+        data: PackageIndexItem[];
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
       };
     },
   });
@@ -131,10 +141,7 @@ export const useDeletePackage = (): UseMutationResult<
 
 export const useGetActivePackages = (): UseQueryResult<
   (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
-    benefits: Pick<
-      BasePackageBenefitModel,
-      'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-    >[];
+    benefits: PackageBenefitDetail[];
     templates: (BasePackageTemplateModel & {
       template: Pick<BaseTemplateModel, 'id' | 'name'>;
     })[];
@@ -151,10 +158,7 @@ export const useGetActivePackages = (): UseQueryResult<
         BasePackageModel,
         'id' | 'name' | 'price'
       > & {
-        benefits: Pick<
-          BasePackageBenefitModel,
-          'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-        >[];
+        benefits: PackageBenefitDetail[];
         templates: (BasePackageTemplateModel & {
           template: Pick<BaseTemplateModel, 'id' | 'name'>;
         })[];

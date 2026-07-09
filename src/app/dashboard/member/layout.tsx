@@ -1,4 +1,4 @@
-import { MemberSidebar } from '@/components/dashboard/member-sidebar';
+import { MemberSidebar } from '@/components/dashboard/member/member-sidebar';
 import React from 'react';
 
 export default function MemberDashboardLayout({

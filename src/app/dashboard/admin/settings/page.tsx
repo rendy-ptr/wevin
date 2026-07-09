@@ -1,9 +1,9 @@
 'use client';
 
-import EditPasswordModal from '@/components/dashboard/admin/edit-password-modal';
-import EditProfileEmailModal from '@/components/dashboard/admin/edit-profile-email-modal';
-import EditProfileNameModal from '@/components/dashboard/admin/edit-profile-name-modal';
 import FilterActivitySidebar from '@/components/dashboard/admin/filter-activity-sidebar';
+import EditPasswordModal from '@/components/shared/edit-password-modal';
+import EditProfileEmailModal from '@/components/shared/edit-profile-email-modal';
+import EditProfileNameModal from '@/components/shared/edit-profile-name-modal';
 import Pagination from '@/components/shared/pagination';
 import { Button } from '@/components/ui/button';
 import {
@@ -16,15 +16,14 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ACTIVITY_ACTION_COLOR } from '@/constants/activity.constant';
-import { useGetAllActivityLogs, useGetSettings } from '@/hooks/api/use-setting';
-import { formatDateTime } from '@/lib/date';
+import { useGetAllActivityLogs } from '@/hooks/api/use-setting';
+import { useSession } from '@/hooks/use-session';
+import { formatDate, formatDateTime } from '@/lib/date';
 import {
   ActivityFilterParams,
   BaseActivityLogModel,
 } from '@/types/activity.type';
 import { ModalType } from '@/types/modal.type';
-import { format } from 'date-fns';
-import { id } from 'date-fns/locale';
 import {
   Filter,
   Heart,
@@ -43,7 +42,6 @@ export default function SettingsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [isFilterSidebarOpen, setIsFilterSidebarOpen] = useState(false);
   const [filters, setFilters] = useState<ActivityFilterParams>({
-    userId: undefined,
     search: '',
     startDate: undefined,
     endDate: undefined,
@@ -51,11 +49,10 @@ export default function SettingsPage() {
     page: 1,
     limit: 10,
   });
-  const { data: user, isLoading: isLoadingGetSettings } = useGetSettings();
+  const { user, isLoading: isLoadingUser } = useSession();
 
   const { data: activityData, isLoading: isLoadingGetActivities } =
     useGetAllActivityLogs({
-      userId: user?.id,
       search: filters.search,
       startDate: filters.startDate,
       endDate: filters.endDate,
@@ -87,7 +84,6 @@ export default function SettingsPage() {
 
   const handleResetFilter = () => {
     setFilters({
-      userId: undefined,
       search: '',
       startDate: undefined,
       endDate: undefined,
@@ -106,7 +102,7 @@ export default function SettingsPage() {
     );
   };
 
-  if (isLoadingGetSettings) {
+  if (isLoadingUser) {
     return (
       <div className="flex h-[80vh] items-center justify-center">
         <Loader2 className="text-primary h-8 w-8 animate-spin" />
@@ -208,11 +204,7 @@ export default function SettingsPage() {
                     Bergabung Sejak
                   </Label>
                   <p className="mt-1 text-sm font-medium">
-                    {user.createdAt
-                      ? format(new Date(user.createdAt), 'dd MMMM yyyy', {
-                          locale: id,
-                        })
-                      : '-'}
+                    {formatDate(user.createdAt)}
                   </p>
                 </div>
               </div>
@@ -231,7 +223,7 @@ export default function SettingsPage() {
           <CardContent className="space-y-4">
             <div>
               <p className="text-primary-dark text-3xl font-bold tracking-tight">
-                {user.profile?.package?.name || 'Gratis'}
+                {user.package?.name || 'Gratis'}
               </p>
               <p className="text-muted-foreground mt-1 text-sm">
                 Akses ke fitur dasar

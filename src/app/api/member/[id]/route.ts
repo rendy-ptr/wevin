@@ -1,154 +1,128 @@
-import { userStatusEnum } from '@/db/schema';
-import { getSession } from '@/lib/auth';
-import { AppError } from '@/lib/errors';
+import { ADMIN } from '@/constants/role';
+import { withAuth } from '@/lib/with-auth';
 import { memberService } from '@/services/member.service';
-import { TUserStatus } from '@/types/user.type';
-import { createUpdateMemberSchema } from '@/validations/admin/create-update-member';
-import { NextResponse } from 'next/server';
-import { ZodError } from 'zod';
+import {
+  createUpdateMemberSchema,
+  updateMemberStatusSchema,
+} from '@/validations/admin/create-update-member';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await getSession();
-    if (!session) {
-      throw new AppError('Unauthorized', 401);
+export const PUT = withAuth(
+  [ADMIN],
+  async (
+    request: NextRequest,
+    session,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
+    const { id } = await params;
+
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
     }
 
-    const { id } = await params;
     const body = await request.json();
-    const validatedData = createUpdateMemberSchema
+
+    const parsed = createUpdateMemberSchema
       .omit({ email: true })
-      .parse(body);
+      .safeParse(body);
 
-    const member = await memberService.update(
-      Number(id),
-      validatedData,
-      session.user.id,
-    );
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Member updated successfully',
-        data: member,
-      },
-      { status: 200 },
-    );
-  } catch (error: unknown) {
-    if (error instanceof ZodError) {
+    if (!parsed.success) {
       return NextResponse.json(
         {
           success: false,
           message: 'Validation failed',
-          errors: error.issues,
+          data: undefined,
+          errors: parsed.error.issues,
         },
         { status: 400 },
       );
     }
-    const isAppError = error instanceof AppError;
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-    const status = isAppError ? error.statusCode : 500;
 
-    return NextResponse.json(
-      {
-        success: false,
-        message,
-        data: null,
-      },
-      { status },
+    const member = await memberService.update(
+      Number(id),
+      parsed.data,
+      session.user.id,
     );
-  }
-}
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await getSession();
-    if (!session) {
-      throw new AppError('Unauthorized', 401);
+    return NextResponse.json({
+      success: true,
+      message: 'Member updated successfully',
+      data: member,
+    });
+  },
+);
+
+export const PATCH = withAuth(
+  [ADMIN],
+  async (
+    request: NextRequest,
+    session,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
+    const { id } = await params;
+
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
     }
 
-    const { id } = await params;
-    const { status } = await request.json();
+    const body = await request.json();
 
-    if (!userStatusEnum.enumValues.includes(status)) {
+    const parsed = updateMemberStatusSchema.safeParse(body);
+
+    if (!parsed.success) {
       return NextResponse.json(
-        { success: false, message: 'Invalid status' },
+        {
+          success: false,
+          message: 'Validation failed',
+          data: undefined,
+          errors: parsed.error.issues,
+        },
         { status: 400 },
       );
     }
 
     const member = await memberService.updateStatus(
       Number(id),
-      status as TUserStatus,
+      parsed.data.status,
       session.user.id,
     );
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Member status updated successfully',
-        data: member,
-      },
-      { status: 200 },
-    );
-  } catch (error: unknown) {
-    const isAppError = error instanceof AppError;
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-    const status = isAppError ? error.statusCode : 500;
+    return NextResponse.json({
+      success: true,
+      message: 'Member status updated successfully',
+      data: member,
+    });
+  },
+);
 
-    return NextResponse.json(
-      {
-        success: false,
-        message,
-        data: null,
-      },
-      { status },
-    );
-  }
-}
+export const DELETE = withAuth(
+  [ADMIN],
+  async (
+    _request: NextRequest,
+    session,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
+    const { id } = await params;
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  try {
-    const session = await getSession();
-    if (!session) {
-      throw new AppError('Unauthorized', 401);
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
     }
 
-    const { id } = await params;
     const member = await memberService.delete(Number(id), session.user.id);
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: 'Member deleted successfully',
-        data: member,
-      },
-      { status: 200 },
-    );
-  } catch (error: unknown) {
-    const isAppError = error instanceof AppError;
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-    const status = isAppError ? error.statusCode : 500;
-
-    return NextResponse.json(
-      {
-        success: false,
-        message,
-        data: null,
-      },
-      { status },
-    );
-  }
-}
+    return NextResponse.json({
+      success: true,
+      message: 'Member deleted successfully',
+      data: member,
+    });
+  },
+);

@@ -62,6 +62,11 @@ export function DemoPreview() {
                   groom="Groom"
                   bride="Bride"
                   guestName="Guest Name"
+                  prefixTitle="The Wedding of"
+                  coverGreeting="With Love,"
+                  coverQuote="Two souls with but a single thought, two hearts that beat as one."
+                  eventDate={new Date()}
+                  placement="Hotel Grand Ballroom, Jakarta"
                   showHint={false}
                 />
               </div>

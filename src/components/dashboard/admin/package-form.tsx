@@ -25,6 +25,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Check, ChevronLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useEffect } from 'react';
 import { Controller, useFieldArray, useForm, useWatch } from 'react-hook-form';
 
 interface PackageFormProps {
@@ -40,9 +41,8 @@ export default function PackageForm({
   isLoading = false,
   title,
 }: PackageFormProps) {
-  const { data: templatesData, isLoading: isLoadingTemplates } =
+  const { data: templatesData = [], isLoading: isLoadingTemplates } =
     useGetTemplates();
-  const templates = templatesData || [];
 
   const {
     register,
@@ -69,10 +69,21 @@ export default function PackageForm({
   });
 
   const selectedBenefits = useWatch({ control, name: 'benefits' }) || [];
-  const selectedTemplateIds = useWatch({ control, name: 'templateIds' }) || [];
+  const selectedTemplateIds = useWatch({ control, name: 'templateIds' });
   const priceValue = useWatch({ control, name: 'price' }) || 0;
   const packageName = useWatch({ control, name: 'name' });
   const packageDesc = useWatch({ control, name: 'description' });
+
+  useEffect(() => {
+    if (templatesData && templatesData.length > 0) {
+      const systemClassic = templatesData.find(
+        (t: TTemplate) => t.name.toLowerCase() === 'system classic',
+      );
+      if (systemClassic && !selectedTemplateIds.includes(systemClassic.id)) {
+        setValue('templateIds', [...selectedTemplateIds, systemClassic.id]);
+      }
+    }
+  }, [templatesData, selectedTemplateIds, setValue]);
 
   const toggleBenefit = (key: BenefitKeyType) => {
     const benefit = BENEFITS_DATA.find((b) => b.key === key);
@@ -110,6 +121,9 @@ export default function PackageForm({
   };
 
   const toggleTemplate = (templateId: number) => {
+    const template = templatesData.find((t) => t.id === templateId);
+    if (template?.name.toLowerCase() === 'system classic') return;
+
     const next = isTemplateSelected(templateId)
       ? selectedTemplateIds.filter((id) => id !== templateId)
       : [...selectedTemplateIds, templateId];
@@ -117,7 +131,9 @@ export default function PackageForm({
   };
 
   const getTemplateName = (templateId: number) => {
-    return templates.find((t: TTemplate) => t.id === templateId)?.name ?? '';
+    return (
+      templatesData.find((t: TTemplate) => t.id === templateId)?.name ?? ''
+    );
   };
 
   return (
@@ -262,6 +278,11 @@ export default function PackageForm({
                     {...register('description')}
                     className="border-border/60 focus:ring-primary/20 focus:border-primary min-h-[120px] rounded-xl bg-transparent px-4 py-3 text-sm leading-relaxed shadow-sm transition-all focus:ring-2"
                   />
+                  {errors.description && (
+                    <p className="text-destructive px-1 text-[10px] font-medium">
+                      {errors.description.message as string}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -340,6 +361,11 @@ export default function PackageForm({
                   <p className="text-muted-foreground mt-1 text-xs">
                     Pilih desain template yang tersedia untuk paket ini.
                   </p>
+                  {errors.templateIds && (
+                    <p className="text-destructive mt-1 px-1 text-[10px] font-medium">
+                      {errors.templateIds.message as string}
+                    </p>
+                  )}
                 </div>
 
                 {isLoadingTemplates ? (
@@ -348,16 +374,30 @@ export default function PackageForm({
                   </div>
                 ) : (
                   <div className="grid grid-cols-2 gap-4">
-                    {templates.map((template: TTemplate, index: number) => {
-                      const selected = isTemplateSelected(template.id);
+                    {templatesData.map((template: TTemplate, index: number) => {
+                      const isSystemClassic =
+                        template.name.toLowerCase() === 'system classic';
+                      const selected = isSystemClassic
+                        ? true
+                        : isTemplateSelected(template.id);
                       return (
                         <div
                           key={`${template.id}-${index}`}
-                          onClick={() => toggleTemplate(template.id)}
-                          className={`group relative cursor-pointer overflow-hidden rounded-2xl border transition-all duration-300 ${
-                            selected
+                          onClick={() => {
+                            if (!isSystemClassic) {
+                              toggleTemplate(template.id);
+                            }
+                          }}
+                          className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 ${
+                            isSystemClassic
+                              ? 'bg-primary/[0.02] border-primary/20 cursor-not-allowed opacity-75'
+                              : 'cursor-pointer'
+                          } ${
+                            selected && !isSystemClassic
                               ? 'bg-primary/[0.03] border-primary/40 ring-primary/20 shadow-md ring-1'
-                              : 'border-border/40 hover:border-primary/20 bg-transparent'
+                              : !selected
+                                ? 'border-border/40 hover:border-primary/20 bg-transparent'
+                                : ''
                           }`}
                         >
                           <div
@@ -379,7 +419,12 @@ export default function PackageForm({
                               <CheckIcon className="h-3.5 w-3.5" />
                             </div>
                           </div>
-                          {selected && (
+                          {isSystemClassic && (
+                            <div className="bg-muted-foreground/20 text-muted-foreground absolute top-3 right-3 rounded-full px-2 py-0.5 text-[8px] font-bold tracking-wider uppercase">
+                              Default
+                            </div>
+                          )}
+                          {selected && !isSystemClassic && (
                             <div className="bg-primary absolute top-3 right-3 rounded-full px-2 py-0.5 text-[8px] font-bold tracking-wider text-white uppercase shadow-lg">
                               Selected
                             </div>
@@ -480,7 +525,9 @@ export default function PackageForm({
             </Button>
           </Link>
           <Button
-            onClick={handleSubmit(onSubmit)}
+            onClick={handleSubmit(onSubmit, (errors) => {
+              console.log('Form validation errors:', errors);
+            })}
             disabled={isLoading}
             className="bg-primary hover:bg-primary-dark h-11 px-6 text-white shadow-sm transition-all active:scale-95"
           >

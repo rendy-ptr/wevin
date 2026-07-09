@@ -1,7 +1,13 @@
 'use client';
 
 import SharedFilterSidebar from '@/components/shared/filter-sidebar';
-import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useState } from 'react';
 
 interface FilterPackageSidebarProps {
@@ -55,13 +61,13 @@ export default function FilterPackageSidebar({
   };
 
   const statusOptions = [
-    { label: 'Aktif', value: true },
-    { label: 'Non-aktif', value: false },
+    { label: 'Aktif', value: 'true' },
+    { label: 'Non-aktif', value: 'false' },
   ] as const;
 
   const popularOptions = [
-    { label: 'Populer', value: true },
-    { label: 'Tidak Populer', value: false },
+    { label: 'Populer', value: 'true' },
+    { label: 'Tidak Populer', value: 'false' },
   ] as const;
 
   return (
@@ -77,47 +83,61 @@ export default function FilterPackageSidebar({
           <label className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
             Status Paket
           </label>
-          <div className="flex flex-col gap-2">
-            {statusOptions.map((opt, index) => (
-              <Button
-                key={index}
-                onClick={() => setLocalIsActiveFilter(opt.value)}
-                className={`flex items-center justify-between rounded-lg px-4 py-3 text-sm transition-all ${
-                  localIsActiveFilter === opt.value
-                    ? 'bg-primary-dark shadow-primary-dark/10 hover:bg-primary-dark/90 text-white shadow-md'
-                    : 'bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground'
-                }`}
-              >
-                <span className="font-medium">{opt.label}</span>
-                {localIsActiveFilter === opt.value && (
-                  <div className="bg-primary h-1.5 w-1.5 rounded-full" />
-                )}
-              </Button>
-            ))}
-          </div>
+          <Select
+            value={
+              localIsActiveFilter === undefined
+                ? ''
+                : String(localIsActiveFilter)
+            }
+            onValueChange={(val) =>
+              setLocalIsActiveFilter(val === '' ? undefined : val === 'true')
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Pilih Status Paket" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer text-xs transition-colors"
+                >
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div className="space-y-3">
           <label className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
-            Status Paket
+            Status Populer
           </label>
-          <div className="flex flex-col gap-2">
-            {popularOptions.map((opt, index) => (
-              <Button
-                key={index}
-                onClick={() => setLocalIsPopularFilter(opt.value)}
-                className={`flex items-center justify-between rounded-lg px-4 py-3 text-sm transition-all ${
-                  localIsPopularFilter === opt.value
-                    ? 'bg-primary-dark shadow-primary-dark/10 hover:bg-primary-dark/90 text-white shadow-md'
-                    : 'bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground'
-                }`}
-              >
-                <span className="font-medium">{opt.label}</span>
-                {localIsPopularFilter === opt.value && (
-                  <div className="bg-primary h-1.5 w-1.5 rounded-full" />
-                )}
-              </Button>
-            ))}
-          </div>
+          <Select
+            value={
+              localIsPopularFilter === undefined
+                ? ''
+                : String(localIsPopularFilter)
+            }
+            onValueChange={(val) =>
+              setLocalIsPopularFilter(val === '' ? undefined : val === 'true')
+            }
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Pilih Status Populer" />
+            </SelectTrigger>
+            <SelectContent>
+              {popularOptions.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer text-xs transition-colors"
+                >
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </SharedFilterSidebar>

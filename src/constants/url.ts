@@ -7,6 +7,9 @@ export const API_URL = {
     ME: `${API_BASE_URL}/api/auth/me`,
     LOGIN_PAGE: `${API_BASE_URL}/login`,
     SESSION: `${API_BASE_URL}/api/auth/session`,
+    VERIFY_EMAIL: `${API_BASE_URL}/api/auth/forgot-password/verify-email`,
+    VERIFY_OTP: `${API_BASE_URL}/api/auth/forgot-password/verify-otp`,
+    RESET_PASSWORD: `${API_BASE_URL}/api/auth/forgot-password/reset-password`,
   },
   MEMBER: {
     GET: `${API_BASE_URL}/api/member`,
@@ -44,5 +47,29 @@ export const API_URL = {
     UPDATE_NAME: (id: number) => `${API_BASE_URL}/api/setting/name/${id}`,
     GET_ALL_ACTIVITY_LOGS: `${API_BASE_URL}/api/setting/logs`,
     SEND_OTP: `${API_BASE_URL}/api/setting/send-otp`,
+  },
+  GUEST: {
+    GET: `${API_BASE_URL}/api/invitation-guest`,
+    CREATE: `${API_BASE_URL}/api/invitation-guest`,
+    UPDATE: (id: number) => `${API_BASE_URL}/api/invitation-guest/${id}`,
+    DELETE: (id: number) => `${API_BASE_URL}/api/invitation-guest/${id}`,
+    UPDATE_PUBLIC_STATUS: `${API_BASE_URL}/api/invitation-guest/public/status`,
+    EXPORT: `${API_BASE_URL}/api/invitation-guest/export`,
+  },
+  INVITATION: {
+    GET: `${API_BASE_URL}/api/invitation`,
+    GET_OPTIONS: `${API_BASE_URL}/api/invitation/options`,
+    CREATE: `${API_BASE_URL}/api/invitation`,
+    GET_BY_ID: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
+    GET_PUBLIC_BY_SLUG: (slug: string) =>
+      `${API_BASE_URL}/api/invitation/public/${slug}`,
+    UPDATE: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
+    DELETE: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
+  },
+  RSVP: {
+    SUBMIT_PUBLIC: `${API_BASE_URL}/api/invitation-rsvp/public`,
+  },
+  WISH: {
+    SUBMIT_PUBLIC: `${API_BASE_URL}/api/invitation-wishes/public`,
   },
 };

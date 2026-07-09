@@ -1,3 +1,4 @@
+import { userStatusEnum } from '@/db/schema';
 import { z } from 'zod';
 
 export const createUpdateMemberSchema = z.object({
@@ -12,4 +13,12 @@ export const createUpdateMemberSchema = z.object({
 
 export type CreateUpdateMemberFormValues = z.infer<
   typeof createUpdateMemberSchema
+>;
+
+export const updateMemberStatusSchema = z.object({
+  status: z.enum(userStatusEnum.enumValues),
+});
+
+export type UpdateMemberStatusFormValues = z.infer<
+  typeof updateMemberStatusSchema
 >;

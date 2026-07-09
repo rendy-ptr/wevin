@@ -5,41 +5,13 @@ import { BaseUserModel } from '@/types/user.type';
 import { and, count, eq, gte, ilike, lte, or } from 'drizzle-orm';
 
 export const settingRepository = {
-  getSessionUser: async (id: number) => {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, id),
-      columns: {
-        password: false,
-      },
-      with: {
-        profile: {
-          with: {
-            package: {
-              columns: {
-                id: true,
-                name: true,
-              },
-            },
-          },
-        },
-      },
-    });
-    return user;
-  },
-
   getPassword: async (id: number) => {
     const user = await db.query.users.findFirst({
       where: eq(users.id, id),
       columns: {
+        id: true,
         password: true,
       },
-    });
-    return user;
-  },
-
-  getUserById: async (id: number) => {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, id),
     });
     return user;
   },
@@ -48,15 +20,16 @@ export const settingRepository = {
     id,
     password,
   }: Pick<BaseUserModel, 'id' | 'password'>) => {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, id),
-      columns: {
-        email: true,
-        name: true,
-      },
-    });
-    await db.update(users).set({ password }).where(eq(users.id, id));
-    return user;
+    const [updatedUser] = await db
+      .update(users)
+      .set({ password })
+      .where(eq(users.id, id))
+      .returning({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+      });
+    return updatedUser;
   },
 
   updateEmail: async ({ id, email }: Pick<BaseUserModel, 'id' | 'email'>) => {
@@ -64,7 +37,13 @@ export const settingRepository = {
       .update(users)
       .set({ email })
       .where(eq(users.id, id))
-      .returning();
+      .returning({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        createdAt: users.createdAt,
+      });
     return updatedUser;
   },
 
@@ -73,19 +52,20 @@ export const settingRepository = {
       .update(users)
       .set({ name })
       .where(eq(users.id, id))
-      .returning();
+      .returning({
+        id: users.id,
+        email: users.email,
+        name: users.name,
+        role: users.role,
+        createdAt: users.createdAt,
+      });
     return updatedUser;
   },
 
-  getAllActivityLogs: async ({
-    userId,
-    search,
-    startDate,
-    endDate,
-    action,
-    page,
-    limit,
-  }: ActivityFilterParams) => {
+  getSettingActivityLogs: async (
+    { search, startDate, endDate, action, page, limit }: ActivityFilterParams,
+    userId: number,
+  ) => {
     const offset = (page - 1) * limit;
 
     const whereClause = and(

@@ -1,4 +1,4 @@
-import { USER_STATUS_VALUES } from '@/constants/user.constant';
+import { ACTIVE } from '@/constants/user.constant';
 import { TUserStatus } from '@/types/user.type';
 
 export const getWelcomeEmailHtml = ({
@@ -254,7 +254,7 @@ export const getStatusNotificationEmailHtml = ({
   status: TUserStatus;
   loginUrl: string;
 }) => {
-  const isEnabling = status === USER_STATUS_VALUES.ACTIVE;
+  const isEnabling = status === ACTIVE;
   const statusLabel = isEnabling ? 'Aktif' : 'Non-Aktif';
   const statusColor = isEnabling ? '#7a9e7e' : '#c0625a';
 
@@ -630,6 +630,72 @@ export const getOtpEmailHtml = ({ otpCode }: { otpCode: string }) => {
 
                   <p style="margin: 35px 0 0 0; font-size: 14px; line-height: 1.7; color: #7a7069; text-align: center;">
                     Jika Anda tidak meminta perubahan ini, abaikan saja email ini. Keamanan akun Anda tetap terjamin.
+                  </p>
+                </td>
+              </tr>
+
+              <tr>
+                <td align="center" style="padding: 20px 40px; background-color: #8b5e6a; border-radius: 0 0 12px 12px;">
+                  <p style="margin: 0; font-size: 13px; color: #f5eae6; letter-spacing: 0.5px;">
+                    Pesan ini dikirimkan otomatis oleh sistem <strong style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 16px; font-weight: 600; color: #ffffff;">Wevin</strong>
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+};
+
+export const getResetPasswordEmailHtml = ({
+  resetLink,
+}: {
+  resetLink: string;
+}) => {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #faf7f4; font-family: 'DM Sans', Arial, sans-serif; color: #2e2e2e; -webkit-font-smoothing: antialiased;">
+      <table width="100%" border="0" cellspacing="0" cellpadding="0" style="background-color: #faf7f4; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="100%" max-width="600" border="0" cellspacing="0" cellpadding="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,0.04); border: 1px solid #e8d5cc; max-width: 600px;">
+
+              <tr>
+                <td align="center" style="padding: 45px 0 25px 0; background-color: #ffffff;">
+                  <h1 style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 36px; font-weight: 600; color: #8b5e6a; letter-spacing: 1.5px;">Wevin</h1>
+                  <p style="margin: 6px 0 0 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 17px; color: #c9a0a0; font-style: italic; letter-spacing: 0.5px;">Digital Wedding Invitation</p>
+                </td>
+              </tr>
+
+              <tr>
+                <td style="padding: 20px 45px 45px 45px;">
+                  <h2 style="margin: 0 0 20px 0; font-size: 20px; font-weight: 500; color: #2e2e2e;">Atur Ulang Password</h2>
+                  <p style="margin: 0 0 20px 0; font-size: 15px; line-height: 1.7; color: #7a7069;">
+                    Kami menerima permintaan untuk mengatur ulang password akun Wevin Anda.
+                  </p>
+                  <p style="margin: 0 0 25px 0; font-size: 15px; line-height: 1.7; color: #7a7069;">
+                    Silakan klik tombol di bawah ini untuk mengatur ulang password Anda. Link ini hanya berlaku selama 15 menit:
+                  </p>
+
+                  <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-bottom: 30px;">
+                    <tr>
+                      <td align="center">
+                        <a href="${resetLink}" style="display: inline-block; background-color: #c9a0a0; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 500; padding: 15px 36px; border-radius: 30px; letter-spacing: 0.5px; box-shadow: 0 4px 15px rgba(201, 160, 160, 0.3);">Atur Ulang Password</a>
+                      </td>
+                    </tr>
+                  </table>
+
+                  <p style="margin: 35px 0 0 0; font-size: 14px; line-height: 1.7; color: #7a7069; text-align: center;">
+                    Jika Anda tidak meminta pengaturan ulang password ini, abaikan saja email ini. Keamanan akun Anda tetap terjamin.
                   </p>
                 </td>
               </tr>

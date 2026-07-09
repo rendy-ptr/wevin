@@ -1,4 +1,4 @@
-import { USER_ROLE_VALUES } from '@/constants/user.constant';
+import { ADMIN, MEMBER } from '@/constants/role';
 import bcrypt from 'bcryptjs';
 import { NeonHttpDatabase } from 'drizzle-orm/neon-http';
 import * as schema from '../schema';
@@ -8,13 +8,13 @@ const USER_SEED_DATA = [
     name: 'Wevin Admin',
     email: 'admin@admin.com',
     password: 'password',
-    role: USER_ROLE_VALUES.ADMIN,
+    role: ADMIN,
   },
   {
     name: 'Wevin Member',
     email: 'member@member.com',
     password: 'password',
-    role: USER_ROLE_VALUES.MEMBER,
+    role: MEMBER,
   },
 ];
 
@@ -39,6 +39,17 @@ export async function seedUsers(db: NeonHttpDatabase<typeof schema>) {
         },
       })
       .returning();
+
+    if (user.role === MEMBER) {
+      await db
+        .insert(schema.memberProfiles)
+        .values({
+          userId: user.id,
+          packageId: 1,
+        })
+        .onConflictDoNothing();
+      console.log(`  ✓ Member Profile created for "${user.name}"`);
+    }
 
     console.log(`  ✓ User "${user.name}" (${user.role})`);
   }

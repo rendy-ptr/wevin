@@ -1,7 +1,5 @@
-import {
-  USER_ROLE_VALUES,
-  USER_STATUS_VALUES,
-} from '@/constants/user.constant';
+import { ADMIN, MEMBER } from '@/constants/role';
+import { ACTIVE, INACTIVE } from '@/constants/user.constant';
 import { relations } from 'drizzle-orm';
 import {
   pgEnum,
@@ -13,17 +11,10 @@ import {
 } from 'drizzle-orm/pg-core';
 import { activityLogs } from './activity-log.table';
 import { memberProfiles } from './member-profiles.table';
-import { memberQuotaUsage } from './member-quota-usage.table';
 
-export const userRoleEnum = pgEnum('user_role', [
-  USER_ROLE_VALUES.ADMIN,
-  USER_ROLE_VALUES.MEMBER,
-]);
+export const userRoleEnum = pgEnum('user_role', [ADMIN, MEMBER]);
 
-export const userStatusEnum = pgEnum('user_status', [
-  USER_STATUS_VALUES.ACTIVE,
-  USER_STATUS_VALUES.INACTIVE,
-]);
+export const userStatusEnum = pgEnum('user_status', [ACTIVE, INACTIVE]);
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -41,10 +32,9 @@ export const users = pgTable('users', {
 });
 
 export const usersRelations = relations(users, ({ one, many }) => ({
-  profile: one(memberProfiles, {
+  memberProfile: one(memberProfiles, {
     fields: [users.id],
     references: [memberProfiles.userId],
   }),
-  quotaUsages: many(memberQuotaUsage),
   activityLogs: many(activityLogs),
 }));
