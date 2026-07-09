@@ -4,6 +4,7 @@ export * from './table/invitation/invitation-events.table';
 export * from './table/invitation/invitation-galleries.table';
 export * from './table/invitation/invitation-guests.table';
 export * from './table/invitation/invitation-rsvp.table';
+export * from './table/invitation/invitation-wishes.table';
 export * from './table/invitation/invitations.table';
 export * from './table/member-profiles.table';
 export * from './table/member-quota-usage.table';

@@ -18,9 +18,10 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { GuestStatusEnum } from '@/enums/invitation.enum';
+import { useGetInvitations } from '@/hooks/api/use-invitation';
 import { useUpdateInvitationGuest } from '@/hooks/api/use-invitation-guest';
 import { useToast } from '@/hooks/use-toast';
-import { InvitationGuest } from '@/types/guest.type';
+import { GuestItem } from '@/types/guestbook.type';
 import {
   CreateUpdateInvitationGuestFormValues,
   createUpdateInvitationGuestSchema,
@@ -28,19 +29,20 @@ import {
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAxiosError } from 'axios';
 import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 
-interface EditInvitationGuestModalProps {
+interface EditGuestModalProps {
   isOpen: boolean;
   onClose: () => void;
-  guest: InvitationGuest;
+  guest: GuestItem;
 }
 
-export default function EditInvitationGuestModal({
+export default function EditGuestModal({
   isOpen,
   onClose,
   guest,
-}: EditInvitationGuestModalProps) {
+}: EditGuestModalProps) {
   const { toast } = useToast();
 
   const {
@@ -49,27 +51,44 @@ export default function EditInvitationGuestModal({
     reset,
     control,
     formState: { errors },
-  } = useForm<CreateUpdateInvitationGuestFormValues>({
+  } = useForm({
     resolver: zodResolver(createUpdateInvitationGuestSchema),
     defaultValues: {
-      guestName: guest.guestName,
-      phoneNumber: guest.phoneNumber || undefined,
-      status: guest.status as GuestStatusEnum | undefined,
       invitationId: guest.invitationId,
+      guestName: guest.guestName,
+      phoneNumber: guest.phoneNumber || '',
+      status: guest.status as GuestStatusEnum,
     },
   });
 
+  const { data: invitationsData, isLoading: isLoadingInvitations } =
+    useGetInvitations({
+      limit: 100,
+    });
+  const invitations = invitationsData?.data || [];
+
   const { mutate, isPending } = useUpdateInvitationGuest();
+
+  useEffect(() => {
+    if (isOpen && guest) {
+      reset({
+        invitationId: guest.invitationId,
+        guestName: guest.guestName,
+        phoneNumber: guest.phoneNumber || '',
+        status: guest.status as GuestStatusEnum,
+      });
+    }
+  }, [isOpen, guest, reset]);
 
   const onSubmit = (data: CreateUpdateInvitationGuestFormValues) => {
     mutate(
-      { id: guest.id, ...data },
+      { ...data, id: guest.id },
       {
         onSuccess: () => {
           toast({
             title: 'Tamu berhasil diperbarui',
             variant: 'default',
-            description: `Informasi tamu ${data.guestName} berhasil diperbarui!`,
+            description: `Data tamu ${data.guestName} berhasil diperbarui!`,
           });
           onClose();
           reset();
@@ -98,24 +117,56 @@ export default function EditInvitationGuestModal({
               Edit Tamu
             </DialogTitle>
             <DialogDescription className="text-muted-foreground mt-1.5 text-xs">
-              Ubah informasi tamu di bawah ini.
+              Perbarui data tamu di bawah ini.
             </DialogDescription>
           </DialogHeader>
 
           <div className="mt-8 space-y-5">
             <div className="space-y-2">
-              <Label
-                htmlFor="invitationId"
-                className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase"
-              >
-                ID Undangan
+              <Label className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
+                Pilih Undangan (Tidak Bisa Diubah){' '}
+                <span className="text-destructive">*</span>
               </Label>
-              <Input
-                id="invitationId"
-                value={guest.invitationId}
-                disabled
-                className="bg-secondary/10 border-border/40 h-11 cursor-not-allowed text-sm transition-all"
-              />
+              <div className="relative">
+                <Controller
+                  name="invitationId"
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      disabled
+                      onValueChange={(val) => field.onChange(Number(val))}
+                      value={field.value ? String(field.value) : ''}
+                    >
+                      <SelectTrigger className="bg-secondary/10 border-border/40 h-11 cursor-not-allowed text-sm opacity-60">
+                        <SelectValue
+                          placeholder={
+                            isLoadingInvitations
+                              ? 'Memuat undangan...'
+                              : 'Pilih undangan...'
+                          }
+                        />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {invitations.map(
+                          (inv: {
+                            id: number;
+                            groomName: string;
+                            brideName: string;
+                          }) => (
+                            <SelectItem
+                              key={inv.id}
+                              value={String(inv.id)}
+                              className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer text-xs transition-colors"
+                            >
+                              {inv.groomName} & {inv.brideName}
+                            </SelectItem>
+                          ),
+                        )}
+                      </SelectContent>
+                    </Select>
+                  )}
+                />
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -123,7 +174,7 @@ export default function EditInvitationGuestModal({
                 htmlFor="guestName"
                 className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase"
               >
-                Nama Tamu
+                Nama Tamu <span className="text-destructive">*</span>
               </Label>
               <Input
                 id="guestName"
@@ -133,7 +184,7 @@ export default function EditInvitationGuestModal({
               />
               {errors.guestName && (
                 <p className="text-destructive text-[10px] font-medium">
-                  {errors.guestName.message as string}
+                  {errors.guestName.message}
                 </p>
               )}
             </div>
@@ -143,58 +194,18 @@ export default function EditInvitationGuestModal({
                 htmlFor="phoneNumber"
                 className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase"
               >
-                No WhatsApp
+                No WhatsApp (Opsional)
               </Label>
               <Input
                 id="phoneNumber"
-                placeholder="Contoh: 6281234567890"
+                type="text"
+                placeholder="Contoh: 08123456789"
                 {...register('phoneNumber')}
                 className={`bg-secondary/5 border-border/40 h-11 text-sm transition-all focus:bg-transparent ${errors.phoneNumber ? 'border-destructive' : ''}`}
               />
               {errors.phoneNumber && (
                 <p className="text-destructive text-[10px] font-medium">
-                  {errors.phoneNumber.message as string}
-                </p>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              <Label className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
-                Status
-              </Label>
-              <div className="relative">
-                <Controller
-                  name="status"
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      onValueChange={field.onChange}
-                      value={field.value ? String(field.value) : ''}
-                      disabled
-                    >
-                      <SelectTrigger
-                        className={`bg-secondary/5 border-border/40 h-11 text-sm ${errors.status ? 'border-destructive' : ''}`}
-                      >
-                        <SelectValue placeholder="Pilih status..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value={GuestStatusEnum.Draft}>
-                          Draft
-                        </SelectItem>
-                        <SelectItem value={GuestStatusEnum.Sent}>
-                          Terkirim
-                        </SelectItem>
-                        <SelectItem value={GuestStatusEnum.Opened}>
-                          Dibuka
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  )}
-                />
-              </div>
-              {errors.status && (
-                <p className="text-destructive text-[10px] font-medium">
-                  {errors.status.message as string}
+                  {errors.phoneNumber.message}
                 </p>
               )}
             </div>

@@ -15,6 +15,7 @@ import { invitationEvents } from './invitation-events.table';
 import { invitationGallery } from './invitation-galleries.table';
 import { invitationGuests } from './invitation-guests.table';
 import { invitationRSVP } from './invitation-rsvp.table';
+import { invitationWishes } from './invitation-wishes.table';
 
 export const invitations = pgTable('invitations', {
   id: serial('id').primaryKey(),
@@ -79,4 +80,5 @@ export const invitationRelations = relations(invitations, ({ one, many }) => ({
   invitationRSVP: many(invitationRSVP),
   invitationGallery: many(invitationGallery),
   invitationGuests: many(invitationGuests),
+  invitationWishes: many(invitationWishes),
 }));

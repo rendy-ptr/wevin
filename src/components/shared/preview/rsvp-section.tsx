@@ -5,13 +5,80 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
 
-export default function PreviewRSVPForm({ guestName }: { guestName: string }) {
-  const [status, setStatus] = useState<'hadir' | 'tidak_hadir' | null>(null);
-  const [submitted, setSubmitted] = useState(false);
+import { RSVPStatusEnum } from '@/enums/invitation.enum';
+import { useSubmitPublicRSVP } from '@/hooks/api/use-invitation-rsvp';
+import { useToast } from '@/hooks/use-toast';
+import {
+  CreateRSVPFormValues,
+  createRSVPSchema,
+} from '@/validations/member/create-rsvp';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { AxiosError } from 'axios';
+import { useForm, useWatch } from 'react-hook-form';
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
+interface PreviewRSVPFormProps {
+  guestName: string;
+  invitationId: number;
+  isPreview?: boolean;
+}
+
+export default function PreviewRSVPForm({
+  guestName,
+  invitationId,
+  isPreview = false,
+}: PreviewRSVPFormProps) {
+  const [submitted, setSubmitted] = useState(false);
+  const { mutate: submitRSVP, isPending } = useSubmitPublicRSVP();
+  const { toast } = useToast();
+
+  const { register, handleSubmit, setValue, control } =
+    useForm<CreateRSVPFormValues>({
+      resolver: zodResolver(createRSVPSchema),
+      defaultValues: {
+        invitationId,
+        guestName,
+        guestCount: 1,
+        reason: '',
+      },
+    });
+
+  const status = useWatch({
+    control,
+    name: 'status',
+  });
+
+  const onSubmit = (data: CreateRSVPFormValues) => {
+    if (isPreview) {
+      toast({
+        title: 'Mode Preview',
+        description:
+          'Simulasi RSVP berhasil! (Data tidak disimpan di database)',
+      });
+      setSubmitted(true);
+      return;
+    }
+
+    submitRSVP(
+      {
+        ...data,
+        reason:
+          data.status === RSVPStatusEnum.NotPresent ? data.reason : undefined,
+      },
+      {
+        onSuccess: () => {
+          setSubmitted(true);
+        },
+        onError: (error) => {
+          const err = error as AxiosError<{ message: string }>;
+          toast({
+            title: 'Gagal',
+            description:
+              err.response?.data?.message || 'Gagal mengirim konfirmasi',
+            variant: 'destructive',
+          });
+        },
+      },
+    );
   };
 
   if (submitted) {
@@ -31,7 +98,7 @@ export default function PreviewRSVPForm({ guestName }: { guestName: string }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       <div className="space-y-2">
         <Label>Nama</Label>
         <Input
@@ -47,10 +114,15 @@ export default function PreviewRSVPForm({ guestName }: { guestName: string }) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => setStatus('hadir')}
+            onClick={() =>
+              setValue('status', RSVPStatusEnum.Present, {
+                shouldValidate: true,
+              })
+            }
+            disabled={isPending}
             className={cn(
               'border-border h-auto py-4',
-              status === 'hadir' &&
+              status === RSVPStatusEnum.Present &&
                 'bg-primary-subtle border-success text-success',
             )}
           >
@@ -60,10 +132,15 @@ export default function PreviewRSVPForm({ guestName }: { guestName: string }) {
           <Button
             type="button"
             variant="outline"
-            onClick={() => setStatus('tidak_hadir')}
+            onClick={() =>
+              setValue('status', RSVPStatusEnum.NotPresent, {
+                shouldValidate: true,
+              })
+            }
+            disabled={isPending}
             className={cn(
               'border-border h-auto py-4',
-              status === 'tidak_hadir' &&
+              status === RSVPStatusEnum.NotPresent &&
                 'bg-destructive/10 border-destructive text-destructive',
             )}
           >
@@ -72,7 +149,7 @@ export default function PreviewRSVPForm({ guestName }: { guestName: string }) {
         </div>
       </div>
 
-      {status === 'hadir' && (
+      {status === RSVPStatusEnum.Present && (
         <div className="space-y-2">
           <Label htmlFor="guests">Jumlah Tamu yang Hadir</Label>
           <Input
@@ -80,18 +157,33 @@ export default function PreviewRSVPForm({ guestName }: { guestName: string }) {
             type="number"
             min="1"
             max="5"
-            defaultValue="1"
+            {...register('guestCount', { valueAsNumber: true })}
             className="border-border bg-background"
+            disabled={isPending}
+          />
+        </div>
+      )}
+
+      {status === RSVPStatusEnum.NotPresent && (
+        <div className="space-y-2">
+          <Label htmlFor="reason">Alasan Tidak Hadir</Label>
+          <Input
+            id="reason"
+            type="text"
+            placeholder="Ada Pekerjaan"
+            {...register('reason')}
+            className="border-border bg-background"
+            disabled={isPending}
           />
         </div>
       )}
 
       <Button
         type="submit"
-        disabled={!status}
+        disabled={!status || isPending}
         className="bg-primary-dark hover:bg-primary-dark/90 text-primary-foreground w-full"
       >
-        Kirim Konfirmasi
+        {isPending ? 'Mengirim...' : 'Kirim Konfirmasi'}
       </Button>
     </form>
   );

@@ -1,12 +1,12 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
-import { GuestFilterParams } from '@/types/guest.type';
+import { GuestFilterParams } from '@/types/guestbook.type';
 import { CreateUpdateInvitationGuestFormValues } from '@/validations/member/create-update-guest';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 export const useGetInvitationGuests = (params: GuestFilterParams) => {
   return useQuery({
-    queryKey: ['guests', params],
+    queryKey: ['invitation-guests', params],
     queryFn: async () => {
       const response = await api.get(API_URL.GUEST.GET, {
         params,
@@ -27,7 +27,7 @@ export const useCreateInvitationGuest = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['guests'] });
+      queryClient.invalidateQueries({ queryKey: ['invitation-guests'] });
     },
   });
 };
@@ -40,7 +40,7 @@ export const useBulkCreateInvitationGuests = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['guests'] });
+      queryClient.invalidateQueries({ queryKey: ['invitation-guests'] });
     },
   });
 };
@@ -56,12 +56,12 @@ export const useUpdateInvitationGuest = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['guests'] });
+      queryClient.invalidateQueries({ queryKey: ['invitation-guests'] });
     },
   });
 };
 
-export const useDeleteInvitationGuest = () => {
+export function useDeleteInvitationGuest() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
@@ -69,7 +69,20 @@ export const useDeleteInvitationGuest = () => {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['guests'] });
+      queryClient.invalidateQueries({ queryKey: ['invitation-guests'] });
     },
   });
-};
+}
+
+export function useUpdatePublicGuestStatus() {
+  return useMutation({
+    mutationFn: async (data: {
+      invitationId: number;
+      guestName: string;
+      status: string;
+    }) => {
+      const response = await api.post(API_URL.GUEST.UPDATE_PUBLIC_STATUS, data);
+      return response.data;
+    },
+  });
+}

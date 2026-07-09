@@ -8,6 +8,8 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { invitationGuestStatusEnum } from './enums';
+import { invitationRSVP } from './invitation-rsvp.table';
+import { invitationWishes } from './invitation-wishes.table';
 import { invitations } from './invitations.table';
 
 export const invitationGuests = pgTable('invitation_guests', {
@@ -21,7 +23,7 @@ export const invitationGuests = pgTable('invitation_guests', {
   guestName: varchar('guest_name', { length: 255 }).notNull(),
   phoneNumber: varchar('phone_number', { length: 50 }),
   status: invitationGuestStatusEnum('status')
-    .default(GuestStatusEnum.Draft)
+    .default(GuestStatusEnum.Idle)
     .notNull(),
 
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -37,6 +39,14 @@ export const invitationGuestRelations = relations(
     invitation: one(invitations, {
       fields: [invitationGuests.invitationId],
       references: [invitations.id],
+    }),
+    rsvp: one(invitationRSVP, {
+      fields: [invitationGuests.id],
+      references: [invitationRSVP.invitationGuestId],
+    }),
+    wishes: one(invitationWishes, {
+      fields: [invitationGuests.id],
+      references: [invitationWishes.invitationGuestId],
     }),
   }),
 );

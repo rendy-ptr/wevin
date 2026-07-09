@@ -18,9 +18,9 @@ export const rsvpStatusEnum = pgEnum('rsvp_status', [
 ]);
 
 export const invitationGuestStatusEnum = pgEnum('invitation_guest_status', [
-  GuestStatusEnum.Draft,
-  GuestStatusEnum.Sent,
+  GuestStatusEnum.Idle,
   GuestStatusEnum.Opened,
+  GuestStatusEnum.Responded,
 ]);
 
 export const timezoneEnum = pgEnum('timezone', [

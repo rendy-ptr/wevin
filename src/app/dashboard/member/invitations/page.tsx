@@ -54,6 +54,8 @@ type InvitationItem = {
   createdAt: string | Date;
   publishedAt?: string | Date | null;
   expiredText: string;
+  totalViews: number;
+  totalRsvps: number;
 };
 
 export default function MemberInvitationsPage() {
@@ -261,10 +263,10 @@ export default function MemberInvitationsPage() {
                         : '-'}
                     </td>
                     <td className="text-muted-foreground px-6 py-4 text-xs">
-                      0 Kunjungan
+                      {invitation.totalViews} Kunjungan
                     </td>
                     <td className="text-muted-foreground px-6 py-4 text-xs">
-                      0 Konfirmasi
+                      {invitation.totalRsvps} Konfirmasi
                     </td>
                     <td className="text-muted-foreground px-6 py-4 text-xs">
                       {invitation.publishedAt ? (

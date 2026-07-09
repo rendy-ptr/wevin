@@ -1,25 +1,38 @@
+import { GuestStatusEnum } from '@/enums/invitation.enum';
+import { DuplicateError } from '@/lib/errors';
+import { guards } from '@/lib/guards';
 import { invitationGuestRepository } from '@/repositories/invitation-guest.repository';
 import { activityService } from '@/services/activity.service';
-import { GuestFilterParams } from '@/types/guest.type';
+import { GuestFilterParams } from '@/types/guestbook.type';
 import { CreateUpdateInvitationGuestFormValues } from '@/validations/member/create-update-guest';
 
 export const invitationGuestService = {
-  getAll: async (params: GuestFilterParams) => {
-    return await invitationGuestRepository.getAll(params);
+  checkDuplicate: async (invitationId: number, guestName: string) => {
+    const existing = await invitationGuestRepository.findExactMatch(
+      invitationId,
+      guestName,
+    );
+
+    if (existing) {
+      throw new DuplicateError(
+        `Nama "${guestName}" sudah ada di daftar tamu ini.`,
+      );
+    }
   },
 
-  getById: async (id: number) => {
-    const guest = await invitationGuestRepository.getById(id);
-    if (!guest) {
-      throw new Error('Guest not found');
-    }
-    return guest;
+  getAll: async (userId: number, params: GuestFilterParams) => {
+    const memberProfile = await guards.checkMemberProfile(userId);
+    return await invitationGuestRepository.getAll(memberProfile.id, params);
   },
 
   create: async (
     payload: CreateUpdateInvitationGuestFormValues,
     userId?: number,
   ) => {
+    await invitationGuestService.checkDuplicate(
+      payload.invitationId,
+      payload.guestName,
+    );
     const guest = await invitationGuestRepository.create(payload);
     if (userId) {
       await activityService.log({
@@ -38,17 +51,52 @@ export const invitationGuestService = {
     userId?: number,
   ) => {
     if (!payloads.length) return [];
-    const guests = await invitationGuestRepository.createMany(payloads);
+
+    const validPayloads: CreateUpdateInvitationGuestFormValues[] = [];
+
+    for (const payload of payloads) {
+      const existing = await invitationGuestRepository.findExactMatch(
+        payload.invitationId,
+        payload.guestName,
+      );
+      const isDuplicateInArray = validPayloads.some(
+        (p) => p.guestName.toLowerCase() === payload.guestName.toLowerCase(),
+      );
+      if (!existing && !isDuplicateInArray) {
+        validPayloads.push(payload);
+      }
+    }
+    if (!validPayloads.length) return [];
+
+    const guests = await invitationGuestRepository.createMany(validPayloads);
     if (userId) {
       await activityService.log({
         userId,
         action: 'CREATE',
         entityType: 'GUEST',
-        entityId: guests[0]?.id || 0,
-        details: `Menambahkan ${guests.length} tamu secara massal`,
+        entityId: 0,
+        details: `Import ${guests.length} tamu untuk undangan ID: ${validPayloads[0]?.invitationId}`,
       });
     }
     return guests;
+  },
+
+  export: async (userId: number) => {
+    const memberProfile = await guards.checkMemberProfile(userId);
+
+    const data = await invitationGuestRepository.export(memberProfile.id);
+
+    if (userId) {
+      await activityService.log({
+        userId: userId,
+        action: 'EXPORT',
+        entityType: 'GUEST',
+        entityId: 0,
+        details: `Export ${data.length} tamu untuk semua undangan`,
+      });
+    }
+
+    return data;
   },
 
   update: async (
@@ -56,7 +104,11 @@ export const invitationGuestService = {
     payload: CreateUpdateInvitationGuestFormValues,
     userId?: number,
   ) => {
-    await invitationGuestService.getById(id);
+    await guards.checkGuestExist(id);
+    await invitationGuestService.checkDuplicate(
+      payload.invitationId,
+      payload.guestName,
+    );
     const updated = await invitationGuestRepository.update(id, payload);
     if (userId) {
       await activityService.log({
@@ -71,7 +123,7 @@ export const invitationGuestService = {
   },
 
   delete: async (id: number, userId?: number) => {
-    const existing = await invitationGuestService.getById(id);
+    const existing = await guards.checkGuestExist(id);
     const deleted = await invitationGuestRepository.delete(id);
     if (userId) {
       await activityService.log({
@@ -83,5 +135,24 @@ export const invitationGuestService = {
       });
     }
     return deleted;
+  },
+
+  updateStatusByInvitationAndName: async (
+    invitationId: number,
+    guestName: string,
+    status: GuestStatusEnum,
+  ) => {
+    const updated =
+      await invitationGuestRepository.updateStatusByInvitationAndName(
+        invitationId,
+        guestName,
+        status,
+      );
+
+    if (!updated) {
+      throw new Error('Tamu tidak ditemukan dalam daftar undangan.');
+    }
+
+    return updated;
   },
 };

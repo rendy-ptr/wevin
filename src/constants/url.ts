@@ -49,16 +49,27 @@ export const API_URL = {
     SEND_OTP: `${API_BASE_URL}/api/setting/send-otp`,
   },
   GUEST: {
-    GET: `${API_BASE_URL}/api/guest`,
-    CREATE: `${API_BASE_URL}/api/guest`,
-    UPDATE: (id: number) => `${API_BASE_URL}/api/guest/${id}`,
-    DELETE: (id: number) => `${API_BASE_URL}/api/guest/${id}`,
+    GET: `${API_BASE_URL}/api/invitation-guest`,
+    CREATE: `${API_BASE_URL}/api/invitation-guest`,
+    UPDATE: (id: number) => `${API_BASE_URL}/api/invitation-guest/${id}`,
+    DELETE: (id: number) => `${API_BASE_URL}/api/invitation-guest/${id}`,
+    UPDATE_PUBLIC_STATUS: `${API_BASE_URL}/api/invitation-guest/public/status`,
+    EXPORT: `${API_BASE_URL}/api/invitation-guest/export`,
   },
   INVITATION: {
     GET: `${API_BASE_URL}/api/invitation`,
+    GET_OPTIONS: `${API_BASE_URL}/api/invitation/options`,
     CREATE: `${API_BASE_URL}/api/invitation`,
     GET_BY_ID: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
+    GET_PUBLIC_BY_SLUG: (slug: string) =>
+      `${API_BASE_URL}/api/invitation/public/${slug}`,
     UPDATE: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
     DELETE: (id: number) => `${API_BASE_URL}/api/invitation/${id}`,
+  },
+  RSVP: {
+    SUBMIT_PUBLIC: `${API_BASE_URL}/api/invitation-rsvp/public`,
+  },
+  WISH: {
+    SUBMIT_PUBLIC: `${API_BASE_URL}/api/invitation-wishes/public`,
   },
 };

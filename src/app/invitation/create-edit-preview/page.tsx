@@ -409,7 +409,11 @@ function PreviewContent() {
                     </p>
 
                     <div className="bg-card border-border rounded-2xl border p-6 md:p-8">
-                      <PreviewRSVPForm guestName={guestName} />
+                      <PreviewRSVPForm
+                        guestName={guestName}
+                        invitationId={0}
+                        isPreview
+                      />
                     </div>
                   </div>
                 </section>
@@ -429,7 +433,11 @@ function PreviewContent() {
                     </p>
 
                     <div className="bg-background border-border mb-8 rounded-2xl border p-6">
-                      <PreviewGuestbookForm />
+                      <PreviewGuestbookForm
+                        guestName={guestName}
+                        invitationId={0}
+                        isPreview
+                      />
                     </div>
 
                     <div className="space-y-4">

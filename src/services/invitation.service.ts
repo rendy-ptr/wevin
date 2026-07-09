@@ -1,25 +1,17 @@
-import { db } from '@/db';
-import { invitations } from '@/db/table/invitation/invitations.table';
+import { NotFoundError } from '@/lib/errors';
+import { guards } from '@/lib/guards';
 import { activityRepository } from '@/repositories/activity.repository';
 import { invitationRepository } from '@/repositories/invitation.repository';
 import { InvitationFilterParams } from '@/types/invitation.type';
 import { CreateUpdateInvitationFormValues } from '@/validations/member/create-update-invitation';
-import { eq } from 'drizzle-orm';
 
 export const invitationService = {
-  getAllInvitations: async (userId: number, params: InvitationFilterParams) => {
-    const memberProfile = await invitationRepository.checkMemberId(userId);
-    if (!memberProfile) {
-      return {
-        data: [],
-        meta: {
-          total: 0,
-          page: params.page || 1,
-          limit: params.limit || 10,
-          totalPages: 0,
-        },
-      };
-    }
+  getAllInvitations: async function (
+    userId: number,
+    params: InvitationFilterParams,
+  ) {
+    const memberProfile = await guards.checkMemberProfile(userId);
+
     const [quota] = await invitationRepository.getActiveDaysQuota(
       memberProfile.id,
     );
@@ -55,17 +47,15 @@ export const invitationService = {
     return { data: formattedData, meta };
   },
 
-  getInvitationById: async (id: number, userId: number) => {
-    const memberProfile = await invitationRepository.checkMemberId(userId);
-    if (!memberProfile) {
-      throw new Error('Member profile not found.');
-    }
+  getInvitationOptions: async function (userId: number) {
+    const memberProfile = await guards.checkMemberProfile(userId);
 
-    const invitation = await invitationRepository.getById(id);
+    return await invitationRepository.getOptions(memberProfile.id);
+  },
 
-    if (!invitation || invitation.memberId !== memberProfile.id) {
-      throw new Error('Invitation not found or unauthorized access.');
-    }
+  getInvitationById: async function (id: number, userId: number) {
+    const memberProfile = await guards.checkMemberProfile(userId);
+    const invitation = await guards.checkInvitationAccess(id, memberProfile.id);
 
     return {
       ...invitation,
@@ -75,16 +65,24 @@ export const invitationService = {
     };
   },
 
-  createInvitation: async (
+  getPublicInvitationBySlug: async (slug: string) => {
+    const invitation = await invitationRepository.getBySlug(slug);
+    if (!invitation) {
+      throw new NotFoundError('Invitation not found.');
+    }
+    return {
+      ...invitation,
+      ...invitation.wording,
+      events: invitation.invitationEvents,
+      gallery: invitation.invitationGallery,
+    };
+  },
+
+  createInvitation: async function (
     userId: number,
     data: CreateUpdateInvitationFormValues,
-  ) => {
-    const memberProfile = await invitationRepository.checkMemberId(userId);
-    if (!memberProfile) {
-      throw new Error(
-        'Member profile not found. Please create a member profile first.',
-      );
-    }
+  ) {
+    const memberProfile = await guards.checkMemberProfile(userId);
 
     const slug = `${data.groomName}-${data.brideName}`
       .toLowerCase()
@@ -114,29 +112,13 @@ export const invitationService = {
     };
   },
 
-  updateInvitation: async (
+  updateInvitation: async function (
     invitationId: number,
     userId: number,
     data: CreateUpdateInvitationFormValues,
-  ) => {
-    const memberProfile = await invitationRepository.checkMemberId(userId);
-
-    if (!memberProfile) {
-      throw new Error(
-        'Member profile not found. Please create a member profile first.',
-      );
-    }
-
-    const existingInvitation = await db.query.invitations.findFirst({
-      where: eq(invitations.id, invitationId),
-    });
-
-    if (
-      !existingInvitation ||
-      existingInvitation.memberId !== memberProfile.id
-    ) {
-      throw new Error('Invitation not found or unauthorized');
-    }
+  ) {
+    const memberProfile = await guards.checkMemberProfile(userId);
+    await guards.checkInvitationAccess(invitationId, memberProfile.id);
 
     const slug = `${data.groomName}-${data.brideName}`
       .toLowerCase()
@@ -163,12 +145,12 @@ export const invitationService = {
     };
   },
 
-  deleteInvitation: async (id: number, userId: number) => {
-    const existingInvitation = await invitationRepository.getById(id);
-
-    if (!existingInvitation) {
-      throw new Error('Invitation not found');
-    }
+  deleteInvitation: async function (id: number, userId: number) {
+    const memberProfile = await guards.checkMemberProfile(userId);
+    const existingInvitation = await guards.checkInvitationAccess(
+      id,
+      memberProfile.id,
+    );
 
     const result = await invitationRepository.deleteInvitation(id);
 

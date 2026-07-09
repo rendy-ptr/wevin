@@ -5,9 +5,9 @@ export enum GuestBookStatusEnum {
 }
 
 export enum GuestStatusEnum {
-  Draft = 'draft',
-  Sent = 'sent',
+  Idle = 'idle',
   Opened = 'opened',
+  Responded = 'responded',
 }
 
 export enum InvitationStatusEnum {

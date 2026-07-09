@@ -157,24 +157,9 @@ export const memberRepository = {
     return updatedUser;
   },
 
-  // getPermissions: async (id: number) => {
-  //   return await db.query.users.findFirst({
-  //     where: eq(users.id, id),
-  //     with: {
-  //       profile: {
-  //         with: {
-  //           package: {
-  //             with: {
-  //               benefits: {
-  //                 with: {
-  //                   benefit: true,
-  //                 },
-  //               },
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   });
-  // },
+  findMemberProfile: async (userId: number) => {
+    return await db.query.memberProfiles.findFirst({
+      where: eq(memberProfiles.userId, userId),
+    });
+  },
 };

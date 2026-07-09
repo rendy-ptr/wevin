@@ -1,15 +1,80 @@
 import { db } from '@/db';
 import { invitationEvents } from '@/db/table/invitation/invitation-events.table';
 import { invitationGallery } from '@/db/table/invitation/invitation-galleries.table';
+import { invitationGuests } from '@/db/table/invitation/invitation-guests.table';
+import { invitationRSVP } from '@/db/table/invitation/invitation-rsvp.table';
 import { invitations } from '@/db/table/invitation/invitations.table';
 import { memberProfiles } from '@/db/table/member-profiles.table';
 import { packageQuotas } from '@/db/table/package-quotas.table';
-import { InvitationStatusEnum } from '@/enums/invitation.enum';
+import { GuestStatusEnum, InvitationStatusEnum } from '@/enums/invitation.enum';
 import { InvitationFilterParams } from '@/types/invitation.type';
 import { CreateUpdateInvitationFormValues } from '@/validations/member/create-update-invitation';
-import { and, count, desc, eq, ilike, or } from 'drizzle-orm';
+import { and, count, desc, eq, ilike, inArray, or } from 'drizzle-orm';
+
+async function getViewsCountMap(invitationIds: number[]) {
+  if (!invitationIds.length) return {};
+
+  const views = await db
+    .select({
+      invitationId: invitationGuests.invitationId,
+      count: count(),
+    })
+    .from(invitationGuests)
+    .where(
+      and(
+        inArray(invitationGuests.invitationId, invitationIds),
+        inArray(invitationGuests.status, [
+          GuestStatusEnum.Opened,
+          GuestStatusEnum.Responded,
+        ]),
+      ),
+    )
+    .groupBy(invitationGuests.invitationId);
+
+  return views.reduce(
+    (acc, curr) => {
+      if (curr.invitationId) acc[curr.invitationId] = Number(curr.count);
+      return acc;
+    },
+    {} as Record<number, number>,
+  );
+}
+
+async function getRsvpsCountMap(invitationIds: number[]) {
+  if (!invitationIds.length) return {};
+
+  const rsvps = await db
+    .select({
+      invitationId: invitationRSVP.invitationId,
+      count: count(),
+    })
+    .from(invitationRSVP)
+    .where(inArray(invitationRSVP.invitationId, invitationIds))
+    .groupBy(invitationRSVP.invitationId);
+
+  return rsvps.reduce(
+    (acc, curr) => {
+      if (curr.invitationId) acc[curr.invitationId] = Number(curr.count);
+      return acc;
+    },
+    {} as Record<number, number>,
+  );
+}
 
 export const invitationRepository = {
+  getOptions: async (memberId: number) => {
+    return await db
+      .select({
+        id: invitations.id,
+        groomName: invitations.groomName,
+        brideName: invitations.brideName,
+        slug: invitations.slug,
+      })
+      .from(invitations)
+      .where(eq(invitations.memberId, memberId))
+      .orderBy(desc(invitations.createdAt));
+  },
+
   getActiveDaysQuota: async (memberProfileId: number) => {
     const quota = await db
       .select({ activeDays: packageQuotas.value })
@@ -74,6 +139,13 @@ export const invitationRepository = {
       },
     });
 
+    const invitationIds = rawData.map((item) => item.id);
+
+    const [viewsCountMap, rsvpsCountMap] = await Promise.all([
+      getViewsCountMap(invitationIds),
+      getRsvpsCountMap(invitationIds),
+    ]);
+
     const data = rawData.map((item) => ({
       id: item.id,
       slug: item.slug,
@@ -84,6 +156,8 @@ export const invitationRepository = {
       createdAt: item.createdAt,
       publishedAt: item.publishedAt,
       events: item.invitationEvents,
+      totalViews: viewsCountMap[item.id] || 0,
+      totalRsvps: rsvpsCountMap[item.id] || 0,
     }));
 
     return {
@@ -112,10 +186,19 @@ export const invitationRepository = {
     return invitation;
   },
 
-  checkMemberId: async (userId: number) => {
-    return await db.query.memberProfiles.findFirst({
-      where: eq(memberProfiles.userId, userId),
+  getBySlug: async (slug: string) => {
+    const invitation = await db.query.invitations.findFirst({
+      where: eq(invitations.slug, slug),
+      with: {
+        invitationEvents: {
+          orderBy: (events, { asc }) => [asc(events.sortOrder)],
+        },
+        invitationGallery: {
+          orderBy: (gallery, { asc }) => [asc(gallery.sortOrder)],
+        },
+      },
     });
+    return invitation;
   },
 
   createInvitation: async (
@@ -270,6 +353,15 @@ export const invitationRepository = {
         .delete(invitationGallery)
         .where(eq(invitationGallery.invitationId, id));
       await tx.delete(invitations).where(eq(invitations.id, id));
+    });
+  },
+
+  getInvitationById: async (invitationId: number, memberId: number) => {
+    return await db.query.invitations.findFirst({
+      where: and(
+        eq(invitations.id, invitationId),
+        eq(invitations.memberId, memberId),
+      ),
     });
   },
 };

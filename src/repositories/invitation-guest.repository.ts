@@ -1,20 +1,25 @@
 import { db } from '@/db';
+import { invitations } from '@/db/schema';
 import { invitationGuests } from '@/db/table/invitation/invitation-guests.table';
-import { GuestFilterParams } from '@/types/guest.type';
+import { GuestStatusEnum } from '@/enums/invitation.enum';
+import { GuestFilterParams } from '@/types/guestbook.type';
 import { CreateUpdateInvitationGuestFormValues } from '@/validations/member/create-update-guest';
-import { and, count, desc, eq, ilike } from 'drizzle-orm';
+import { and, asc, count, desc, eq, ilike, inArray } from 'drizzle-orm';
 
 export const invitationGuestRepository = {
-  getAll: async ({
-    search,
-    invitationId,
-    status,
-    page = 1,
-    limit = 10,
-  }: GuestFilterParams) => {
+  getAll: async (
+    memberId: number,
+    { search, invitationId, status, page = 1, limit = 10 }: GuestFilterParams,
+  ) => {
     const offset = (page - 1) * limit;
 
+    const allowedInvitations = db
+      .select({ id: invitations.id })
+      .from(invitations)
+      .where(eq(invitations.memberId, memberId));
+
     const whereClause = and(
+      inArray(invitationGuests.invitationId, allowedInvitations),
       invitationId
         ? eq(invitationGuests.invitationId, invitationId)
         : undefined,
@@ -29,6 +34,7 @@ export const invitationGuestRepository = {
       orderBy: [desc(invitationGuests.createdAt)],
       with: {
         invitation: true,
+        rsvp: true,
       },
     });
 
@@ -41,15 +47,6 @@ export const invitationGuestRepository = {
       items,
       total: totalResult.value,
     };
-  },
-
-  getById: async (id: number) => {
-    return await db.query.invitationGuests.findFirst({
-      where: eq(invitationGuests.id, id),
-      with: {
-        invitation: true,
-      },
-    });
   },
 
   create: async (payload: CreateUpdateInvitationGuestFormValues) => {
@@ -106,5 +103,55 @@ export const invitationGuestRepository = {
       .where(eq(invitationGuests.id, id))
       .returning();
     return deletedGuest;
+  },
+
+  updateStatusByInvitationAndName: async (
+    invitationId: number,
+    guestName: string,
+    status: GuestStatusEnum,
+  ) => {
+    const [updated] = await db
+      .update(invitationGuests)
+      .set({ status })
+      .where(
+        and(
+          eq(invitationGuests.invitationId, invitationId),
+          eq(invitationGuests.guestName, guestName),
+        ),
+      )
+      .returning();
+    return updated;
+  },
+
+  export: async (memberId: number) => {
+    const allowedInvitations = db
+      .select({ id: invitations.id })
+      .from(invitations)
+      .where(eq(invitations.memberId, memberId));
+
+    return await db.query.invitationGuests.findMany({
+      where: inArray(invitationGuests.invitationId, allowedInvitations),
+      with: {
+        wishes: true,
+        rsvp: true,
+        invitation: true,
+      },
+      orderBy: [asc(invitationGuests.guestName)],
+    });
+  },
+
+  findById: async (id: number) => {
+    return await db.query.invitationGuests.findFirst({
+      where: eq(invitationGuests.id, id),
+    });
+  },
+
+  findExactMatch: async (invitationId: number, guestName: string) => {
+    return await db.query.invitationGuests.findFirst({
+      where: and(
+        eq(invitationGuests.invitationId, invitationId),
+        ilike(invitationGuests.guestName, guestName),
+      ),
+    });
   },
 };
