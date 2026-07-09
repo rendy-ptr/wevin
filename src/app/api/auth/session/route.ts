@@ -5,8 +5,22 @@ export async function GET() {
   const session = await getSession();
 
   if (!session) {
-    return NextResponse.json({ user: null });
+    return NextResponse.json(
+      {
+        success: false,
+        message: 'User is not authenticated',
+        user: null,
+      },
+      { status: 401 },
+    );
   }
 
-  return NextResponse.json({ user: session.user });
+  return NextResponse.json(
+    {
+      success: true,
+      message: 'User is authenticated',
+      user: session.user,
+    },
+    { status: 200 },
+  );
 }

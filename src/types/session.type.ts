@@ -1,3 +1,4 @@
+import { ADMIN, MEMBER } from '@/constants/role';
 import { BenefitKeyType } from './benefit.type';
 
 export type SessionBenefit = {
@@ -17,6 +18,7 @@ export type SessionUser = {
   id: number;
   name: string;
   email: string;
-  role: 'admin' | 'member';
+  role: typeof ADMIN | typeof MEMBER;
+  createdAt: Date;
   package: SessionPackage | null;
 };

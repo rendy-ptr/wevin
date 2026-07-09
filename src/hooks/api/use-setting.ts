@@ -1,21 +1,21 @@
 import { API_URL } from '@/constants/url';
 import api from '@/lib/axios';
 import { ActivityFilterParams, ActivityIndexItem } from '@/types/activity.type';
-import { BaseUserModel, UserWithRelationships } from '@/types/user.type';
+import { BaseUserModel } from '@/types/user.type';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-export const useGetSettings = () => {
-  return useQuery({
-    queryKey: ['settings'],
-    queryFn: async () => {
-      const response = await api.get(API_URL.SETTING.GET);
-      if (!response.data.success) {
-        throw new Error(response.data.message || 'Gagal mengambil data');
-      }
-      return response.data.data as UserWithRelationships;
-    },
-  });
-};
+// export const useGetSettings = () => {
+//   return useQuery({
+//     queryKey: ['settings'],
+//     queryFn: async () => {
+//       const response = await api.get(API_URL.SETTING.GET);
+//       if (!response.data.success) {
+//         throw new Error(response.data.message || 'Gagal mengambil data');
+//       }
+//       return response.data.data as UserWithRelationships;
+//     },
+//   });
+// };
 
 export const useUpdatePassword = () => {
   const queryClient = useQueryClient();
@@ -91,7 +91,6 @@ export const useUpdateName = () => {
 };
 
 export const useGetAllActivityLogs = ({
-  userId,
   search,
   startDate,
   endDate,
@@ -103,7 +102,6 @@ export const useGetAllActivityLogs = ({
     queryKey: [
       'settings',
       'activity-logs',
-      userId,
       search,
       startDate,
       endDate,
@@ -113,7 +111,7 @@ export const useGetAllActivityLogs = ({
     ],
     queryFn: async () => {
       const response = await api.get(API_URL.SETTING.GET_ALL_ACTIVITY_LOGS, {
-        params: { userId, search, startDate, endDate, action, page, limit },
+        params: { search, startDate, endDate, action, page, limit },
       });
       if (!response.data.success) {
         throw new Error(response.data.message || 'Gagal mengambil data');

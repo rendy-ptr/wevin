@@ -1,27 +1,25 @@
-import { getSession } from '@/lib/auth';
-import { AppError } from '@/lib/errors';
+import { ADMIN } from '@/constants/role';
+import { withAuth } from '@/lib/with-auth';
 import { packageService } from '@/services/package.service';
-import { BasePackageModel } from '@/types/package.type';
 import { createUpdatePackageSchema } from '@/validations/admin/create-update-package';
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<
-  NextResponse<{
-    success: boolean;
-    message: string;
-    data: BasePackageModel | undefined;
-  }>
-> {
-  try {
-    const session = await getSession();
-    if (!session) {
-      throw new AppError('Unauthorized', 401);
+export const PUT = withAuth(
+  [ADMIN],
+  async (
+    request: NextRequest,
+    session,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
+    const { id } = await params;
+
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
     }
 
-    const { id } = await params;
     const body = await request.json();
     const parsed = createUpdatePackageSchema.safeParse(body);
 
@@ -51,40 +49,25 @@ export async function PUT(
       },
       { status: 200 },
     );
-  } catch (error: unknown) {
-    const isAppError = error instanceof AppError;
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-    const status = isAppError ? error.statusCode : 500;
+  },
+);
 
-    return NextResponse.json(
-      {
-        success: false,
-        message,
-        data: undefined,
-      },
-      { status },
-    );
-  }
-}
+export const DELETE = withAuth(
+  [ADMIN],
+  async (
+    _request: NextRequest,
+    session,
+    { params }: { params: Promise<{ id: string }> },
+  ) => {
+    const { id } = await params;
 
-export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> },
-): Promise<
-  NextResponse<{
-    success: boolean;
-    message: string;
-    data: BasePackageModel | undefined;
-  }>
-> {
-  try {
-    const session = await getSession();
-    if (!session) {
-      throw new AppError('Unauthorized', 401);
+    if (isNaN(Number(id))) {
+      return NextResponse.json(
+        { success: false, message: 'Invalid ID' },
+        { status: 400 },
+      );
     }
 
-    const { id } = await params;
     const packageData = await packageService.delete(
       Number(id),
       session.user.id,
@@ -98,19 +81,5 @@ export async function DELETE(
       },
       { status: 200 },
     );
-  } catch (error: unknown) {
-    const isAppError = error instanceof AppError;
-    const message =
-      error instanceof Error ? error.message : 'Internal Server Error';
-    const status = isAppError ? error.statusCode : 500;
-
-    return NextResponse.json(
-      {
-        success: false,
-        message,
-        data: undefined,
-      },
-      { status },
-    );
-  }
-}
+  },
+);

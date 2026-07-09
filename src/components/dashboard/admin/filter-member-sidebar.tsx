@@ -1,7 +1,13 @@
 'use client';
 
 import SharedFilterSidebar from '@/components/shared/filter-sidebar';
-import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { USER_STATUS_OPTIONS } from '@/constants/user.constant';
 import { useGetPackages } from '@/hooks/api/use-package';
 import { Loader2 } from 'lucide-react';
@@ -36,7 +42,7 @@ export default function FilterMemberSidebar({
   const { data: packagesData, isLoading: isLoadingPackages } = useGetPackages({
     limit: 100,
   });
-  const packages = packagesData?.items || [];
+  const packages = packagesData?.data || [];
 
   if (isOpen && !prevIsOpen) {
     setPrevIsOpen(true);
@@ -84,28 +90,25 @@ export default function FilterMemberSidebar({
           <label className="text-muted-foreground text-[11px] font-bold tracking-wider uppercase">
             Status Akun
           </label>
-          <div className="flex flex-col gap-2">
-            {statusOptions.map((opt) => (
-              <Button
-                key={opt.value}
-                onClick={() =>
-                  setLocalStatus(
-                    localStatus === opt.value ? undefined : opt.value,
-                  )
-                }
-                className={`flex items-center justify-between rounded-lg px-4 py-3 text-sm transition-all ${
-                  localStatus === opt.value
-                    ? 'bg-primary-dark shadow-primary-dark/10 hover:bg-primary-dark/90 text-white shadow-md'
-                    : 'bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground'
-                }`}
-              >
-                <span className="font-medium">{opt.label}</span>
-                {localStatus === opt.value && (
-                  <div className="bg-primary h-1.5 w-1.5 rounded-full" />
-                )}
-              </Button>
-            ))}
-          </div>
+          <Select
+            value={localStatus || ''}
+            onValueChange={(val) => setLocalStatus(val || undefined)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Pilih Status Akun" />
+            </SelectTrigger>
+            <SelectContent>
+              {statusOptions.map((opt) => (
+                <SelectItem
+                  key={opt.value}
+                  value={opt.value}
+                  className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer text-xs transition-colors"
+                >
+                  {opt.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <div className="space-y-3">
@@ -117,28 +120,27 @@ export default function FilterMemberSidebar({
               <Loader2 className="text-primary h-5 w-5 animate-spin" />
             </div>
           ) : (
-            <div className="flex flex-col gap-2">
-              {packages.map((pkg) => (
-                <Button
-                  key={pkg.id}
-                  onClick={() =>
-                    setLocalPackageId(
-                      localPackageId === pkg.id ? undefined : pkg.id,
-                    )
-                  }
-                  className={`flex items-center justify-between rounded-lg px-4 py-3 text-sm transition-all ${
-                    localPackageId === pkg.id
-                      ? 'bg-primary-dark shadow-primary-dark/10 hover:bg-primary-dark/90 text-white shadow-md'
-                      : 'bg-secondary/50 text-muted-foreground hover:bg-secondary hover:text-foreground'
-                  }`}
-                >
-                  <span className="font-medium">{pkg.name}</span>
-                  {localPackageId === pkg.id && (
-                    <div className="bg-primary h-1.5 w-1.5 rounded-full" />
-                  )}
-                </Button>
-              ))}
-            </div>
+            <Select
+              value={localPackageId ? String(localPackageId) : ''}
+              onValueChange={(val) =>
+                setLocalPackageId(val ? Number(val) : undefined)
+              }
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Pilih Paket Member" />
+              </SelectTrigger>
+              <SelectContent>
+                {packages.map((pkg) => (
+                  <SelectItem
+                    key={pkg.id}
+                    value={String(pkg.id)}
+                    className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer text-xs transition-colors"
+                  >
+                    {pkg.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           )}
         </div>
       </div>

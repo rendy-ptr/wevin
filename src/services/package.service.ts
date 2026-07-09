@@ -1,17 +1,12 @@
 import { BusinessError, DuplicateError, NotFoundError } from '@/lib/errors';
 import { packageRepository } from '@/repositories/package.repository';
 import { activityService } from '@/services/activity.service';
-import { BasePackageBenefitModel } from '@/types/benefit.type';
 import type {
+  ActivePackageWithBenefits,
   BasePackageModel,
   PackageFilterParams,
-  PackageIndexItem,
   PackageWithRelationships,
 } from '@/types/package.type';
-import {
-  BasePackageTemplateModel,
-  BaseTemplateModel,
-} from '@/types/template.type';
 import { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 
 export const packageService = {
@@ -21,10 +16,7 @@ export const packageService = {
     isPopular,
     page,
     limit,
-  }: PackageFilterParams): Promise<{
-    items: PackageIndexItem[];
-    total: number;
-  }> => {
+  }: PackageFilterParams) => {
     return await packageRepository.getAll({
       search,
       isActive,
@@ -130,18 +122,9 @@ export const packageService = {
     return result;
   },
 
-  getActiveWithBenefits: async (): Promise<
-    (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
-      benefits: Pick<
-        BasePackageBenefitModel,
-        'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-      >[];
-      templates: (BasePackageTemplateModel & {
-        template: Pick<BaseTemplateModel, 'id' | 'name'>;
-      })[];
-    })[]
-  > => {
+  getActiveWithBenefits: async (): Promise<ActivePackageWithBenefits[]> => {
     const packages = await packageRepository.getPackageActiveWithBenefits();
+
     return packages;
   },
 

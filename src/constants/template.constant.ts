@@ -1,4 +1,5 @@
 export type Template = {
+  id: number;
   name: string;
   accent: string;
   ribbonColor: string;
@@ -22,6 +23,7 @@ export type Template = {
 
 export const TEMPLATES: Template[] = [
   {
+    id: 1,
     name: 'System Classic',
     accent: 'Dusty Rose (Default)',
     ribbonColor: '#C9A09A',
@@ -43,6 +45,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 2,
     name: 'Elegant Rose',
     accent: 'Dusty Pink',
     ribbonColor: '#C4607A',
@@ -64,6 +67,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 3,
     name: 'Golden Classic',
     accent: 'Warm Gold',
     ribbonColor: '#B8922A',
@@ -85,6 +89,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 4,
     name: 'Sage Garden',
     accent: 'Sage Green',
     ribbonColor: '#5E8A5C',
@@ -106,6 +111,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 5,
     name: 'Midnight Serenade',
     accent: 'Periwinkle',
     ribbonColor: '#7B8FC2',
@@ -127,6 +133,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 6,
     name: 'Emerald Forest',
     accent: 'Jewel Emerald',
     ribbonColor: '#3DB882',
@@ -148,6 +155,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 7,
     name: 'Terracotta Sun',
     accent: 'Burnt Orange',
     ribbonColor: '#E07840',
@@ -169,6 +177,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 8,
     name: 'Noir Romantique',
     accent: 'Burgundy Rose',
     ribbonColor: '#C4789A',
@@ -190,6 +199,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 9,
     name: 'Bohemian Earth',
     accent: 'Terracotta & Olive',
     ribbonColor: '#BC6C25',
@@ -211,6 +221,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 10,
     name: 'Midnight Royal',
     accent: 'Navy & Gold',
     ribbonColor: '#FFB703',
@@ -232,6 +243,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 11,
     name: 'Minimalist Slate',
     accent: 'Modern Monochrome',
     ribbonColor: '#2D3748',
@@ -253,6 +265,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 12,
     name: 'Forest Mist',
     accent: 'Deep Emerald',
     ribbonColor: '#064E3B',
@@ -274,6 +287,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 13,
     name: 'Peach Sorbet',
     accent: 'Warm Coral',
     ribbonColor: '#FF9A8B',
@@ -295,6 +309,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 14,
     name: 'Crimson Velvet',
     accent: 'Maroon Gold',
     ribbonColor: '#D4AF37',
@@ -316,6 +331,7 @@ export const TEMPLATES: Template[] = [
     },
   },
   {
+    id: 15,
     name: 'Vintage Matcha',
     accent: 'Olive & Earth',
     ribbonColor: '#606C38',

@@ -59,6 +59,7 @@ export function AdminSidebar() {
           size="icon"
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          className="text-muted-foreground hover:text-foreground hover:bg-secondary flex items-center justify-center rounded-lg transition-all focus:outline-none disabled:pointer-events-none"
         >
           {isMobileMenuOpen ? (
             <X className="h-6 w-6" />
@@ -159,7 +160,7 @@ export function AdminSidebar() {
             variant="outline"
             className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark h-10 w-full cursor-pointer justify-start px-5 font-medium transition-colors"
             onClick={onSubmit}
-            disabled={logoutMutation.isPending}
+            disabled={isLoading || logoutMutation.isPending}
           >
             {logoutMutation.isPending ? (
               <>

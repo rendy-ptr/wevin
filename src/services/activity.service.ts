@@ -2,7 +2,6 @@ import { activityLogs } from '@/db/schema';
 import { activityRepository } from '@/repositories/activity.repository';
 import {
   ActivityFilterParams,
-  ActivityIndexItem,
   BaseActivityLogModel,
 } from '@/types/activity.type';
 import { InferInsertModel } from 'drizzle-orm';
@@ -15,10 +14,7 @@ export const activityService = {
     action,
     page = 1,
     limit = 10,
-  }: ActivityFilterParams): Promise<{
-    items: ActivityIndexItem[];
-    total: number;
-  }> => {
+  }: ActivityFilterParams) => {
     return await activityRepository.getAll({
       search,
       startDate,

@@ -1,17 +1,23 @@
 import { BENEFITS_DATA } from '@/constants/benefit.constant';
 import { db } from '@/db';
-import { packageBenefits, packages, packageTemplates } from '@/db/schema';
-import { BasePackageBenefitModel } from '@/types/benefit.type';
+import {
+  packageBenefits,
+  packageQuotas,
+  packages,
+  packageTemplates,
+} from '@/db/schema';
 import type {
+  BenefitKeyType,
+  QuotaBenefitKeyType,
+  ToggleBenefitKeyType,
+} from '@/types/benefit.type';
+import type {
+  ActivePackageWithBenefits,
   BasePackageModel,
   PackageFilterParams,
   PackageIndexItem,
   PackageWithRelationships,
 } from '@/types/package.type';
-import {
-  BasePackageTemplateModel,
-  BaseTemplateModel,
-} from '@/types/template.type';
 import type { CreateUpdatePackageFormValues } from '@/validations/admin/create-update-package';
 import { and, count, eq, ilike } from 'drizzle-orm';
 
@@ -23,8 +29,13 @@ export const packageRepository = {
     page = 1,
     limit = 10,
   }: PackageFilterParams): Promise<{
-    items: PackageIndexItem[];
-    total: number;
+    data: PackageIndexItem[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+    };
   }> => {
     const offset = (page - 1) * limit;
 
@@ -45,8 +56,14 @@ export const packageRepository = {
             columns: {
               id: true,
               benefitKey: true,
-              toggleValue: true,
-              quotaValue: true,
+              value: true,
+            },
+          },
+          quotas: {
+            columns: {
+              id: true,
+              quotaKey: true,
+              value: true,
             },
           },
           templates: {
@@ -60,9 +77,43 @@ export const packageRepository = {
       db.select({ value: count() }).from(packages).where(whereClause),
     ]);
 
+    const mappedItems: PackageIndexItem[] = items.map((pkg) => {
+      const mergedBenefits = [
+        ...pkg.benefits.map((b) => ({
+          id: b.id,
+          benefitKey: b.benefitKey as BenefitKeyType,
+          toggleValue: b.value,
+          quotaValue: null,
+        })),
+        ...pkg.quotas.map((q) => ({
+          id: q.id,
+          benefitKey: q.quotaKey as BenefitKeyType,
+          toggleValue: null,
+          quotaValue: q.value,
+        })),
+      ];
+
+      return {
+        id: pkg.id,
+        name: pkg.name,
+        description: pkg.description,
+        price: pkg.price,
+        isActive: pkg.isActive,
+        isPopular: pkg.isPopular,
+        createdAt: pkg.createdAt,
+        templates: pkg.templates,
+        benefits: mergedBenefits,
+      };
+    });
+
     return {
-      items: items as PackageIndexItem[],
-      total: totalResult.value,
+      data: mappedItems,
+      meta: {
+        total: totalResult.value,
+        page,
+        limit,
+        totalPages: Math.ceil(totalResult.value / limit),
+      },
     };
   },
 
@@ -103,26 +154,40 @@ export const packageRepository = {
         .returning();
 
       if (benefits?.length) {
-        await tx.insert(packageBenefits).values(
-          benefits.map((b) => {
-            const benefitDef = BENEFITS_DATA.find(
-              (def) => def.key === b.benefitKey,
-            );
-            if (!benefitDef)
-              throw new Error(
-                `Benefit key "${b.benefitKey}" tidak ada di konstanta`,
-              );
+        const toggleBenefits = [];
+        const quotaBenefits = [];
 
-            return {
+        for (const b of benefits) {
+          const benefitDef = BENEFITS_DATA.find(
+            (def) => def.key === b.benefitKey,
+          );
+          if (!benefitDef) {
+            throw new Error(
+              `Benefit key "${b.benefitKey}" tidak ada di konstanta`,
+            );
+          }
+
+          if (benefitDef.type === 'toggle') {
+            toggleBenefits.push({
               packageId: newPackage.id,
-              benefitKey: b.benefitKey,
-              toggleValue:
-                benefitDef.type === 'toggle' ? (b.toggleValue ?? null) : null,
-              quotaValue:
-                benefitDef.type === 'quota' ? (b.quotaValue ?? null) : null,
-            };
-          }),
-        );
+              benefitKey: b.benefitKey as ToggleBenefitKeyType,
+              value: b.toggleValue ?? false,
+            });
+          } else if (benefitDef.type === 'quota') {
+            quotaBenefits.push({
+              packageId: newPackage.id,
+              quotaKey: b.benefitKey as QuotaBenefitKeyType,
+              value: b.quotaValue ?? 0,
+            });
+          }
+        }
+
+        if (toggleBenefits.length) {
+          await tx.insert(packageBenefits).values(toggleBenefits);
+        }
+        if (quotaBenefits.length) {
+          await tx.insert(packageQuotas).values(quotaBenefits);
+        }
       }
 
       if (templateIds?.length) {
@@ -152,31 +217,46 @@ export const packageRepository = {
         .returning();
 
       await tx.delete(packageBenefits).where(eq(packageBenefits.packageId, id));
+      await tx.delete(packageQuotas).where(eq(packageQuotas.packageId, id));
       await tx
         .delete(packageTemplates)
         .where(eq(packageTemplates.packageId, id));
 
       if (benefits?.length) {
-        await tx.insert(packageBenefits).values(
-          benefits.map((b) => {
-            const benefitDef = BENEFITS_DATA.find(
-              (def) => def.key === b.benefitKey,
-            );
-            if (!benefitDef)
-              throw new Error(
-                `Benefit key "${b.benefitKey}" tidak ada di konstanta`,
-              );
+        const toggleBenefits = [];
+        const quotaBenefits = [];
 
-            return {
+        for (const b of benefits) {
+          const benefitDef = BENEFITS_DATA.find(
+            (def) => def.key === b.benefitKey,
+          );
+          if (!benefitDef) {
+            throw new Error(
+              `Benefit key "${b.benefitKey}" tidak ada di konstanta`,
+            );
+          }
+
+          if (benefitDef.type === 'toggle') {
+            toggleBenefits.push({
               packageId: id,
-              benefitKey: b.benefitKey,
-              toggleValue:
-                benefitDef.type === 'toggle' ? (b.toggleValue ?? null) : null,
-              quotaValue:
-                benefitDef.type === 'quota' ? (b.quotaValue ?? null) : null,
-            };
-          }),
-        );
+              benefitKey: b.benefitKey as ToggleBenefitKeyType,
+              value: b.toggleValue ?? false,
+            });
+          } else if (benefitDef.type === 'quota') {
+            quotaBenefits.push({
+              packageId: id,
+              quotaKey: b.benefitKey as QuotaBenefitKeyType,
+              value: b.quotaValue ?? 0,
+            });
+          }
+        }
+
+        if (toggleBenefits.length) {
+          await tx.insert(packageBenefits).values(toggleBenefits);
+        }
+        if (quotaBenefits.length) {
+          await tx.insert(packageQuotas).values(quotaBenefits);
+        }
       }
 
       if (templateIds?.length) {
@@ -202,7 +282,7 @@ export const packageRepository = {
   getPackageWithRelationships: async (
     id: number,
   ): Promise<PackageWithRelationships | undefined> => {
-    return db.query.packages.findFirst({
+    const pkg = await db.query.packages.findFirst({
       where: eq(packages.id, id),
       columns: {
         createdAt: false,
@@ -213,8 +293,14 @@ export const packageRepository = {
           columns: {
             id: true,
             benefitKey: true,
-            toggleValue: true,
-            quotaValue: true,
+            value: true,
+          },
+        },
+        quotas: {
+          columns: {
+            id: true,
+            quotaKey: true,
+            value: true,
           },
         },
         templates: {
@@ -232,21 +318,42 @@ export const packageRepository = {
           },
         },
       },
-    }) as Promise<PackageWithRelationships | undefined>;
+    });
+
+    if (!pkg) return undefined;
+
+    const mergedBenefits = [
+      ...pkg.benefits.map((b) => ({
+        id: b.id,
+        benefitKey: b.benefitKey as BenefitKeyType,
+        toggleValue: b.value,
+        quotaValue: null,
+      })),
+      ...pkg.quotas.map((q) => ({
+        id: q.id,
+        benefitKey: q.quotaKey as BenefitKeyType,
+        toggleValue: null,
+        quotaValue: q.value,
+      })),
+    ];
+
+    return {
+      id: pkg.id,
+      name: pkg.name,
+      description: pkg.description,
+      price: pkg.price,
+      isActive: pkg.isActive,
+      isPopular: pkg.isPopular,
+      templates: pkg.templates,
+      members: pkg.members,
+      benefits: mergedBenefits,
+    };
   },
 
   getPackageActiveWithBenefits: async (): Promise<
-    (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
-      benefits: Pick<
-        BasePackageBenefitModel,
-        'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-      >[];
-      templates: (BasePackageTemplateModel & {
-        template: Pick<BaseTemplateModel, 'id' | 'name'>;
-      })[];
-    })[]
+    ActivePackageWithBenefits[]
   > => {
-    return db.query.packages.findMany({
+    const list = await db.query.packages.findMany({
       where: eq(packages.isActive, true),
       columns: { id: true, name: true, price: true },
       with: {
@@ -254,8 +361,14 @@ export const packageRepository = {
           columns: {
             id: true,
             benefitKey: true,
-            toggleValue: true,
-            quotaValue: true,
+            value: true,
+          },
+        },
+        quotas: {
+          columns: {
+            id: true,
+            quotaKey: true,
+            value: true,
           },
         },
         templates: {
@@ -266,16 +379,31 @@ export const packageRepository = {
           },
         },
       },
-    }) as Promise<
-      (Pick<BasePackageModel, 'id' | 'name' | 'price'> & {
-        benefits: Pick<
-          BasePackageBenefitModel,
-          'id' | 'benefitKey' | 'toggleValue' | 'quotaValue'
-        >[];
-        templates: (BasePackageTemplateModel & {
-          template: Pick<BaseTemplateModel, 'id' | 'name'>;
-        })[];
-      })[]
-    >;
+    });
+
+    return list.map((pkg) => {
+      const mergedBenefits = [
+        ...pkg.benefits.map((b) => ({
+          id: b.id,
+          benefitKey: b.benefitKey as BenefitKeyType,
+          toggleValue: b.value,
+          quotaValue: null,
+        })),
+        ...pkg.quotas.map((q) => ({
+          id: q.id,
+          benefitKey: q.quotaKey as BenefitKeyType,
+          toggleValue: null,
+          quotaValue: q.value,
+        })),
+      ];
+
+      return {
+        id: pkg.id,
+        name: pkg.name,
+        price: pkg.price,
+        templates: pkg.templates,
+        benefits: mergedBenefits,
+      };
+    });
   },
 };

@@ -14,8 +14,9 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import {
+  ACTIVE,
+  INACTIVE,
   USER_STATUS_OPTIONS,
-  USER_STATUS_VALUES,
 } from '@/constants/user.constant';
 import {
   useDeleteMember,
@@ -26,6 +27,7 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/date';
 import { ModalType } from '@/types/modal.type';
 import { UserWithRelationships } from '@/types/user.type';
+import { UpdateMemberStatusFormValues } from '@/validations/admin/create-update-member';
 import { isAxiosError } from 'axios';
 import {
   Filter,
@@ -70,9 +72,9 @@ export default function MemberManagementPage() {
   const { mutate: updateStatus, isPending: isStatusUpdating } =
     useUpdateMemberStatus();
 
-  const members = membersData?.items || [];
-  const totalItems = membersData?.total || 0;
-  const totalPages = Math.ceil(totalItems / filters.limit);
+  const members = membersData?.data || [];
+  const totalItems = membersData?.meta?.total || 0;
+  const totalPages = membersData?.meta?.totalPages || 1;
 
   const closeModal = () => {
     setActiveModal(null);
@@ -136,12 +138,9 @@ export default function MemberManagementPage() {
     });
   };
 
-  const handleUpdateStatus = () => {
+  const handleUpdateStatus = (data: UpdateMemberStatusFormValues) => {
     if (!selectedMember) return;
-    const newStatus =
-      selectedMember.status === USER_STATUS_VALUES.ACTIVE
-        ? USER_STATUS_VALUES.INACTIVE
-        : USER_STATUS_VALUES.ACTIVE;
+    const newStatus = data.status;
 
     updateStatus(
       { id: selectedMember.id, status: newStatus },
@@ -150,9 +149,7 @@ export default function MemberManagementPage() {
           toast({
             title: 'Status diperbarui',
             description: `Member telah berhasil ${
-              newStatus === USER_STATUS_VALUES.INACTIVE
-                ? 'di Non-Aktifkan'
-                : 'di Aktifkan'
+              newStatus === INACTIVE ? 'di Non-Aktifkan' : 'di Aktifkan'
             }`,
           });
           closeModal();
@@ -263,17 +260,17 @@ export default function MemberManagementPage() {
                       {member.email}
                     </td>
                     <td className="text-muted-foreground px-6 py-4 text-xs">
-                      {member.profile?.package?.name || '-'}
+                      {member.memberProfile?.package?.name || '-'}
                     </td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${
-                          member.status === USER_STATUS_VALUES.ACTIVE
+                          member.status === ACTIVE
                             ? 'bg-success/10 text-success'
                             : 'bg-destructive/10 text-destructive'
                         }`}
                       >
-                        {member.status === USER_STATUS_VALUES.ACTIVE
+                        {member.status === ACTIVE
                           ? USER_STATUS_OPTIONS.ACTIVE.LABEL
                           : USER_STATUS_OPTIONS.INACTIVE.LABEL}
                       </span>
@@ -305,13 +302,13 @@ export default function MemberManagementPage() {
                               variant="ghost"
                               size="icon"
                               className={`hover:bg-secondary h-8 w-8 transition-colors ${
-                                member.status === USER_STATUS_VALUES.ACTIVE
+                                member.status === ACTIVE
                                   ? 'text-accent-dark hover:text-accent-dark hover:bg-secondary'
                                   : 'text-success hover:text-success hover:bg-secondary'
                               }`}
                               onClick={() => handleOpenModal('status', member)}
                             >
-                              {member.status === USER_STATUS_VALUES.ACTIVE ? (
+                              {member.status === ACTIVE ? (
                                 <UserX className="h-4 w-4" />
                               ) : (
                                 <UserCheck className="h-4 w-4" />
@@ -320,7 +317,7 @@ export default function MemberManagementPage() {
                           </TooltipTrigger>
                           <TooltipContent>
                             <p>
-                              {member.status === USER_STATUS_VALUES.ACTIVE
+                              {member.status === ACTIVE
                                 ? 'Non-Aktifkan'
                                 : 'Aktifkan'}
                             </p>

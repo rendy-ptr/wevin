@@ -8,14 +8,21 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { USER_STATUS_VALUES } from '@/constants/user.constant';
+import { ACTIVE, INACTIVE } from '@/constants/user.constant';
 import { UserWithRelationships } from '@/types/user.type';
+import {
+  UpdateMemberStatusFormValues,
+  updateMemberStatusSchema,
+} from '@/validations/admin/create-update-member';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 
 interface DeactiveModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  onConfirm: (data: UpdateMemberStatusFormValues) => void;
   isLoading?: boolean;
   member: UserWithRelationships | null;
 }
@@ -27,7 +34,21 @@ export default function DeactiveModal({
   isLoading = false,
   member,
 }: DeactiveModalProps) {
-  const isEnabling = member?.status !== USER_STATUS_VALUES.ACTIVE;
+  const { handleSubmit, reset } = useForm<UpdateMemberStatusFormValues>({
+    resolver: zodResolver(updateMemberStatusSchema),
+    defaultValues: {
+      status: member?.status === ACTIVE ? INACTIVE : ACTIVE,
+    },
+  });
+
+  useEffect(() => {
+    if (member) {
+      reset({
+        status: member.status === ACTIVE ? INACTIVE : ACTIVE,
+      });
+    }
+  }, [member, reset]);
+  const isEnabling = member?.status !== ACTIVE;
   const label = isEnabling ? 'Aktifkan' : 'Non-aktifkan';
 
   return (
@@ -55,7 +76,7 @@ export default function DeactiveModal({
               Batal
             </Button>
             <Button
-              onClick={onConfirm}
+              onClick={handleSubmit(onConfirm)}
               disabled={isLoading}
               className="bg-destructive hover:bg-destructive/90 shadow-destructive/20 relative h-11 px-8 text-xs font-bold tracking-wide uppercase transition-all active:scale-95"
             >

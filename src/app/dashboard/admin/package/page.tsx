@@ -57,9 +57,9 @@ export default function PackageManagementPage() {
 
   const { mutate: deletePackage, isPending: isDeleting } = useDeletePackage();
 
-  const packages = packagesData?.items || [];
-  const totalItems = packagesData?.total || 0;
-  const totalPages = Math.ceil(totalItems / filters.limit);
+  const packages = packagesData?.data || [];
+  const totalItems = packagesData?.meta?.total || 0;
+  const totalPages = packagesData?.meta?.totalPages || 1;
 
   const closeModal = () => {
     setActiveModal(null);

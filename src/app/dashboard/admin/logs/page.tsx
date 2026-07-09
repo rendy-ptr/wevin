@@ -36,9 +36,9 @@ export default function LogsActivityPage() {
     limit: filters.limit,
   });
 
-  const activities = activityData?.items || [];
-  const total = activityData?.total || 0;
-  const totalPages = Math.ceil(total / filters.limit);
+  const activities = activityData?.data || [];
+  const total = activityData?.meta?.total || 0;
+  const totalPages = activityData?.meta?.totalPages || 1;
 
   const debouncedSearch = useDebouncedCallback((value: string) => {
     setFilters((prev) => ({ ...prev, search: value, page: 1 }));

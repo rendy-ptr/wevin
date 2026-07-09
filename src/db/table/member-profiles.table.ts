@@ -1,5 +1,7 @@
 import { relations } from 'drizzle-orm';
 import { integer, pgTable, serial, timestamp } from 'drizzle-orm/pg-core';
+import { invitations } from './invitation/invitations.table';
+import { memberQuotaUsage } from './member-quota-usage.table';
 import { packages } from './packages.table';
 import { users } from './users.table';
 
@@ -19,13 +21,18 @@ export const memberProfiles = pgTable('member_profiles', {
     .$onUpdate(() => new Date()),
 });
 
-export const memberProfileRelations = relations(memberProfiles, ({ one }) => ({
-  user: one(users, {
-    fields: [memberProfiles.userId],
-    references: [users.id],
+export const memberProfileRelations = relations(
+  memberProfiles,
+  ({ one, many }) => ({
+    user: one(users, {
+      fields: [memberProfiles.userId],
+      references: [users.id],
+    }),
+    package: one(packages, {
+      fields: [memberProfiles.packageId],
+      references: [packages.id],
+    }),
+    invitations: many(invitations),
+    quotaUsages: many(memberQuotaUsage),
   }),
-  package: one(packages, {
-    fields: [memberProfiles.packageId],
-    references: [packages.id],
-  }),
-}));
+);

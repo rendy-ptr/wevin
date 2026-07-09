@@ -22,8 +22,13 @@ export const useGetMembers = ({
         throw new Error(response.data.message || 'Gagal mengambil data');
       }
       return response.data.data as {
-        items: UserWithRelationships[];
-        total: number;
+        data: UserWithRelationships[];
+        meta: {
+          total: number;
+          page: number;
+          limit: number;
+          totalPages: number;
+        };
       };
     },
   });

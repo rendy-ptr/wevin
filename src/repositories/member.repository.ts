@@ -1,4 +1,4 @@
-import { USER_ROLE_VALUES } from '@/constants/user.constant';
+import { MEMBER } from '@/constants/role';
 import { db } from '@/db';
 import { memberProfiles, users } from '@/db/schema';
 import { MemberFilterParams } from '@/types/member.type';
@@ -26,12 +26,20 @@ export const memberRepository = {
       matchingUserIds = profiles.map((p) => p.userId);
 
       if (matchingUserIds.length === 0) {
-        return { items: [], total: 0 };
+        return {
+          data: [],
+          meta: {
+            total: 0,
+            page,
+            limit,
+            totalPages: 0,
+          },
+        };
       }
     }
 
     const whereClause = and(
-      eq(users.role, USER_ROLE_VALUES.MEMBER),
+      eq(users.role, MEMBER),
       isNull(users.deletedAt),
       search ? ilike(users.name, `%${search}%`) : undefined,
       status ? eq(users.status, status as TUserStatus) : undefined,
@@ -47,7 +55,7 @@ export const memberRepository = {
         password: false,
       },
       with: {
-        profile: {
+        memberProfile: {
           with: {
             package: true,
           },
@@ -61,8 +69,13 @@ export const memberRepository = {
       .where(whereClause);
 
     return {
-      items,
-      total: totalResult.value,
+      data: items,
+      meta: {
+        total: totalResult.value,
+        page,
+        limit,
+        totalPages: Math.ceil(totalResult.value / limit),
+      },
     };
   },
 
@@ -78,7 +91,7 @@ export const memberRepository = {
           name: payload.name,
           email: payload.email,
           password: payload.password,
-          role: USER_ROLE_VALUES.MEMBER,
+          role: MEMBER,
         })
         .returning({ id: users.id, name: users.name, email: users.email });
 
@@ -105,11 +118,17 @@ export const memberRepository = {
         .returning({ id: users.id, name: users.name, email: users.email });
 
       await tx
-        .update(memberProfiles)
-        .set({
+        .insert(memberProfiles)
+        .values({
+          userId: id,
           packageId: payload.packageId,
         })
-        .where(eq(memberProfiles.userId, id));
+        .onConflictDoUpdate({
+          target: memberProfiles.userId,
+          set: {
+            packageId: payload.packageId,
+          },
+        });
 
       return updatedUser;
     });
@@ -138,24 +157,9 @@ export const memberRepository = {
     return updatedUser;
   },
 
-  // getPermissions: async (id: number) => {
-  //   return await db.query.users.findFirst({
-  //     where: eq(users.id, id),
-  //     with: {
-  //       profile: {
-  //         with: {
-  //           package: {
-  //             with: {
-  //               benefits: {
-  //                 with: {
-  //                   benefit: true,
-  //                 },
-  //               },
-  //             },
-  //           },
-  //         },
-  //       },
-  //     },
-  //   });
-  // },
+  findMemberProfile: async (userId: number) => {
+    return await db.query.memberProfiles.findFirst({
+      where: eq(memberProfiles.userId, userId),
+    });
+  },
 };

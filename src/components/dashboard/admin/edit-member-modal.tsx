@@ -53,14 +53,14 @@ export default function EditMemberModal({
     resolver: zodResolver(createUpdateMemberSchema.omit({ email: true })),
     defaultValues: {
       name: member.name,
-      packageId: member.profile?.package?.id || 0,
+      packageId: member.memberProfile?.package?.id || 0,
     },
   });
 
   const { data: packagesData, isLoading: isLoadingPackages } = useGetPackages({
     limit: 100,
   });
-  const packages = packagesData?.items || [];
+  const packages = packagesData?.data || [];
 
   const { mutate, isPending } = useUpdateMember();
 
@@ -70,9 +70,9 @@ export default function EditMemberModal({
       {
         onSuccess: (res) => {
           toast({
-            title: 'Member berhasil ditambahkan',
+            title: 'Member berhasil diperbarui',
             variant: 'default',
-            description: `Member ${res.data.name} berhasil ditambahkan!`,
+            description: `Member ${res.data.name} berhasil diperbarui!`,
           });
           onClose();
           reset();
@@ -176,9 +176,12 @@ export default function EditMemberModal({
                           <SelectItem
                             key={pkg.id}
                             value={String(pkg.id)}
+                            disabled={!pkg.isActive}
                             className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark cursor-pointer text-xs transition-colors"
                           >
-                            {pkg.name}
+                            {pkg.isActive
+                              ? pkg.name
+                              : `${pkg.name} (Tidak Aktif)`}
                           </SelectItem>
                         ))}
                       </SelectContent>

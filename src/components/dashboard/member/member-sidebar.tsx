@@ -1,0 +1,180 @@
+'use client';
+
+import { Button } from '@/components/ui/button';
+import { SIDEBAR_LINKS } from '@/constants/member-sidebar';
+import { useLogout } from '@/hooks/api/use-auth';
+import { useSession } from '@/hooks/use-session';
+import { useToast } from '@/hooks/use-toast';
+import { cn } from '@/lib/utils';
+import { isAxiosError } from 'axios';
+import { Heart, LogOut, Menu, X } from 'lucide-react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState } from 'react';
+
+export function MemberSidebar() {
+  const { user, isLoading } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { toast } = useToast();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const logoutMutation = useLogout();
+  const onSubmit = () => {
+    logoutMutation.mutate(undefined, {
+      onSuccess: () => {
+        toast({
+          title: 'Berhasil keluar',
+          description: 'Anda telah berhasil keluar dari sistem.',
+        });
+        router.push('/login');
+      },
+      onError: (error) => {
+        let message = 'Gagal keluar. Silakan coba lagi.';
+        if (isAxiosError(error)) {
+          message =
+            error.response?.data?.message || 'Gagal keluar. Silakan coba lagi.';
+        }
+        toast({
+          variant: 'destructive',
+          title: 'Gagal keluar',
+          description: message,
+        });
+      },
+    });
+  };
+
+  return (
+    <>
+      <div className="bg-sidebar border-sidebar-border fixed top-0 right-0 left-0 z-50 flex h-16 items-center justify-between border-b px-4 lg:hidden">
+        <Link href="/dashboard/member" className="flex items-center gap-2">
+          <Heart className="text-primary fill-primary h-6 w-6" />
+          <span className="text-sidebar-foreground font-serif text-lg font-bold">
+            {process.env.NEXT_PUBLIC_APP_ALIAS ||
+              process.env.NEXT_PUBLIC_APP_NAME ||
+              'Configure on ENV'}
+          </span>
+        </Link>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+          aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+          className="hover:bg-primary/10 hover:text-primary-dark"
+        >
+          {isMobileMenuOpen ? (
+            <X className="h-6 w-6" />
+          ) : (
+            <Menu className="h-6 w-6" />
+          )}
+        </Button>
+      </div>
+
+      {isMobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
+      <aside
+        className={cn(
+          'bg-sidebar border-sidebar-border fixed top-0 left-0 z-50 flex h-full w-64 flex-col border-r transition-transform duration-300',
+          'lg:z-30 lg:translate-x-0',
+          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full',
+        )}
+      >
+        <div className="border-sidebar-border flex h-16 items-center border-b px-6">
+          <Link href="/dashboard/member" className="flex items-center gap-2">
+            <Heart className="text-primary fill-primary h-6 w-6" />
+            <span className="text-sidebar-foreground font-serif text-xl font-bold">
+              {process.env.NEXT_PUBLIC_APP_ALIAS ||
+                process.env.NEXT_PUBLIC_APP_NAME ||
+                'Configure on ENV'}
+            </span>
+          </Link>
+        </div>
+
+        <nav className="flex-1 overflow-y-auto px-3 py-2">
+          <ul className="space-y-1">
+            {SIDEBAR_LINKS.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== '/dashboard/member' &&
+                  pathname.startsWith(item.href));
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className={cn(
+                      'flex items-center gap-3 rounded-xl px-4 py-3 transition-all duration-200',
+                      isActive
+                        ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm'
+                        : 'text-sidebar-foreground hover:bg-sidebar-accent',
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span className="font-medium">{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+
+        <div className="border-sidebar-border border-t p-4">
+          <div className="mb-4 flex items-center gap-3">
+            {isLoading || !user ? (
+              <>
+                <div className="bg-sidebar-accent h-10 w-10 animate-pulse rounded-full" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <div className="bg-sidebar-accent h-4 w-24 animate-pulse rounded" />
+                  <div className="bg-sidebar-accent h-3 w-32 animate-pulse rounded" />
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="bg-primary/20 flex h-10 w-10 items-center justify-center rounded-full">
+                  <span className="text-primary-dark font-serif font-semibold">
+                    {user.name
+                      .split(' ')
+                      .map((n) => n[0])
+                      .join('')
+                      .toUpperCase()
+                      .slice(0, 2)}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sidebar-foreground truncate font-medium">
+                    {user.name}
+                  </p>
+                  <p className="text-muted-foreground truncate text-xs">
+                    {user.email}
+                  </p>
+                </div>
+              </>
+            )}
+          </div>
+          <Button
+            variant="outline"
+            className="hover:bg-primary/10 focus:bg-primary/10 hover:text-primary-dark focus:text-primary-dark h-10 w-full cursor-pointer justify-start px-5 font-medium transition-colors"
+            onClick={onSubmit}
+            disabled={isLoading || logoutMutation.isPending}
+          >
+            {logoutMutation.isPending ? (
+              <>
+                <span className="animate-pulse">Keluar...</span>
+              </>
+            ) : (
+              <>
+                <LogOut className="mr-2 h-4 w-4" />
+                Keluar
+              </>
+            )}
+          </Button>
+        </div>
+      </aside>
+    </>
+  );
+}

@@ -1,31 +1,26 @@
-export const USER_ROLE_VALUES = {
-  ADMIN: 'admin',
-  MEMBER: 'member',
-} as const;
+import { ADMIN, MEMBER } from './role';
 
-export const USER_STATUS_VALUES = {
-  ACTIVE: 'active',
-  INACTIVE: 'inactive',
-} as const;
+export const ACTIVE = 'active' as const;
+export const INACTIVE = 'inactive' as const;
 
 export const USER_ROLE_OPTIONS = {
   ADMIN: {
     LABEL: 'Admin',
-    VALUE: USER_ROLE_VALUES.ADMIN,
+    VALUE: ADMIN,
   },
   MEMBER: {
     LABEL: 'Member',
-    VALUE: USER_ROLE_VALUES.MEMBER,
+    VALUE: MEMBER,
   },
 } as const;
 
 export const USER_STATUS_OPTIONS = {
   ACTIVE: {
     LABEL: 'Aktif',
-    VALUE: USER_STATUS_VALUES.ACTIVE,
+    VALUE: ACTIVE,
   },
   INACTIVE: {
     LABEL: 'Tidak Aktif',
-    VALUE: USER_STATUS_VALUES.INACTIVE,
+    VALUE: INACTIVE,
   },
 } as const;

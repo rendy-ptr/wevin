@@ -8,15 +8,15 @@ import {
   unique,
   varchar,
 } from 'drizzle-orm/pg-core';
-import { users } from './users.table';
+import { memberProfiles } from './member-profiles.table';
 
 export const memberQuotaUsage = pgTable(
   'member_quota_usage',
   {
     id: serial('id').primaryKey(),
-    userId: integer('user_id')
+    memberId: integer('member_id')
       .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
+      .references(() => memberProfiles.id, { onDelete: 'cascade' }),
     benefitKey: varchar('benefit_key', { length: 50 })
       .notNull()
       .$type<QuotaBenefitKeyType>(),
@@ -27,15 +27,15 @@ export const memberQuotaUsage = pgTable(
       .notNull()
       .$onUpdate(() => new Date()),
   },
-  (t) => [unique().on(t.userId, t.benefitKey)],
+  (t) => [unique().on(t.memberId, t.benefitKey)],
 );
 
 export const memberQuotaUsageRelations = relations(
   memberQuotaUsage,
   ({ one }) => ({
-    user: one(users, {
-      fields: [memberQuotaUsage.userId],
-      references: [users.id],
+    memberProfile: one(memberProfiles, {
+      fields: [memberQuotaUsage.memberId],
+      references: [memberProfiles.id],
     }),
   }),
 );

@@ -48,14 +48,14 @@ export const ADMIN_STATS = [
     value: '250',
     change: '+12% bulan ini',
     icon: Users,
-    color: 'text-primary',
+    color: 'text-primary-dark',
   },
   {
     label: 'Total Undangan',
     value: '1.2K',
     change: '+25% bulan ini',
     icon: FileHeart,
-    color: 'text-accent',
+    color: 'text-primary-dark',
   },
   {
     label: 'Avg RSVP Rate',
@@ -69,6 +69,6 @@ export const ADMIN_STATS = [
     value: 'Rp 15.2M',
     change: '+32% bulan ini',
     icon: TrendingUp,
-    color: 'text-accent',
+    color: 'text-primary-dark',
   },
 ];

@@ -13,6 +13,9 @@ export function useSession() {
       return response.data.user;
     },
     staleTime: 1000 * 60 * 5,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    refetchInterval: 1000 * 60 * 5,
   });
 
   return {
